@@ -4,6 +4,7 @@ This Dataiku DSS plugin provides recipes to analyze text data:
 - Sentiment Analysis
 - Named Entity Recognition
 - Summarization
+- Text classification
 
 Documentation: TODO
 
