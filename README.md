@@ -1,6 +1,6 @@
-# Text Information Extraction Plugin 🚧 WORK IN PROGRESS
+# Text Analysis Plugin 🚧 WORK IN PROGRESS
 
-This Dataiku DSS plugin provides recipes to extract information from text data:
+This Dataiku DSS plugin provides recipes to analyze text data:
 - Sentiment Analysis
 - Named Entity Recognition
 - Summarization
