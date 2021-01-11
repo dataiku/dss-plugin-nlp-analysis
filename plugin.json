@@ -1,16 +1,16 @@
 {
-    "id": "your-plugin-id",
+    "id": "nlp-analysis",
     "version": "0.1.0",
     "meta": {
-        "label": "Your plugin label",
-        "category": "Your category (optional)",
+        "label": "Text analysis",
+        "category": "Natural Language Processing",
         "description": "Your description (keep it short and simple)",
-        "author": "Organization (firstName LASTNAME)",
+        "author": "Dataiku",
         "icon": "icon-font-awesome-3.2.1",
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/product/plugins/your-plugin-id/",
         "tags": [
-            "myTag"
+            "NLP"
         ],
         "supportLevel": "NOT_SUPPORTED"
     }
