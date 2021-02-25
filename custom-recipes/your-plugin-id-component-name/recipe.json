@@ -1,116 +1,213 @@
-// This file is the descriptor for the Custom code recipe test
+// This file is the descriptor for the Custom code recipe ontology-tagging
 {
     // Meta data for display purposes
     "meta": {
-        // label: name of the recipe as displayed, should be short
-        "label": "Your recipe label",
-        // description: longer string to help end users understand what this recipe does
-        "description": "Your recipe description",
-        // icon: must be one of the FontAwesome 3.2.1 icons, complete list here at https://fontawesome.com/v3.2.1/icons/
-        "icon": "icon-puzzle-piece"
+       
+        "label": "Ontology tagging",
+        "description": "assigning given tags to documents",
+        "icon": "icon-font-awesome-3.2.1"
     },
+
     "kind": "PYTHON",
-    // Inputs and outputs are defined by roles. In the recipe's I/O tab, the user can associate one
-    // or more dataset to each input and output role.
-    // The "arity" field indicates whether the user can associate several datasets to the role ('NARY')
-    // or at most one ('UNARY'). The "required" field indicates whether the user is allowed to
-    // associate no dataset with the role.
+   
+
     "inputRoles": [
         {
-            "name": "input_A_role",
-            "label": "input A displayed name",
-            "description": "what input A means",
+            "name": "documents_to_tag",
+            "label": "documents to tag",
+            "description": "the documents you wish to tag",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
         },
         {
-            "name": "input_B_role",
-            "label": "input B displayed name",
-            "description": "what input B means",
-            "arity": "NARY",
-            "required": false,
+            "name": "ontology_of_tags",
+            "label": "ontology of tags",
+            "description": "dictionary with tags,keywords and categories",
+            "arity": "UNARY",
+            "required": true,
             "acceptsDataset": true
-            // ,'mustBeSQL': true
-            // ,'mustBeStrictlyType':'HDFS'
         }
-        // ...
+    
     ],
+
     "outputRoles": [
         {
-            "name": "main_output",
-            "label": "main output displayed name",
-            "description": "what main output means",
+            "name": "tagged_documents",
+            "label": "tagged documents",
+            "description": "documents and their assigned tags",
             "arity": "UNARY",
-            "required": false,
-            "acceptsDataset": true
-        },
-        {
-            "name": "errors_output",
-            "label": "errors output displayed name",
-            "description": "what errors output means",
-            "arity": "UNARY",
-            "required": false,
+            "required": true,
             "acceptsDataset": true
         }
-        // ...
+  
     ],
-    /* The field "params" holds a list of all the params
-       for wich the user will be prompted for values in the Settings tab of the recipe.
+    
+    "selectableFromDataset": "documents_to_tag",
+    "selectableFromDataset":"ontology_of_tags",
 
-       The available parameter types include:
-       STRING, STRINGS, INT, DOUBLE, BOOLEAN, SELECT, MULTISELECT, MAP, TEXTAREA, PRESET, COLUMN, COLUMNS
 
-       For the full list and for more details, see the documentation: https://doc.dataiku.com/dss/latest/plugins/reference/params.html
-    */
     "params": [
-        {
-            "name": "parameter1",
-            "label": "User-readable label",
-            "type": "STRING",
-            "description": "Some documentation for parameter1",
-            "mandatory": true
+        
+         {
+            "name": "separator_input",
+            "label": "Document dataset",
+            "type": "SEPARATOR"
         },
+        
+        
         {
-            "name": "parameter2",
-            "label": "Parameter 2 label",
-            "type": "INT",
-            "defaultValue": 42
-            /* Note that standard json parsing will return it as a double in Python (instead of an int), so you need to write
-               int(get_recipe_config()['parameter2'])
-            */
-        },
-        // A "SELECT" parameter is a multi-choice selector. Choices are specified using the selectChoice field
-        {
-            "name": "parameter3",
-            "label": "Parameter 3 label",
-            "type": "SELECT",
-            "selectChoices": [
-                {
-                    "value": "val_x",
-                    "label": "display name for val_x"
-                },
-                {
-                    "value": "val_y",
-                    "label": "display name for val_y"
-                }
+            "name": "text_column",
+            "label": "text column",
+            "type": "COLUMN",
+            "description": "text column containing the documents",
+            "mandatory": true,
+            "columnRole": "documents_to_tag",
+            "allowedColumnTypes": [
+                "string"
             ]
         },
-        // A 'COLUMN' parameter is a string, whose value is a column name from an input schema.
-        // To specify the input schema whose column names are used, use the "columnRole" field like below.
-        // The column names will come from the schema of the first dataset associated to that role.
-        {
-            "name": "parameter4",
-            "label": "Parameter 4 label",
+        {                                           #TODO add a comment about the supported languages? 
+            "name": "language_column",
+            "label":'language',
             "type": "COLUMN",
-            "columnRole": "input_B_role"
+            "mandatory":true,
+            "columnRole": "documents_to_tag",
+            "allowedColumnTypes": [
+                "string"
+            ]
+            
+        },
+        
+        {
+            "name": "tags_dataset",
+            "label": "Tags dataset",
+            "type": "SEPARATOR"
+        },
+        
+        {
+            "name": "tag_column",
+            "label": "tag column",
+            "type":"COLUMN",
+            "mandatory":true,
+            "columnRole":"ontology_of_tags",
+            "allowedColumnTypes": [
+                "string"
+            ]
+        },
+        
+       
+         
+        {
+            "name":"keyword_column",
+            "label":"keyword column",
+            "type":"COLUMN",
+            "mandatory":false,
+            "columnRole":"ontology_of_tags",
+            "allowedColumnTypes": [
+                "string"
+            ]
+            
+        },
+        
+        
+        {
+            "name":'category_column',
+            "label":"category column",
+            "type": "COLUMN",
+            "mandatory":false,
+            "columnRole":"ontology_of_tags",
+            "allowedColumnTypes": [
+                "string"
+            ],
+            "defaultValue":""
+            
+        },
+        
+        {
+            "name": "Matching Parameters",
+            "label": "Matching Parameters",
+            "type": "SEPARATOR"
+        },
+        
+        {
+            "name":'case_sensitivity',
+            "label":"case-sensitive output",
+            "description": "for keywords compared case sensitive by exact match",
+            "type": "BOOLEAN",
+            "defaultValue":true
+            
+        },
+        {
+            "name":"lemmatization",
+            "label":"lemmatization",
+            "description": "for matching by lemmatized forms",
+            "type": "BOOLEAN",
+            "defaultValue":false
+            
+        },
+        {
+            "name":'unicode_normalization',
+            "label":"unicode normalization",
+            "description": "for matching regardless character encoding",
+            "type": "BOOLEAN",
+            "defaultValue":false
+            
+        },
+        
+        
+          {
+            "name": "Output Formats",
+            "label": "Output Formats",
+            "type": "SEPARATOR"
+        },
+        
+
+        {
+            "name": "possible_outputs_with_cat",
+            "label":"possible outputs",
+            "type": "SELECT",
+            "visibilityCondition":"model.category_column.length>0",
+            
+            "selectChoices": [
+                {
+                    "value": "one row per doc",
+                    "label": "one row per doc"
+                },
+                
+                {
+                    "value": "one row per tag",
+                    "label": "one row per tag"
+                },
+                
+                {
+                    "value":"JSON output",
+                    "label":"JSON output"  
+                }
+            ],
+            "defaultValue":"one row per doc"
+        },
+         
+        {
+            "name": "possible_outputs",
+            "label":"possible outputs",
+            "type": "SELECT",
+            "visibilityCondition": "!model.category_column.length>0",
+             
+            "selectChoices": [
+                {
+                    "value": "one row per doc",
+                    "label": "one row per doc"
+                },
+                
+                {
+                    "value": "one row per tag",
+                    "label": "one row per tag"
+                }
+            ],
+            "defaultValue":"one row per doc"
         }
-        // The 'COLUMNS' type works in the same way, except that it is a list of strings.
-    ],
-    // The field "resourceKeys" holds a list of keys that allows to limit the number
-    // of concurrent executions and activities triggered by this recipe.
-    //
-    // Administrators can configure the limit per resource key in the Administration > Settings > Flow build
-    // screen.
-    "resourceKeys": []
+     
+    ]
+
 }
