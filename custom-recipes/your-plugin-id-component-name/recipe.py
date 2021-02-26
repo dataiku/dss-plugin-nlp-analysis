@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Code for custom code recipe dictionnary-tagging (imported from a Python recipe)
 from dataiku.customrecipe import *
 import dataiku
@@ -34,6 +33,7 @@ def get_output_datasets(role):
 def load_settings():
     settings = {}
 
+    
     #get inputs 
     settings['text_input']     = get_input_datasets('documents_to_tag').get_dataframe()
     settings['ontology_input'] = get_input_datasets('ontology_of_tags').get_dataframe()
@@ -46,9 +46,13 @@ def load_settings():
             raise ParameterError(
                 'Missing input column : {} '.format(par)
             )       
-    for par in OPTIONAL_PARAMS:
-        settings[par] = get_recipe_config().get(par, None)
-
+    
+    key_col = get_recipe_config().get('keyword_column')
+    settings['keyword_column'] = key_col if key_col else None
+     
+    cat_column = get_recipe_config().get('category_column')
+    settings['category_column'] = cat_column if len(cat_column)>0 else None 
+        
     return settings
 
 #check if the given columns come from the right input datasets
@@ -64,19 +68,18 @@ def check_columns(settings):
                          'category_column']
     
     for col in input_text_params:
-        print(settings[col])
         if settings[col] not in input_text_cols:
             raise ParameterError(
                 'Invalid input column : {}'.format(col)
             )
     for col in input_onto_params:
-        if len(settings[col])>0 and settings[col] not in input_onto_cols:
+        if settings[col] is not None and settings[col] not in input_onto_cols:
             raise ParameterError(
             'Invalid input column : {}'.format(settings[col])
             )
 
-#give settings to the Tagger and get the created output dataset   
-#def call_tagger(settings):                                       #TODO decomment when adding class Tagger in python-lib
+#give settings to the Tagger and get the created output dataset   #TODO decomment when adding class Tagger in python-lib
+#def call_tagger(settings):
 #    tagging = Tagger(settings)
 #    df      = tagging.tagging_proceedure()
 #    return df
@@ -85,11 +88,10 @@ def check_columns(settings):
 def process_params():
     
     settings                = load_settings()
-    print(settings['keyword_column'])
     check_columns(settings)
-    tagged_documents_df     = pd.DataFrame()                      #TODO comment   when adding class Tagger in python-lib
-    #tagged_documents_df     = call_tagger(settings)              #TODO decomment when adding class Tagger in python-lib 
-
+    tagged_documents_df     = pd.DataFrame()
+    #tagged_documents_df     = call_tagger(settings) #TODO decomment when adding class Tagger in python-lib 
+    
     #write output dataset
     output_ds               = get_output_datasets('tagged_documents')
     output_ds.write_with_schema(tagged_documents_df)
