@@ -46,8 +46,6 @@ def load_settings():
             raise ParameterError(
                 'Missing input column : {} '.format(par)
             )       
-
-
     for par in OPTIONAL_PARAMS:
         settings[par] = get_recipe_config().get(par, None)
 
@@ -61,32 +59,36 @@ def check_columns(settings):
     
     input_text_params = [ 'text_column',
                           'language_column']
-    input_onto_params = [ 'tag_column',
-                          'category_column',
-                          'keyword_column']
+    input_onto_params = ['tag_column',
+                         'keyword_column',
+                         'category_column']
+    
     for col in input_text_params:
+        print(settings[col])
         if settings[col] not in input_text_cols:
-            raise ParameterError(
-                'Invalid input column : {} '.format(col)
-            )
-    for col in input_onto_params:
-        if settings[col] not in input_onto_cols:
             raise ParameterError(
                 'Invalid input column : {}'.format(col)
             )
+    for col in input_onto_params:
+        if len(settings[col])>0 and settings[col] not in input_onto_cols:
+            raise ParameterError(
+            'Invalid input column : {}'.format(settings[col])
+            )
 
-#give settings to the Tagger and get the created output dataset   TODO decomment when adding class Tagger in python-lib
-#def call_tagger():
+#give settings to the Tagger and get the created output dataset   
+#def call_tagger(settings):                                       #TODO decomment when adding class Tagger in python-lib
 #    tagging = Tagger(settings)
 #    df      = tagging.tagging_proceedure()
 #    return df
 
+            
 def process_params():
     
     settings                = load_settings()
+    print(settings['keyword_column'])
     check_columns(settings)
-    tagged_documents_df      = pd.DataFrame()
-    #tagged_documents_df     = call_tagger()                      TODO decomment when adding class Tagger in python-lib
+    tagged_documents_df     = pd.DataFrame()                      #TODO comment   when adding class Tagger in python-lib
+    #tagged_documents_df     = call_tagger(settings)              #TODO decomment when adding class Tagger in python-lib 
 
     #write output dataset
     output_ds               = get_output_datasets('tagged_documents')
