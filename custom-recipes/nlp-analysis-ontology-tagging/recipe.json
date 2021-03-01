@@ -4,7 +4,7 @@
     "meta": {
        
         "label": "Ontology tagging",
-        "description": "Assign given tags and to documents",
+        "description": "Tag documents matching keywords within a corpus of text documents",
         "icon": "icon-pushpin"
     },
 
@@ -14,16 +14,16 @@
     "inputRoles": [
         {
             "name": "documents_to_tag",
-            "label": "Documents to tag",
-            "description": "the documents you wish to tag",
+            "label": "Document dataset",
+            "description": "Dataset with a column containing the text documents to tag",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
         },
         {
-            "name": "ontology_of_tags",
-            "label": "Ontology of tags",
-            "description": "dictionary with tags,keywords and categories",
+            "name": "ontology_dataset",
+            "label": "Ontology dataset",
+            "description": "Dataset with columns for tags, keywords and categories",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -35,7 +35,7 @@
         {
             "name": "tagged_documents",
             "label": "Tagged documents",
-            "description": "documents and their assigned tags",
+            "description": "Dataset with the input documents and their assigned tags",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -50,7 +50,7 @@
     "params": [
         
          {
-            "name": "separator_input",
+            "name": "separator_document_dataset",
             "label": "Document dataset",
             "type": "SEPARATOR"
         },
@@ -60,7 +60,7 @@
             "name": "text_column",
             "label": "Text column",
             "type": "COLUMN",
-            "description": "text column containing the documents",
+            "description": "Column containing the text documents",
             "mandatory": true,
             "columnRole": "documents_to_tag",
             "allowedColumnTypes": [
@@ -80,8 +80,8 @@
         },
         
         {
-            "name": "tags_dataset",
-            "label": "Tags dataset",
+            "name": "separator_ontology_dataset",
+            "label": "Ontology dataset",
             "type": "SEPARATOR"
         },
         
@@ -102,7 +102,7 @@
             "name":"keyword_column",
             "label":"Keyword column",
             "type":"COLUMN",
-            "mandatory":false,
+            "mandatory": true,
             "columnRole":"ontology_of_tags",
             "allowedColumnTypes": [
                 "string"
@@ -113,7 +113,7 @@
         
         {
             "name":'category_column',
-            "label":"Category column",
+            "label":"Category column (optional)",
             "type": "COLUMN",
             "mandatory":false,
             "columnRole":"ontology_of_tags",
@@ -125,14 +125,14 @@
         },
         
         {
-            "name": "Matching Parameters",
+            "name": "separator_matching_parameters",
             "label": "Matching Parameters",
             "type": "SEPARATOR"
         },
         
         {
             "name":'case_sensitivity',
-            "label":"Case-sensitive output",
+            "label":"Case-sensitive",
             "description": "for keywords compared case sensitive by exact match",
             "type": "BOOLEAN",
             "defaultValue":true
@@ -141,7 +141,7 @@
         {
             "name":"lemmatization",
             "label":"Lemmatization",
-            "description": "for matching by lemmatized forms",
+            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
             "type": "BOOLEAN",
             "defaultValue":false
             
@@ -149,7 +149,7 @@
         {
             "name":'unicode_normalization',
             "label":"Unicode normalization",
-            "description": "for matching regardless character encoding",
+            "description": "Apply NFD Unicode normalization before matching",
             "type": "BOOLEAN",
             "defaultValue":false
             
@@ -157,35 +157,35 @@
         
         
           {
-            "name": "Output Formats",
-            "label": "Output Formats",
+            "name": "separator_output_parameters",
+            "label": "Output parameters",
             "type": "SEPARATOR"
         },
         
 
         {
-            "name": "possible_outputs_with_cat",
-            "label":"Possible outputs",
+            "name": "output_format",
+            "label": "Output format",
             "type": "SELECT",
             "visibilityCondition":"model.category_column.length>0",
             
             "selectChoices": [
                 {
-                    "value": "one row per doc",
-                    "label": "one row per doc"
+                    "value": "one_row_per_doc_tag_lists",
+                    "label": "One row per document with lists of tags"
                 },
                 
                 {
-                    "value": "one row per tag",
-                    "label": "one row per tag"
+                    "value": "one_row_per_tag",
+                    "label": "One row per tag"
                 },
                 
                 {
-                    "value":"JSON output",
-                    "label":"JSON output"  
+                    "value": "one_row_per_doc_json",
+                    "label": "One row per document with JSON tags"  
                 }
             ],
-            "defaultValue":"one row per doc"
+            "defaultValue": "one_row_per_doc_tag_lists"
         },
          
         {
