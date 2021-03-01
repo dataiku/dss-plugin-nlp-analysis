@@ -8,7 +8,7 @@
         "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE)",
         "icon": "icon-list-alt",
         "licenseInfo": "Apache Software License",
-        "url": "https://www.dataiku.com/product/plugins/ynlp-analysis/",
+        "url": "https://www.dataiku.com/product/plugins/nlp-analysis/",
         "tags": [
             "NLP"
         ],
