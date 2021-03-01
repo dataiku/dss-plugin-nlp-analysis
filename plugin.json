@@ -5,7 +5,7 @@
         "label": "Text analysis",
         "category": "Natural Language Processing",
         "description": "TODO add your description (keep it short and simple)",
-        "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE",
+        "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE)",
         "icon": "icon-list-alt",
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/product/plugins/ynlp-analysis/",
