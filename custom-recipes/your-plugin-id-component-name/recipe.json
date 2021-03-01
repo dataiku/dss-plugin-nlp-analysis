@@ -5,7 +5,7 @@
        
         "label": "Ontology tagging",
         "description": "assigning given tags to documents",
-        "icon": "icon-font-awesome-3.2.1"
+        "icon": "icon-pushpin"
     },
 
     "kind": "PYTHON",
@@ -14,7 +14,7 @@
     "inputRoles": [
         {
             "name": "documents_to_tag",
-            "label": "documents to tag",
+            "label": "Documents to tag",
             "description": "the documents you wish to tag",
             "arity": "UNARY",
             "required": true,
@@ -22,7 +22,7 @@
         },
         {
             "name": "ontology_of_tags",
-            "label": "ontology of tags",
+            "label": "Ontology of tags",
             "description": "dictionary with tags,keywords and categories",
             "arity": "UNARY",
             "required": true,
@@ -34,7 +34,7 @@
     "outputRoles": [
         {
             "name": "tagged_documents",
-            "label": "tagged documents",
+            "label": "Tagged documents",
             "description": "documents and their assigned tags",
             "arity": "UNARY",
             "required": true,
@@ -58,7 +58,7 @@
         
         {
             "name": "text_column",
-            "label": "text column",
+            "label": "Text column",
             "type": "COLUMN",
             "description": "text column containing the documents",
             "mandatory": true,
@@ -69,7 +69,7 @@
         },
         {                                           #TODO add a comment about the supported languages? 
             "name": "language_column",
-            "label":'language',
+            "label":'Language column',
             "type": "COLUMN",
             "mandatory":true,
             "columnRole": "documents_to_tag",
@@ -87,7 +87,7 @@
         
         {
             "name": "tag_column",
-            "label": "tag column",
+            "label": "Tag column",
             "type":"COLUMN",
             "mandatory":true,
             "columnRole":"ontology_of_tags",
@@ -100,7 +100,7 @@
          
         {
             "name":"keyword_column",
-            "label":"keyword column",
+            "label":"Keyword column",
             "type":"COLUMN",
             "mandatory":false,
             "columnRole":"ontology_of_tags",
@@ -113,7 +113,7 @@
         
         {
             "name":'category_column',
-            "label":"category column",
+            "label":"Category column",
             "type": "COLUMN",
             "mandatory":false,
             "columnRole":"ontology_of_tags",
@@ -132,7 +132,7 @@
         
         {
             "name":'case_sensitivity',
-            "label":"case-sensitive output",
+            "label":"Case-sensitive output",
             "description": "for keywords compared case sensitive by exact match",
             "type": "BOOLEAN",
             "defaultValue":true
@@ -140,7 +140,7 @@
         },
         {
             "name":"lemmatization",
-            "label":"lemmatization",
+            "label":"Lemmatization",
             "description": "for matching by lemmatized forms",
             "type": "BOOLEAN",
             "defaultValue":false
@@ -148,7 +148,7 @@
         },
         {
             "name":'unicode_normalization',
-            "label":"unicode normalization",
+            "label":"Unicode normalization",
             "description": "for matching regardless character encoding",
             "type": "BOOLEAN",
             "defaultValue":false
@@ -165,7 +165,7 @@
 
         {
             "name": "possible_outputs_with_cat",
-            "label":"possible outputs",
+            "label":"Possible outputs",
             "type": "SELECT",
             "visibilityCondition":"model.category_column.length>0",
             
@@ -190,7 +190,7 @@
          
         {
             "name": "possible_outputs",
-            "label":"possible outputs",
+            "label":"Possible outputs",
             "type": "SELECT",
             "visibilityCondition": "!model.category_column.length>0",
              
