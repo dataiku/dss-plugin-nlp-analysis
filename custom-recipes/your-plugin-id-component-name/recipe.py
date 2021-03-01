@@ -1,4 +1,4 @@
-# Code for custom code recipe dictionnary-tagging (imported from a Python recipe)
+# -*- coding: utf-8 -*-
 from dataiku.customrecipe import *
 import dataiku
 import pandas as pd
