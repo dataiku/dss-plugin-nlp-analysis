@@ -75,7 +75,7 @@ def check_columns(settings):
     for col in input_onto_params:
         if settings[col] is not None and settings[col] not in input_onto_cols:
             raise ParameterError(
-            'Invalid input column : {}'.format(settings[col])
+            'Invalid input column : {}'.format(col)
             )
 
 #give settings to the Tagger and get the created output dataset   #TODO decomment when adding class Tagger in python-lib
