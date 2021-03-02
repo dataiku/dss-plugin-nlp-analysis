@@ -1,6 +1,4 @@
-// This file is the descriptor for the Custom code recipe ontology-tagging
 {
-    // Meta data for display purposes
     "meta": {
        
         "label": "Ontology tagging",
@@ -13,7 +11,7 @@
 
     "inputRoles": [
         {
-            "name": "documents_to_tag",
+            "name": "Document dataset",
             "label": "Document dataset",
             "description": "Dataset with a column containing the text documents to tag",
             "arity": "UNARY",
@@ -21,7 +19,7 @@
             "acceptsDataset": true
         },
         {
-            "name": "ontology_dataset",
+            "name": "Ontology dataset",
             "label": "Ontology dataset",
             "description": "Dataset with columns for tags, keywords and categories",
             "arity": "UNARY",
@@ -33,7 +31,7 @@
 
     "outputRoles": [
         {
-            "name": "tagged_documents",
+            "name": "Tagged documents",
             "label": "Tagged documents",
             "description": "Dataset with the input documents and their assigned tags",
             "arity": "UNARY",
@@ -43,10 +41,10 @@
   
     ],
     
-    "selectableFromDataset": "documents_to_tag",
-    "selectableFromDataset":"ontology_of_tags",
+    "selectableFromDataset": "Document dataset",
+    "selectableFromDataset":"Ontology dataset",
 
-
+    "paramsPythonSetup": "pick_languages.py",
     "params": [
         
          {
@@ -62,21 +60,29 @@
             "type": "COLUMN",
             "description": "Column containing the text documents",
             "mandatory": true,
-            "columnRole": "documents_to_tag",
+            "columnRole": "Document dataset",
             "allowedColumnTypes": [
                 "string"
             ]
         },
-        {                                           #TODO add a comment about the supported languages? 
+
+        {
+            "name": "language",
+            "label": "Language",
+            "type": "SELECT",
+            "getChoicesFromPython": true,
+            "defaultValue": "en"
+        },
+        {
             "name": "language_column",
-            "label":'Language column',
+            "label": "Language column",
             "type": "COLUMN",
-            "mandatory":true,
-            "columnRole": "documents_to_tag",
+            "description": "Column containing ISO 639-1 language codes",
+            "columnRole": "Document dataset",
             "allowedColumnTypes": [
                 "string"
-            ]
-            
+            ],
+            "visibilityCondition": "model.language == 'language_column'"
         },
         
         {
@@ -90,7 +96,7 @@
             "label": "Tag column",
             "type":"COLUMN",
             "mandatory":true,
-            "columnRole":"ontology_of_tags",
+            "columnRole":"Ontology dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -103,7 +109,7 @@
             "label":"Keyword column",
             "type":"COLUMN",
             "mandatory": true,
-            "columnRole":"ontology_of_tags",
+            "columnRole":"Ontology dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -112,16 +118,14 @@
         
         
         {
-            "name":'category_column',
+            "name":"category_column",
             "label":"Category column (optional)",
             "type": "COLUMN",
             "mandatory":false,
-            "columnRole":"ontology_of_tags",
+            "columnRole":"Ontology dataset",
             "allowedColumnTypes": [
                 "string"
-            ],
-            "defaultValue":""
-            
+            ]
         },
         
         {
@@ -131,9 +135,9 @@
         },
         
         {
-            "name":'case_sensitivity',
+            "name":"case_sensitivity",
             "label":"Case-sensitive",
-            "description": "for keywords compared case sensitive by exact match",
+            "description": "Match keywords with the same case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue":true
             
@@ -147,7 +151,7 @@
             
         },
         {
-            "name":'unicode_normalization',
+            "name":"unicode_normalization",
             "label":"Unicode normalization",
             "description": "Apply NFD Unicode normalization before matching",
             "type": "BOOLEAN",
@@ -164,48 +168,42 @@
         
 
         {
-            "name": "output_format",
+            "name": "output_format_with_categories",
             "label": "Output format",
             "type": "SELECT",
-            "visibilityCondition":"model.category_column.length>0",
-            
+            "visibilityCondition": "model.category_column.length>0",
             "selectChoices": [
-                {
-                    "value": "one_row_per_doc_tag_lists",
-                    "label": "One row per document with lists of tags"
-                },
-                
                 {
                     "value": "one_row_per_tag",
                     "label": "One row per tag"
                 },
-                
+                {
+                    "value": "one_row_per_doc_tag_lists",
+                    "label": "One row per document with lists of tags"
+                },
                 {
                     "value": "one_row_per_doc_json",
-                    "label": "One row per document with JSON tags"  
+                    "label": "One row per document with JSON tags"
                 }
             ],
             "defaultValue": "one_row_per_doc_tag_lists"
         },
-         
         {
-            "name": "possible_outputs",
-            "label":"Possible outputs",
+            "name": "output_format",
+            "label": "Output format",
             "type": "SELECT",
-            "visibilityCondition": "!model.category_column.length>0",
-             
+            "visibilityCondition": "model.category_column.length==0",
             "selectChoices": [
                 {
-                    "value": "one row per doc",
-                    "label": "one row per doc"
+                    "value": "one_row_per_tag",
+                    "label": "One row per tag"
                 },
-                
                 {
-                    "value": "one row per tag",
-                    "label": "one row per tag"
+                    "value": "one_row_per_doc_tag_list",
+                    "label": "One row per document with list of tags"
                 }
             ],
-            "defaultValue":"one row per doc"
+            "defaultValue": "one_row_per_doc_tag_list"
         }
      
     ]
