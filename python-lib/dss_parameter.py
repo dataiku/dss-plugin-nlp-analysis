@@ -71,7 +71,6 @@ class DSSParameter:
         return """
         Error for parameter \"{name}\" :
         {errors}
-        Please check your settings and fix errors.
         """.format(
             name=self.name, errors="\n".join(["\t- {}".format(e) for e in errors])
         )
