@@ -1,14 +1,10 @@
 {
-    "meta": {
-       
+    "meta": { 
         "label": "Ontology tagging",
         "description": "Tag documents matching keywords within a corpus of text documents",
         "icon": "icon-pushpin"
     },
-
     "kind": "PYTHON",
-   
-
     "inputRoles": [
         {
             "name": "Document dataset",
@@ -26,9 +22,7 @@
             "required": true,
             "acceptsDataset": true
         }
-    
     ],
-
     "outputRoles": [
         {
             "name": "Tagged documents",
@@ -38,21 +32,15 @@
             "required": true,
             "acceptsDataset": true
         }
-  
     ],
-    
     "selectableFromDataset": "Document dataset",
-
     "paramsPythonSetup": "pick_languages.py",
     "params": [
-        
          {
             "name": "separator_document_dataset",
             "label": "Document dataset",
             "type": "SEPARATOR"
         },
-        
-        
         {
             "name": "text_column",
             "label": "Text column",
@@ -64,7 +52,6 @@
                 "string"
             ]
         },
-
         {
             "name": "language",
             "label": "Language",
@@ -83,13 +70,11 @@
             ],
             "visibilityCondition": "model.language == 'language_column'"
         },
-        
         {
             "name": "separator_ontology_dataset",
             "label": "Ontology dataset",
             "type": "SEPARATOR"
         },
-        
         {
             "name": "tag_column",
             "label": "Tag column",
@@ -100,9 +85,6 @@
                 "string"
             ]
         },
-        
-       
-         
         {
             "name":"keyword_column",
             "label":"Keyword column",
@@ -111,11 +93,8 @@
             "columnRole":"Ontology dataset",
             "allowedColumnTypes": [
                 "string"
-            ]
-            
+            ]  
         },
-        
-        
         {
             "name":"category_column",
             "label":"Category column (optional)",
@@ -126,20 +105,17 @@
                 "string"
             ]
         },
-        
         {
             "name": "separator_matching_parameters",
             "label": "Matching Parameters",
             "type": "SEPARATOR"
         },
-        
         {
             "name":"case_sensitivity",
             "label":"Case-sensitive",
             "description": "Match keywords with the same case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue":true
-            
         },
         {
             "name":"lemmatization",
@@ -147,25 +123,19 @@
             "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
             "type": "BOOLEAN",
             "defaultValue":false
-            
         },
         {
             "name":"unicode_normalization",
             "label":"Unicode normalization",
             "description": "Apply NFD Unicode normalization before matching",
             "type": "BOOLEAN",
-            "defaultValue":false
-            
+            "defaultValue":false  
         },
-        
-        
           {
             "name": "separator_output_parameters",
             "label": "Output parameters",
             "type": "SEPARATOR"
         },
-        
-
         {
             "name": "output_format_with_categories",
             "label": "Output format",
@@ -204,7 +174,5 @@
             ],
             "defaultValue": "one_row_per_doc_tag_list"
         }
-     
     ]
-
 }
