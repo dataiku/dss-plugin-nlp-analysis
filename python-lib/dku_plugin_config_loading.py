@@ -15,9 +15,6 @@ MATCHING_PARAMS       = ['case_sensitivity',
 def get_input_datasets(role):
     return dataiku.Dataset(get_input_names_for_role(role)[0])
 
-def get_output_datasets(role):
-    return dataiku.Dataset(get_output_names_for_role(role)[0])
-
 def load_settings():
     
     text_input        = get_input_datasets('Document dataset').get_dataframe()
