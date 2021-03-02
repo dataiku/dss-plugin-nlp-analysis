@@ -42,7 +42,6 @@
     ],
     
     "selectableFromDataset": "Document dataset",
-    "selectableFromDataset":"Ontology dataset",
 
     "paramsPythonSetup": "pick_languages.py",
     "params": [
