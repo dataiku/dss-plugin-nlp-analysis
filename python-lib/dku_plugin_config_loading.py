@@ -19,15 +19,11 @@ def load_settings():
     text_input = get_input_datasets("document_dataset").get_dataframe()
     ontology_input = get_input_datasets("ontology_dataset").get_dataframe()
 
-    config = get_recipe_config()
-
     input_text_cols = text_input.columns
     input_onto_cols = ontology_input.columns
-
-    dku_config = DkuConfig(
-        local_vars=dataiku.Project().get_variables()["local"],
-        local_prefix="Ontology-tagging",
-    )
+    
+    config = get_recipe_config()
+    dku_config = DkuConfig()
 
     dku_config.add_param(name="text_input", value=text_input, required=True)
 
