@@ -16,8 +16,8 @@ def get_input_datasets(role):
 
 def load_settings():
 
-    text_input = get_input_datasets("Document dataset").get_dataframe()
-    ontology_input = get_input_datasets("Ontology dataset").get_dataframe()
+    text_input = get_input_datasets("document_dataset").get_dataframe()
+    ontology_input = get_input_datasets("ontology_dataset").get_dataframe()
 
     config = get_recipe_config()
 
@@ -44,7 +44,7 @@ def load_settings():
         checks=[
             {
                 "type": "exists",
-                "err_msg": "Missing input column : {}.\n".format("Text_column"),
+                "err_msg": "Missing input column : {}.\n".format("Text column"),
             },
             {
                 "type": "custom",
@@ -68,7 +68,7 @@ def load_settings():
                 "type": "in",
                 "op": list(SUPPORTED_LANGUAGES_SPACY.keys()) + ["language_column"],
                 "err_msg": "You must select one of the languages.\n"
-                'If your dataset contains several languages, you can use "Language column" and create a column in your Document dataset containing the languages of the documents.',
+                'If your dataset contains several languages, you can use "Language column" and create a column in your Document dataset containing the languages of the documents.\n',
             },
         ],
     )
@@ -114,13 +114,17 @@ def load_settings():
     dku_config.add_param(
         name="keyword_column",
         value=key_col,
-        required=False,
+        required=True,
         checks=[
             {
+                "type": "exists",
+                "err_msg": "Missing input column : {}.\n".format("Keyword column"),
+            },
+            {
                 "type": "custom",
-                "cond": key_col in input_onto_cols or key_col == None,
+                "cond": key_col in input_onto_cols,
                 "err_msg": "Invalid input column : {}.\n".format("Keyword column"),
-            }
+            },
         ],
     )
 

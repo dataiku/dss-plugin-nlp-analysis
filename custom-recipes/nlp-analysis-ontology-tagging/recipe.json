@@ -7,7 +7,7 @@
     "kind": "PYTHON",
     "inputRoles": [
         {
-            "name": "Document dataset",
+            "name": "document_dataset",
             "label": "Document dataset",
             "description": "Dataset with a column containing the text documents to tag",
             "arity": "UNARY",
@@ -15,7 +15,7 @@
             "acceptsDataset": true
         },
         {
-            "name": "Ontology dataset",
+            "name": "ontology_dataset",
             "label": "Ontology dataset",
             "description": "Dataset with columns for tags, keywords and categories",
             "arity": "UNARY",
@@ -25,7 +25,7 @@
     ],
     "outputRoles": [
         {
-            "name": "Tagged documents",
+            "name": "tagged_documents",
             "label": "Tagged documents",
             "description": "Dataset with the input documents and their assigned tags",
             "arity": "UNARY",
@@ -33,7 +33,7 @@
             "acceptsDataset": true
         }
     ],
-    "selectableFromDataset": "Document dataset",
+    "selectableFromDataset": "document_dataset",
     "params": [
         {
             "name": "separator_document_dataset",
@@ -46,7 +46,7 @@
             "type": "COLUMN",
             "description": "Column containing the text documents",
             "mandatory": true,
-            "columnRole": "Document dataset",
+            "columnRole": "document_dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -300,7 +300,7 @@
             "label": "Language column",
             "type": "COLUMN",
             "description": "Column containing ISO 639-1 language codes",
-            "columnRole": "Document dataset",
+            "columnRole": "document_dataset",
             "allowedColumnTypes": [
                 "string"
             ],
@@ -316,7 +316,7 @@
             "label": "Tag column",
             "type": "COLUMN",
             "mandatory": true,
-            "columnRole": "Ontology dataset",
+            "columnRole": "ontology_dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -326,7 +326,7 @@
             "label": "Keyword column",
             "type": "COLUMN",
             "mandatory": true,
-            "columnRole": "Ontology dataset",
+            "columnRole": "ontology_dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -336,7 +336,7 @@
             "label": "Category column (optional)",
             "type": "COLUMN",
             "mandatory": false,
-            "columnRole": "Ontology dataset",
+            "columnRole": "ontology_dataset",
             "allowedColumnTypes": [
                 "string"
             ]
