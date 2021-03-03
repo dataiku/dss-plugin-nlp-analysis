@@ -15,7 +15,7 @@ def call_tagger(settings):
 def process_params():
     settings = load_settings()
     tagged_documents_df = call_tagger(settings)
-    output_ds = get_output_names_for_role('Tagged documents')
+    output_ds = get_output_names_for_role("Tagged documents")
     output_ds = dataiku.Dataset(output_ds[0])
     output_ds.write_with_schema(tagged_documents_df)
 
