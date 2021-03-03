@@ -1,5 +1,5 @@
 {
-    "meta": { 
+    "meta": {
         "label": "Ontology tagging",
         "description": "Tag documents matching keywords within a corpus of text documents",
         "icon": "icon-pushpin"
@@ -35,7 +35,7 @@
     ],
     "selectableFromDataset": "Document dataset",
     "params": [
-         {
+        {
             "name": "separator_document_dataset",
             "label": "Document dataset",
             "type": "SEPARATOR"
@@ -55,66 +55,126 @@
             "name": "language",
             "label": "Language",
             "type": "SELECT",
-            "selectChoices":[{'value':'language_column','label':'Language column'},
-                             {'value': 'af', 'label': 'Afrikaans'},
-                             {'value': 'ar', 'label': 'Arabic'},
-                             {'value': 'bg', 'label': 'Bulgarian'},
-                             {'value': 'bn', 'label': 'Bengali'},
-                             {'value': 'ca', 'label': 'Catalan'},
-                             {'value': 'cs', 'label': 'Czech'},
-                             {'value': 'da', 'label': 'Danish'},
-                             {'value': 'de', 'label': 'German'},
-                             {'value': 'el', 'label': 'Greek'},
-                             {'value': 'en', 'label': 'English'},
-                             {'value': 'es', 'label': 'Spanish'},
-                             {'value': 'et', 'label': 'Estonian'},
-                             {'value': 'eu', 'label': 'Basque'},
-                             {'value': 'fa', 'label': 'Persian'},
-                             {'value': 'fi', 'label': 'Finnish'},
-                             {'value': 'fr', 'label': 'French'},
-                             {'value': 'ga', 'label': 'Irish'},
-                             {'value': 'gu', 'label': 'Gujarati'},
-                             {'value': 'he', 'label': 'Hebrew'},
-                             {'value': 'hi', 'label': 'Hindi'},
-                             {'value': 'hr', 'label': 'Croatian'},
-                             {'value': 'hu', 'label': 'Hungarian'},
-                             {'value': 'hy', 'label': 'Armenian'},
-                             {'value': 'id', 'label': 'Indonesian'},
-                             {'value': 'is', 'label': 'Icelandic'},
-                             {'value': 'it', 'label': 'Italian'},
-                             {'value': 'kn', 'label': 'Kannada'},
-                             {'value': 'lb', 'label': 'Luxembourgish'},
-                             {'value': 'lt', 'label': 'Lithuanian'},
-                             {'value': 'lv', 'label': 'Latvian'},
-                             {'value': 'mk', 'label': 'Macedonian'},
-                             {'value': 'ml', 'label': 'Malayalam'},
-                             {'value': 'mr', 'label': 'Marathi'},
-                             {'value': 'nb', 'label': 'Norwegian Bokmål'},
-                             {'value': 'ne', 'label': 'Nepali'},
-                             {'value': 'nl', 'label': 'Dutch'},
-                             {'value': 'pl', 'label': 'Polish'},
-                             {'value': 'pt', 'label': 'Portuguese'},
-                             {'value': 'ro', 'label': 'Romanian'},
-                             {'value': 'ru', 'label': 'Russian'},
-                             {'value': 'sa', 'label': 'Sanskrit'},
-                             {'value': 'si', 'label': 'Sinhala'},
-                             {'value': 'sk', 'label': 'Slovak'},
-                             {'value': 'sl', 'label': 'Slovenian'},
-                             {'value': 'sq', 'label': 'Albanian'},
-                             {'value': 'sr', 'label': 'Serbian'},
-                             {'value': 'sv', 'label': 'Swedish'},
-                             {'value': 'ta', 'label': 'Tamil'},
-                             {'value': 'te', 'label': 'Telugu'},
-                             {'value': 'th', 'label': 'Thai'},
-                             {'value': 'tl', 'label': 'Tagalog'},
-                             {'value': 'tr', 'label': 'Turkish'},
-                             {'value': 'tt', 'label': 'Tatar'},
-                             {'value': 'uk', 'label': 'Ukrainian'},
-                             {'value': 'ur', 'label': 'Urdu'},
-                             {'value': 'vi', 'label': 'Vietnamese'},
-                             {'value': 'yo', 'label': 'Yoruba'},
-                             {'value': 'zh', 'label': 'Chinese (simplified)'}
-                            ],
+            "selectChoices": [
+                {''value'':''language_column'',''label'':''Language column''
+                },
+                {''value'': ''af'', ''label'': ''Afrikaans''
+                },
+                {''value'': ''ar'', ''label'': ''Arabic''
+                },
+                {''value'': ''bg'', ''label'': ''Bulgarian''
+                },
+                {''value'': ''bn'', ''label'': ''Bengali''
+                },
+                {''value'': ''ca'', ''label'': ''Catalan''
+                },
+                {''value'': ''cs'', ''label'': ''Czech''
+                },
+                {''value'': ''da'', ''label'': ''Danish''
+                },
+                {''value'': ''de'', ''label'': ''German''
+                },
+                {''value'': ''el'', ''label'': ''Greek''
+                },
+                {''value'': ''en'', ''label'': ''English''
+                },
+                {''value'': ''es'', ''label'': ''Spanish''
+                },
+                {''value'': ''et'', ''label'': ''Estonian''
+                },
+                {''value'': ''eu'', ''label'': ''Basque''
+                },
+                {''value'': ''fa'', ''label'': ''Persian''
+                },
+                {''value'': ''fi'', ''label'': ''Finnish''
+                },
+                {''value'': ''fr'', ''label'': ''French''
+                },
+                {''value'': ''ga'', ''label'': ''Irish''
+                },
+                {''value'': ''gu'', ''label'': ''Gujarati''
+                },
+                {''value'': ''he'', ''label'': ''Hebrew''
+                },
+                {''value'': ''hi'', ''label'': ''Hindi''
+                },
+                {''value'': ''hr'', ''label'': ''Croatian''
+                },
+                {''value'': ''hu'', ''label'': ''Hungarian''
+                },
+                {''value'': ''hy'', ''label'': ''Armenian''
+                },
+                {''value'': ''id'', ''label'': ''Indonesian''
+                },
+                {''value'': ''is'', ''label'': ''Icelandic''
+                },
+                {''value'': ''it'', ''label'': ''Italian''
+                },
+                {''value'': ''kn'', ''label'': ''Kannada''
+                },
+                {''value'': ''lb'', ''label'': ''Luxembourgish''
+                },
+                {''value'': ''lt'', ''label'': ''Lithuanian''
+                },
+                {''value'': ''lv'', ''label'': ''Latvian''
+                },
+                {''value'': ''mk'', ''label'': ''Macedonian''
+                },
+                {''value'': ''ml'', ''label'': ''Malayalam''
+                },
+                {''value'': ''mr'', ''label'': ''Marathi''
+                },
+                {''value'': ''nb'', ''label'': ''Norwegian Bokmål''
+                },
+                {''value'': ''ne'', ''label'': ''Nepali''
+                },
+                {''value'': ''nl'', ''label'': ''Dutch''
+                },
+                {''value'': ''pl'', ''label'': ''Polish''
+                },
+                {''value'': ''pt'', ''label'': ''Portuguese''
+                },
+                {''value'': ''ro'', ''label'': ''Romanian''
+                },
+                {''value'': ''ru'', ''label'': ''Russian''
+                },
+                {''value'': ''sa'', ''label'': ''Sanskrit''
+                },
+                {''value'': ''si'', ''label'': ''Sinhala''
+                },
+                {''value'': ''sk'', ''label'': ''Slovak''
+                },
+                {''value'': ''sl'', ''label'': ''Slovenian''
+                },
+                {''value'': ''sq'', ''label'': ''Albanian''
+                },
+                {''value'': ''sr'', ''label'': ''Serbian''
+                },
+                {''value'': ''sv'', ''label'': ''Swedish''
+                },
+                {''value'': ''ta'', ''label'': ''Tamil''
+                },
+                {''value'': ''te'', ''label'': ''Telugu''
+                },
+                {''value'': ''th'', ''label'': ''Thai''
+                },
+                {''value'': ''tl'', ''label'': ''Tagalog''
+                },
+                {''value'': ''tr'', ''label'': ''Turkish''
+                },
+                {''value'': ''tt'', ''label'': ''Tatar''
+                },
+                {''value'': ''uk'', ''label'': ''Ukrainian''
+                },
+                {''value'': ''ur'', ''label'': ''Urdu''
+                },
+                {''value'': ''vi'', ''label'': ''Vietnamese''
+                },
+                {''value'': ''yo'', ''label'': ''Yoruba''
+                },
+                {''value'': ''zh'', ''label'': ''Chinese (simplified)''
+                }
+            ],
             "defaultValue": "en"
         },
         {
@@ -126,7 +186,7 @@
             "allowedColumnTypes": [
                 "string"
             ],
-            "visibilityCondition": "model.language == 'language_column'"
+            "visibilityCondition": "model.language == ''language_column''"
         },
         {
             "name": "separator_ontology_dataset",
@@ -136,29 +196,29 @@
         {
             "name": "tag_column",
             "label": "Tag column",
-            "type":"COLUMN",
-            "mandatory":true,
-            "columnRole":"Ontology dataset",
+            "type": "COLUMN",
+            "mandatory": true,
+            "columnRole": "Ontology dataset",
             "allowedColumnTypes": [
                 "string"
             ]
         },
         {
-            "name":"keyword_column",
-            "label":"Keyword column",
-            "type":"COLUMN",
+            "name": "keyword_column",
+            "label": "Keyword column",
+            "type": "COLUMN",
             "mandatory": true,
-            "columnRole":"Ontology dataset",
+            "columnRole": "Ontology dataset",
             "allowedColumnTypes": [
                 "string"
-            ]  
+            ]
         },
         {
-            "name":"category_column",
-            "label":"Category column (optional)",
+            "name": "category_column",
+            "label": "Category column (optional)",
             "type": "COLUMN",
-            "mandatory":false,
-            "columnRole":"Ontology dataset",
+            "mandatory": false,
+            "columnRole": "Ontology dataset",
             "allowedColumnTypes": [
                 "string"
             ]
@@ -169,27 +229,27 @@
             "type": "SEPARATOR"
         },
         {
-            "name":"case_sensitivity",
-            "label":"Case-sensitive",
+            "name": "case_sensitivity",
+            "label": "Case-sensitive",
             "description": "Match keywords with the same case (upper or lower)",
             "type": "BOOLEAN",
-            "defaultValue":true
+            "defaultValue": true
         },
         {
-            "name":"lemmatization",
-            "label":"Lemmatization",
+            "name": "lemmatization",
+            "label": "Lemmatization",
             "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
             "type": "BOOLEAN",
-            "defaultValue":false
+            "defaultValue": false
         },
         {
-            "name":"unicode_normalization",
-            "label":"Unicode normalization",
+            "name": "unicode_normalization",
+            "label": "Unicode normalization",
             "description": "Apply NFD Unicode normalization before matching",
             "type": "BOOLEAN",
-            "defaultValue":false  
+            "defaultValue": false
         },
-          {
+        {
             "name": "separator_output_parameters",
             "label": "Output parameters",
             "type": "SEPARATOR"
