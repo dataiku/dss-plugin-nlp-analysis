@@ -162,6 +162,8 @@ def load_settings():
                 "err_msg": "Missing parameter : {}".format("Output format"),
             }
         ],
+
+        
     )
 
     return dku_config
