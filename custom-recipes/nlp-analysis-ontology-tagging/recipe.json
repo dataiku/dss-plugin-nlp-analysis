@@ -304,7 +304,7 @@
             "allowedColumnTypes": [
                 "string"
             ],
-            "visibilityCondition": "model.language == "'language_column'",
+            "visibilityCondition": "model.language == "language_column",
         },
         {
             "name": "separator_ontology_dataset",
