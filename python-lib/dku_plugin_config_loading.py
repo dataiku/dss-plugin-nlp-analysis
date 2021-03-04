@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from dataiku.customrecipe import *
-import dataiku
+from dataiku.customrecipe import get_input_names_for_role
 import pandas as pd
-from dataiku import pandasutils as pdu
+import dataiku
 from dataiku.customrecipe import get_recipe_config
 from language_dict import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
