@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from dataiku.customrecipe import get_input_names_for_role
 import pandas as pd
 import dataiku
 from dataiku.customrecipe import get_recipe_config
