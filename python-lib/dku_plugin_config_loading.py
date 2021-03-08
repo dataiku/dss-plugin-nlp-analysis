@@ -172,7 +172,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             ],
         )
 
-    def _add_output(self):
+    def _add_output_format(self):
         """Load output format parameters"""
 
         output = self.config.get("output_format")
