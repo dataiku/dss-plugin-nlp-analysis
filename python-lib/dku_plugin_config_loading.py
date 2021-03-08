@@ -180,7 +180,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self.dku_config.add_param(
             name="output_format",
             value=output,
-            required=self.dku_config.category_column == None,
+            required= not bool(self.dku_config.category_column),
         )
 
         output = self.config.get("output_format_with_categories")
