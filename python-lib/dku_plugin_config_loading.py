@@ -198,5 +198,5 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_language()
         self._add_language_column()
         self._add_ontology_columns()
-        self._add_output()
+        self._add_output_format()
         return self.dku_config
