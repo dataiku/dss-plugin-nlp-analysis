@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
 import dataiku
 from dataiku.customrecipe import get_recipe_config
 from language_dict import SUPPORTED_LANGUAGES_SPACY
@@ -12,10 +11,8 @@ class DkuConfigLoading:
         self.dku_config = DkuConfig()
 
 
-"""Configuration for Ontology Tagging Plugin"""
-
-
 class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
+    """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
         "case_sensitivity",
@@ -23,16 +20,26 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         "unicode_normalization",
     ]
 
-    """instanciate class with DkuConfigLoading and add input datasets to dku_config"""
+    def __init__(self, text_input, ontology_input):
+        """Instanciate class with DkuConfigLoading and add input datasets to dku_config"""
 
-    def __init__(self, text_columns, ontology_columns):
         super().__init__()
-        self.text_columns = text_columns
-        self.ontology_columns = ontology_columns
-
-    """get corresponding error message if any"""
+        self.dku_config.add_param(
+            name="text_input", value=dataiku.Dataset(text_input), required=True
+        )
+        self.dku_config.add_param(
+            name="ontology_input", value=dataiku.Dataset(ontology_input), required=True
+        )
+        self.document_dataset_columns = [
+            p["name"] for p in self.dku_config.text_input.read_schema()
+        ]
+        self.ontology_dataset_columns = [
+            p["name"] for p in self.dku_config.ontology_input.read_schema()
+        ]
 
     def _content_error_message(self, error, column):
+        """Get corresponding error message if any"""
+
         if error == "missing":
             return "Missing input column : {}.\n".format(column)
 
@@ -42,11 +49,11 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         if error == "language":
             return "You must select one of the languages.\n If your dataset contains several languages, you can use 'Language column' and create a column in your Document dataset containing the languages of the documents.\n"
 
-    """Load text column from Document Dataset"""
-
     def _add_text_column(self):
+        """Load text column from Document Dataset"""
+
         text_column = self.config.get("text_column")
-        input_columns = self.text_columns
+        input_columns = self.document_dataset_columns
         self.dku_config.add_param(
             name="text_column",
             value=text_column,
@@ -54,17 +61,16 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             checks=self._get_column_checks(text_column, "Text column", input_columns),
         )
 
-    """Load matching parameters"""
-
     def _add_matching_settings(self):
+        """Load matching parameters"""
+
         for parameter in self.MATCHING_PARAMETERS:
             self.dku_config.add_param(
                 name=parameter, value=self.config[parameter], required=True
             )
 
-    """Load language from dropdown"""
-
     def _add_language(self):
+        """Load language from dropdown"""
 
         self.dku_config.add_param(
             name="language",
@@ -83,12 +89,11 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             ],
         )
 
-    """Load language column if specified"""
-
     def _add_language_column(self):
+        """Load language column if specified"""
 
         lang_column = self.config.get("language_column")
-        input_columns = self.text_columns
+        input_columns = self.document_dataset_columns
         self.dku_config.add_param(
             name="language_column",
             value=lang_column if lang_column else None,
@@ -111,9 +116,9 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             ],
         )
 
-    """Check for mandatory columns parameters"""
-
     def _get_column_checks(self, column, column_name, input_columns):
+        """Check for mandatory columns parameters"""
+
         return [
             {
                 "type": "exists",
@@ -126,9 +131,9 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             },
         ]
 
-    """Load mandatory columns from Ontology Dataset"""
-
     def _ontology_columns_mandatory(self, column_name, column_label, input_columns):
+        """Load mandatory columns from Ontology Dataset"""
+
         column = self.config.get(column_name)
         self.dku_config.add_param(
             name=column_name,
@@ -137,29 +142,29 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             checks=self._get_column_checks(column, column_label, input_columns),
         )
 
-    """Load columns from Ontology Dataset"""
-
     def _add_ontology_columns(self):
-        input_columns = self.ontology_columns
+        """Load columns from Ontology Dataset"""
+
+        input_columns = self.ontology_dataset_columns
         self._ontology_columns_mandatory("tag_column", "Tag column", input_columns)
         self._ontology_columns_mandatory(
             "keyword_column", "Keyword column", input_columns
         )
         self._add_category_column()
 
-    """load category column if exists"""
-
     def _add_category_column(self):
+        """Load category column if exists"""
+
         category_column = self.config.get("category_column")
-        input_columns = self.ontology_columns
+        input_columns = self.ontology_dataset_columns
         self.dku_config.add_param(
             name="category_column",
-            value=category_column if category_column else "none",
+            value=category_column if category_column else None,
             required=False,
             checks=[
                 {
                     "type": "in",
-                    "op": input_columns + ["none"],
+                    "op": input_columns + [None],
                     "err_msg": self._content_error_message(
                         "invalid", "Category column"
                     ),
@@ -167,9 +172,9 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             ],
         )
 
-    """load output format parameters"""
-
     def _add_output(self):
+        """Load output format parameters"""
+
         output = self.config.get("output_format")
 
         self.dku_config.add_param(
@@ -185,9 +190,8 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             required=self.dku_config.category_column != None,
         )
 
-    """Public function to load all given parameters for Ontology Tagging Plugin"""
-
     def load_settings(self):
+        """Public function to load all given parameters for Ontology Tagging Plugin"""
 
         self._add_matching_settings()
         self._add_text_column()
