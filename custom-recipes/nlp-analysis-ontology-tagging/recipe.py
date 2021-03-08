@@ -10,7 +10,7 @@ ontology_input = get_input_names_for_role("ontology_dataset")[0]
 settings = DkuConfigLoadingOntologyTagging(text_input, ontology_input).load_settings()
 
 tagging = Tagger(settings)
-output_df = tagging.write_output_dataset()
+output_df = tagging.tagging_proceedure()
 
 output_dataset = get_output_names_for_role("tagged_documents")[0]
 output_dataset = dataiku.Dataset(output_dataset)
