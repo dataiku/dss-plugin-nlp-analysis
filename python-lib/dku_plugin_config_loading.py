@@ -187,7 +187,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self.dku_config.add_param(
             name="output_format_with_categories",
             value=output,
-            required=self.dku_config.category_column != None,
+            required=bool(self.dku_config.category_column),
         )
 
     def load_settings(self):
