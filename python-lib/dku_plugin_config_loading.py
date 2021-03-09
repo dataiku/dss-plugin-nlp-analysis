@@ -91,17 +91,15 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
 
     def _add_language_column(self):
         """Load language column if specified"""
-
         lang_column = self.config.get("language_column")
         input_columns = self.document_dataset_columns
         self.dku_config.add_param(
             name="language_column",
-            value=lang_column if lang_column else None,
-            required=(self.dku_config.language == "language_column"),
+            value=lang_column,
             checks=[
                 {
                     "type": "custom",
-                    "cond": lang_column != None,
+                    "cond": bool(lang_column),
                     "err_msg": self._content_error_message(
                         "missing", "Language column"
                     ),
@@ -196,7 +194,8 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_matching_settings()
         self._add_text_column()
         self._add_language()
-        self._add_language_column()
+        if self.dku_config.language=='language_column':
+            self._add_language_column()
         self._add_ontology_columns()
         self._add_output_format()
         return self.dku_config

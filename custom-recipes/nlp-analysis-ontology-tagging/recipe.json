@@ -291,7 +291,7 @@
                 {
                     "value": "zh",
                     "label": "Chinese (simplified)"
-                }
+                }  
             ],
             "defaultValue": "en"
         },
@@ -335,6 +335,7 @@
             "name": "category_column",
             "label": "Category column (optional)",
             "type": "COLUMN",
+            "defaultValue":"",
             "mandatory": false,
             "columnRole": "ontology_dataset",
             "allowedColumnTypes": [
