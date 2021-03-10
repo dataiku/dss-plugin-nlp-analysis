@@ -41,7 +41,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         """Get corresponding error message if any"""
 
         if error == "missing":
-            return "Missing input column : {}.\n".format(column)
+            return "Missing input column."
 
         if error == "invalid":
             return "Invalid input column : {}.\n".format(column)
@@ -58,7 +58,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             name="text_column",
             value=text_column,
             required=True,
-            checks=self._get_column_checks(text_column, "Text column", input_columns),
+            checks=self._get_column_checks(text_column, input_columns),
         )
 
     def _add_matching_settings(self):
@@ -100,32 +100,29 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 {
                     "type": "custom",
                     "cond": bool(lang_column),
-                    "err_msg": self._content_error_message(
-                        "missing", "Language column"
-                    ),
+                    "err_msg": self._content_error_message("missing", None),
                 },
                 {
-                    "type": "in",
-                    "op": input_columns + [None],
-                    "err_msg": self._content_error_message(
-                        "invalid", "Language column"
-                    ),
+                    "type": "custom",
+                    "cond": lang_column in input_columns + [None]
+                    or not bool(lang_column),
+                    "err_msg": self._content_error_message("invalid", lang_column),
                 },
             ],
         )
 
-    def _get_column_checks(self, column, column_name, input_columns):
+    def _get_column_checks(self, column, input_columns):
         """Check for mandatory columns parameters"""
 
         return [
             {
                 "type": "exists",
-                "err_msg": self._content_error_message("missing", column_name),
+                "err_msg": self._content_error_message("missing", None),
             },
             {
                 "type": "custom",
-                "cond": column in input_columns,
-                "err_msg": self._content_error_message("invalid", column_name),
+                "cond": column in input_columns or column == None,
+                "err_msg": self._content_error_message("invalid", column),
             },
         ]
 
@@ -137,7 +134,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             name=column_name,
             value=column,
             required=True,
-            checks=self._get_column_checks(column, column_label, input_columns),
+            checks=self._get_column_checks(column, input_columns),
         )
 
     def _add_ontology_columns(self):
@@ -163,9 +160,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 {
                     "type": "in",
                     "op": input_columns + [None],
-                    "err_msg": self._content_error_message(
-                        "invalid", "Category column"
-                    ),
+                    "err_msg": self._content_error_message("invalid", category_column),
                 }
             ],
         )
@@ -178,14 +173,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self.dku_config.add_param(
             name="output_format",
             value=output,
-            required= not bool(self.dku_config.category_column),
-        )
-
-        output = self.config.get("output_format_with_categories")
-        self.dku_config.add_param(
-            name="output_format_with_categories",
-            value=output,
-            required=bool(self.dku_config.category_column),
+            required=True,
         )
 
     def load_settings(self):
@@ -194,7 +182,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_matching_settings()
         self._add_text_column()
         self._add_language()
-        if self.dku_config.language=='language_column':
+        if self.dku_config.language == "language_column":
             self._add_language_column()
         self._add_ontology_columns()
         self._add_output_format()
