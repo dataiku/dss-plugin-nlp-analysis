@@ -72,7 +72,7 @@ class DSSParameter:
         Error for parameter \"{name}\" :
         {errors}
         """.format(
-            name=self.name, errors="\n".join(["\t- {}".format(e) for e in errors])
+            name=self.name, errors="\n".join(["\t {}".format(e) for e in errors])
         )
 
     def handle_success(self):
