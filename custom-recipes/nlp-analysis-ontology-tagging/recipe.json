@@ -44,7 +44,6 @@
             "name": "text_column",
             "label": "Text column",
             "type": "COLUMN",
-            "description": "Column containing the text documents",
             "mandatory": true,
             "columnRole": "document_dataset",
             "allowedColumnTypes": [
@@ -65,20 +64,40 @@
                     "label": "Afrikaans"
                 },
                 {
+                    "value": "sq",
+                    "label": "Albanian"
+                },
+                {
                     "value": "ar",
                     "label": "Arabic"
                 },
                 {
-                    "value": "bg",
-                    "label": "Bulgarian"
+                    "value": "hy",
+                    "label": "Armenian"
+                },
+                {
+                    "value": "eu",
+                    "label": "Basque"
                 },
                 {
                     "value": "bn",
                     "label": "Bengali"
                 },
                 {
+                    "value": "bg",
+                    "label": "Bulgarian"
+                },
+                {
                     "value": "ca",
                     "label": "Catalan"
+                },
+                {
+                    "value": "zh",
+                    "label": "Chinese (simplified)"
+                },
+                {
+                    "value": "hr",
+                    "label": "Croatian"
                 },
                 {
                     "value": "cs",
@@ -89,32 +108,16 @@
                     "label": "Danish"
                 },
                 {
-                    "value": "de",
-                    "label": "German"
-                },
-                {
-                    "value": "el",
-                    "label": "Greek"
+                    "value": "nl",
+                    "label": "Dutch"
                 },
                 {
                     "value": "en",
                     "label": "English"
                 },
                 {
-                    "value": "es",
-                    "label": "Spanish"
-                },
-                {
                     "value": "et",
                     "label": "Estonian"
-                },
-                {
-                    "value": "eu",
-                    "label": "Basque"
-                },
-                {
-                    "value": "fa",
-                    "label": "Persian"
                 },
                 {
                     "value": "fi",
@@ -125,8 +128,12 @@
                     "label": "French"
                 },
                 {
-                    "value": "ga",
-                    "label": "Irish"
+                    "value": "de",
+                    "label": "German"
+                },
+                {
+                    "value": "el",
+                    "label": "Greek"
                 },
                 {
                     "value": "gu",
@@ -141,24 +148,20 @@
                     "label": "Hindi"
                 },
                 {
-                    "value": "hr",
-                    "label": "Croatian"
-                },
-                {
                     "value": "hu",
                     "label": "Hungarian"
                 },
                 {
-                    "value": "hy",
-                    "label": "Armenian"
+                    "value": "is",
+                    "label": "Icelandic"
                 },
                 {
                     "value": "id",
                     "label": "Indonesian"
                 },
                 {
-                    "value": "is",
-                    "label": "Icelandic"
+                    "value": "ga",
+                    "label": "Irish"
                 },
                 {
                     "value": "it",
@@ -169,16 +172,16 @@
                     "label": "Kannada"
                 },
                 {
-                    "value": "lb",
-                    "label": "Luxembourgish"
+                    "value": "lv",
+                    "label": "Latvian"
                 },
                 {
                     "value": "lt",
                     "label": "Lithuanian"
                 },
                 {
-                    "value": "lv",
-                    "label": "Latvian"
+                    "value": "lb",
+                    "label": "Luxembourgish"
                 },
                 {
                     "value": "mk",
@@ -193,16 +196,16 @@
                     "label": "Marathi"
                 },
                 {
-                    "value": "nb",
-                    "label": "Norwegian Bokmål"
-                },
-                {
                     "value": "ne",
                     "label": "Nepali"
                 },
                 {
-                    "value": "nl",
-                    "label": "Dutch"
+                    "value": "nb",
+                    "label": "Norwegian Bokmål"
+                },
+                {
+                    "value": "fa",
+                    "label": "Persian"
                 },
                 {
                     "value": "pl",
@@ -225,6 +228,10 @@
                     "label": "Sanskrit"
                 },
                 {
+                    "value": "sr",
+                    "label": "Serbian"
+                },
+                {
                     "value": "si",
                     "label": "Sinhala"
                 },
@@ -237,20 +244,24 @@
                     "label": "Slovenian"
                 },
                 {
-                    "value": "sq",
-                    "label": "Albanian"
-                },
-                {
-                    "value": "sr",
-                    "label": "Serbian"
+                    "value": "es",
+                    "label": "Spanish"
                 },
                 {
                     "value": "sv",
                     "label": "Swedish"
                 },
                 {
+                    "value": "tl",
+                    "label": "Tagalog"
+                },
+                {
                     "value": "ta",
                     "label": "Tamil"
+                },
+                {
+                    "value": "tt",
+                    "label": "Tatar"
                 },
                 {
                     "value": "te",
@@ -261,16 +272,8 @@
                     "label": "Thai"
                 },
                 {
-                    "value": "tl",
-                    "label": "Tagalog"
-                },
-                {
                     "value": "tr",
                     "label": "Turkish"
-                },
-                {
-                    "value": "tt",
-                    "label": "Tatar"
                 },
                 {
                     "value": "uk",
@@ -287,11 +290,7 @@
                 {
                     "value": "yo",
                     "label": "Yoruba"
-                },
-                {
-                    "value": "zh",
-                    "label": "Chinese (simplified)"
-                }  
+                }
             ],
             "defaultValue": "en"
         },
@@ -335,7 +334,7 @@
             "name": "category_column",
             "label": "Category column (optional)",
             "type": "COLUMN",
-            "defaultValue":"",
+            "defaultValue": "",
             "mandatory": false,
             "columnRole": "ontology_dataset",
             "allowedColumnTypes": [
@@ -374,42 +373,24 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "output_format_with_categories",
-            "label": "Output format",
-            "type": "SELECT",
-            "visibilityCondition": "model.category_column.length>0",
-            "selectChoices": [
-                {
-                    "value": "one_row_per_tag",
-                    "label": "One row per tag"
-                },
-                {
-                    "value": "one_row_per_doc_tag_lists",
-                    "label": "One row per document with lists of tags"
-                },
-                {
-                    "value": "one_row_per_doc_json",
-                    "label": "One row per document with JSON tags"
-                }
-            ],
-            "defaultValue": "one_row_per_doc_tag_lists"
-        },
-        {
             "name": "output_format",
             "label": "Output format",
             "type": "SELECT",
-            "visibilityCondition": "model.category_column.length==0",
             "selectChoices": [
                 {
                     "value": "one_row_per_tag",
-                    "label": "One row per tag"
+                    "label": "One row / tag"
                 },
                 {
-                    "value": "one_row_per_doc_tag_list",
-                    "label": "One row per document with list of tags"
+                    "value": "one_row_per_doc",
+                    "label": "One row / document (list of tags)"
+                },
+                {
+                    "value": "one_row_per_doc_json",
+                    "label": "One row / document (JSON)"
                 }
             ],
-            "defaultValue": "one_row_per_doc_tag_list"
+            "defaultValue": "one_row_per_document"
         }
     ]
 }
