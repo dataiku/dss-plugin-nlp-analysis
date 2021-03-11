@@ -1,0 +1,396 @@
+{
+    "meta": {
+        "label": "Ontology tagging",
+        "description": "Tag documents matching keywords within a corpus of text documents",
+        "icon": "icon-pushpin"
+    },
+    "kind": "PYTHON",
+    "inputRoles": [
+        {
+            "name": "document_dataset",
+            "label": "Document dataset",
+            "description": "Dataset with a column containing the text documents to tag",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        },
+        {
+            "name": "ontology_dataset",
+            "label": "Ontology dataset",
+            "description": "Dataset with columns for tags, keywords and categories",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+    ],
+    "outputRoles": [
+        {
+            "name": "tagged_documents",
+            "label": "Tagged documents",
+            "description": "Dataset with the input documents and their assigned tags",
+            "arity": "UNARY",
+            "required": true,
+            "acceptsDataset": true
+        }
+    ],
+    "selectableFromDataset": "document_dataset",
+    "params": [
+        {
+            "name": "separator_document_dataset",
+            "label": "Document dataset",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "text_column",
+            "label": "Text column",
+            "type": "COLUMN",
+            "mandatory": true,
+            "columnRole": "document_dataset",
+            "allowedColumnTypes": [
+                "string"
+            ]
+        },
+        {
+            "name": "language",
+            "label": "Language",
+            "type": "SELECT",
+            "selectChoices": [
+                {
+                    "value": "language_column",
+                    "label": "Language column"
+                },
+                {
+                    "value": "af",
+                    "label": "Afrikaans"
+                },
+                {
+                    "value": "sq",
+                    "label": "Albanian"
+                },
+                {
+                    "value": "ar",
+                    "label": "Arabic"
+                },
+                {
+                    "value": "hy",
+                    "label": "Armenian"
+                },
+                {
+                    "value": "eu",
+                    "label": "Basque"
+                },
+                {
+                    "value": "bn",
+                    "label": "Bengali"
+                },
+                {
+                    "value": "bg",
+                    "label": "Bulgarian"
+                },
+                {
+                    "value": "ca",
+                    "label": "Catalan"
+                },
+                {
+                    "value": "zh",
+                    "label": "Chinese (simplified)"
+                },
+                {
+                    "value": "hr",
+                    "label": "Croatian"
+                },
+                {
+                    "value": "cs",
+                    "label": "Czech"
+                },
+                {
+                    "value": "da",
+                    "label": "Danish"
+                },
+                {
+                    "value": "nl",
+                    "label": "Dutch"
+                },
+                {
+                    "value": "en",
+                    "label": "English"
+                },
+                {
+                    "value": "et",
+                    "label": "Estonian"
+                },
+                {
+                    "value": "fi",
+                    "label": "Finnish"
+                },
+                {
+                    "value": "fr",
+                    "label": "French"
+                },
+                {
+                    "value": "de",
+                    "label": "German"
+                },
+                {
+                    "value": "el",
+                    "label": "Greek"
+                },
+                {
+                    "value": "gu",
+                    "label": "Gujarati"
+                },
+                {
+                    "value": "he",
+                    "label": "Hebrew"
+                },
+                {
+                    "value": "hi",
+                    "label": "Hindi"
+                },
+                {
+                    "value": "hu",
+                    "label": "Hungarian"
+                },
+                {
+                    "value": "is",
+                    "label": "Icelandic"
+                },
+                {
+                    "value": "id",
+                    "label": "Indonesian"
+                },
+                {
+                    "value": "ga",
+                    "label": "Irish"
+                },
+                {
+                    "value": "it",
+                    "label": "Italian"
+                },
+                {
+                    "value": "kn",
+                    "label": "Kannada"
+                },
+                {
+                    "value": "lv",
+                    "label": "Latvian"
+                },
+                {
+                    "value": "lt",
+                    "label": "Lithuanian"
+                },
+                {
+                    "value": "lb",
+                    "label": "Luxembourgish"
+                },
+                {
+                    "value": "mk",
+                    "label": "Macedonian"
+                },
+                {
+                    "value": "ml",
+                    "label": "Malayalam"
+                },
+                {
+                    "value": "mr",
+                    "label": "Marathi"
+                },
+                {
+                    "value": "ne",
+                    "label": "Nepali"
+                },
+                {
+                    "value": "nb",
+                    "label": "Norwegian Bokmål"
+                },
+                {
+                    "value": "fa",
+                    "label": "Persian"
+                },
+                {
+                    "value": "pl",
+                    "label": "Polish"
+                },
+                {
+                    "value": "pt",
+                    "label": "Portuguese"
+                },
+                {
+                    "value": "ro",
+                    "label": "Romanian"
+                },
+                {
+                    "value": "ru",
+                    "label": "Russian"
+                },
+                {
+                    "value": "sa",
+                    "label": "Sanskrit"
+                },
+                {
+                    "value": "sr",
+                    "label": "Serbian"
+                },
+                {
+                    "value": "si",
+                    "label": "Sinhala"
+                },
+                {
+                    "value": "sk",
+                    "label": "Slovak"
+                },
+                {
+                    "value": "sl",
+                    "label": "Slovenian"
+                },
+                {
+                    "value": "es",
+                    "label": "Spanish"
+                },
+                {
+                    "value": "sv",
+                    "label": "Swedish"
+                },
+                {
+                    "value": "tl",
+                    "label": "Tagalog"
+                },
+                {
+                    "value": "ta",
+                    "label": "Tamil"
+                },
+                {
+                    "value": "tt",
+                    "label": "Tatar"
+                },
+                {
+                    "value": "te",
+                    "label": "Telugu"
+                },
+                {
+                    "value": "th",
+                    "label": "Thai"
+                },
+                {
+                    "value": "tr",
+                    "label": "Turkish"
+                },
+                {
+                    "value": "uk",
+                    "label": "Ukrainian"
+                },
+                {
+                    "value": "ur",
+                    "label": "Urdu"
+                },
+                {
+                    "value": "vi",
+                    "label": "Vietnamese"
+                },
+                {
+                    "value": "yo",
+                    "label": "Yoruba"
+                }
+            ],
+            "defaultValue": "en"
+        },
+        {
+            "name": "language_column",
+            "label": "Language column",
+            "type": "COLUMN",
+            "description": "Column containing ISO 639-1 language codes",
+            "columnRole": "document_dataset",
+            "allowedColumnTypes": [
+                "string"
+            ],
+            "visibilityCondition": "model.language == 'language_column'"
+        },
+        {
+            "name": "separator_ontology_dataset",
+            "label": "Ontology dataset",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "tag_column",
+            "label": "Tag column",
+            "type": "COLUMN",
+            "mandatory": true,
+            "columnRole": "ontology_dataset",
+            "allowedColumnTypes": [
+                "string"
+            ]
+        },
+        {
+            "name": "keyword_column",
+            "label": "Keyword column",
+            "type": "COLUMN",
+            "mandatory": true,
+            "columnRole": "ontology_dataset",
+            "allowedColumnTypes": [
+                "string"
+            ]
+        },
+        {
+            "name": "category_column",
+            "label": "Category column (optional)",
+            "type": "COLUMN",
+            "defaultValue": "",
+            "mandatory": false,
+            "columnRole": "ontology_dataset",
+            "allowedColumnTypes": [
+                "string"
+            ]
+        },
+        {
+            "name": "separator_matching_parameters",
+            "label": "Matching Parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "case_sensitivity",
+            "label": "Case-sensitive",
+            "description": "Match keywords with the same case (upper or lower)",
+            "type": "BOOLEAN",
+            "defaultValue": true
+        },
+        {
+            "name": "lemmatization",
+            "label": "Lemmatization",
+            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
+            "type": "BOOLEAN",
+            "defaultValue": false
+        },
+        {
+            "name": "unicode_normalization",
+            "label": "Unicode normalization",
+            "description": "Apply NFD Unicode normalization before matching",
+            "type": "BOOLEAN",
+            "defaultValue": false
+        },
+        {
+            "name": "separator_output_parameters",
+            "label": "Output parameters",
+            "type": "SEPARATOR"
+        },
+        {
+            "name": "output_format",
+            "label": "Output format",
+            "type": "SELECT",
+            "selectChoices": [
+                {
+                    "value": "one_row_per_tag",
+                    "label": "One row / tag"
+                },
+                {
+                    "value": "one_row_per_doc",
+                    "label": "One row / document (list of tags)"
+                },
+                {
+                    "value": "one_row_per_doc_json",
+                    "label": "One row / document (JSON)"
+                }
+            ],
+            "defaultValue": "one_row_per_document"
+        }
+    ]
+}
