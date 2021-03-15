@@ -187,6 +187,7 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
+                nlp.add_pipe("sentencizer")
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
@@ -273,6 +274,7 @@ class MultilingualTokenizer:
         if language not in self.spacy_nlp_dict:
             self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language)
             added_tokenizer = True
+
         return added_tokenizer
 
     def tokenize_list(self, text_list: List[AnyStr], language: AnyStr) -> List[Doc]:
@@ -367,4 +369,4 @@ class MultilingualTokenizer:
                 text_list=df[text_column], language=language
             )
             df[self.tokenized_column] = tokenized_list
-        return df
+        return df, self.tokenized_column, self.spacy_nlp_dict[language]
