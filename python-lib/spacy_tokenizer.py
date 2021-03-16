@@ -161,7 +161,7 @@ class MultilingualTokenizer:
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
 
-    def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
+    def _create_spacy_tokenizer(self, language: AnyStr,sentencizer: bool) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
 
         Args:
@@ -187,7 +187,8 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
-                nlp.add_pipe("sentencizer")
+            if sentencizer:    
+                nlp.add_pipe("sentencizer") 
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
@@ -249,7 +250,7 @@ class MultilingualTokenizer:
                 f"Stopword file for language '{language}' not available because of error: '{e}'"
             )
 
-    def _add_spacy_tokenizer(self, language: AnyStr) -> bool:
+    def _add_spacy_tokenizer(self, language: AnyStr,sentencizer: bool) -> bool:
         """Private method to add a spaCy tokenizer for a given language to the `spacy_nlp_dict` attribute
 
         This method only adds the tokenizer if the language code is valid and recognized among
@@ -272,7 +273,7 @@ class MultilingualTokenizer:
         if language not in SUPPORTED_LANGUAGES_SPACY:
             raise TokenizationError(f"Unsupported language code: '{language}'")
         if language not in self.spacy_nlp_dict:
-            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language)
+            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language,sentencizer)
             added_tokenizer = True
 
         return added_tokenizer
@@ -369,4 +370,4 @@ class MultilingualTokenizer:
                 text_list=df[text_column], language=language
             )
             df[self.tokenized_column] = tokenized_list
-        return df, self.tokenized_column, self.spacy_nlp_dict[language]
+        return df

@@ -3,6 +3,7 @@ import dataiku
 from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
 from tagger_formatter import TaggerFormatter
+from tagger import Tagger
 
 text_input = get_input_names_for_role("document_dataset")[0]
 ontology_input = get_input_names_for_role("ontology_dataset")[0]
@@ -13,8 +14,7 @@ if settings.language == "language_column":
 else:
     lang, lang_column = settings.language, ""
 
-
-tagging = TaggerFormatter(
+tagger = Tagger(
     settings.text_input,
     settings.ontology_input,
     settings.text_column,
@@ -28,7 +28,8 @@ tagging = TaggerFormatter(
     settings.unicode_normalization,
     settings.output_format,
 )
-output_df = tagging.tagging_procedure()
+tagging_formatter = TaggerFormatter(tagger)
+output_df = tagging_formatter.tagging_procedure()
 
 output_dataset = get_output_names_for_role("tagged_documents")[0]
 output_dataset = dataiku.Dataset(output_dataset)

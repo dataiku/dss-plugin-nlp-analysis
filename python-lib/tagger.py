@@ -2,6 +2,7 @@
 splits on sentences and instanciates a Matcher to tag the documents"""
 
 from spacy_tokenizer import MultilingualTokenizer
+from dkulib_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
 from fastcore.utils import store_attr
 
@@ -40,7 +41,7 @@ class Tagger:
         match_list = self.ontology_df[self.keyword_column].values.tolist()
         self.keyword_to_tag = dict(zip(match_list, list_of_tags))
 
-        if self.category_column is not None:
+        if self.category_column:
             list_of_categories = self.ontology_df[self.category_column].values.tolist()
             self.patterns = [
                 {"label": label, "pattern": pattern}
@@ -88,14 +89,17 @@ class Tagger:
         # monolingual case
         else:
             # sentence splitting
-            tokenizer._add_spacy_tokenizer(self.language)
+            tokenizer._add_spacy_tokenizer(self.language, True)
             self.nlp_dict = tokenizer.spacy_nlp_dict
-            self.text_df["list-sentences"] = self.text_df.apply(
+            self.splitted_sentences_column = generate_unique(
+                "list_sentences", self.text_df.columns.tolist()
+            )
+            self.text_df[self.splitted_sentences_column] = self.text_df.apply(
                 self._list_sentences, axis=1
             )
             # matching
             self._get_patterns()
-            if self.category_column is not None:
+            if self.category_column:
                 self._matching_method_with_category(self.language)
             else:
                 self._matching_method_no_category(self.language)
