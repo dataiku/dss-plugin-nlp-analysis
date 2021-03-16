@@ -343,7 +343,7 @@ class TaggerFormatter:
             line_full[category][tag]["keywords"].append(keyword)
         return line, line_full
 
-    def _get_tags_row_per_keyword(self, matches: List, row: Span):
+    def _get_tags_row_per_keyword(self, matches: List, row: pd.Series):
         """
         Called by _row_per_keyword
         Creates the list of new rows with infos about the tags and gives it to _update_output_df function
@@ -360,7 +360,7 @@ class TaggerFormatter:
             ]
             self._update_output_df(match, values, row)
 
-    def _get_tags_row_per_keyword_category(self, document: List, row: Span):
+    def _get_tags_row_per_keyword_category(self, document: List, row: pd.Series):
         """
         Called by _row_per_keyword_category
         Creates the list of new rows with infos about the tags and gives it to _update_output_df function
@@ -378,7 +378,7 @@ class TaggerFormatter:
             ]
             self._update_output_df(tag_rows, tag_rows, row)
 
-    def _update_output_df(self, match: List, values: List[dict], row: Span):
+    def _update_output_df(self, match: List, values: List[dict], row: pd.Series):
         """
         Called by _get_tags_row_per_keyword_category and _get_tags_row_per_keyword
         Appends:
