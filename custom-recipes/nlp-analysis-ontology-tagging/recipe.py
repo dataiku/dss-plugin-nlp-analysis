@@ -29,7 +29,7 @@ tagger = Tagger(
     settings.output_format,
 )
 tagging_formatter = TaggerFormatter(tagger)
-output_df = tagging_formatter.tagging_procedure()
+output_df = tagging_formatter.formatting_procedure()
 
 output_dataset = get_output_names_for_role("tagged_documents")[0]
 output_dataset = dataiku.Dataset(output_dataset)

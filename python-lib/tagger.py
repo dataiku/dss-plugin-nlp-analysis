@@ -5,6 +5,8 @@ from spacy_tokenizer import MultilingualTokenizer
 from dkulib_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
 from fastcore.utils import store_attr
+from typing import AnyStr
+import pandas as pd
 
 
 class Tagger:
@@ -38,37 +40,38 @@ class Tagger:
         - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
         """
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
-        match_list = self.ontology_df[self.keyword_column].values.tolist()
-        self.keyword_to_tag = dict(zip(match_list, list_of_tags))
+        list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
+        self.keyword_to_tag = dict(zip(list_of_keywords, list_of_tags))
 
         if self.category_column:
             list_of_categories = self.ontology_df[self.category_column].values.tolist()
             self.patterns = [
                 {"label": label, "pattern": pattern}
-                for label, pattern in zip(list_of_categories, match_list)
+                for label, pattern in zip(list_of_categories, list_of_keywords)
             ]
         else:
-            self.patterns = match_list
+            self.patterns = list_of_keywords
 
-    def _list_sentences(self, x):
+    def _list_sentences(self, row: pd.Series):
         """Auxiliary function called in _matching_pipeline
         Applies sentencizer and return list of sentences"""
         return [
-            elt.text for elt in self.nlp_dict[self.language](x[self.text_column]).sents
+            sentence.text
+            for sentence in self.nlp_dict[self.language](row[self.text_column]).sents
         ]
 
-    def _matching_method_no_category(self, lang):
+    def _matching_method_no_category(self, language: AnyStr):
         """instanciates PhraseMatcher with associated tags"""
-        _, _ = self.nlp_dict[lang].remove_pipe("sentencizer")
-        matcher = PhraseMatcher(self.nlp_dict[lang].vocab)
-        self.patterns = list(self.nlp_dict[lang].tokenizer.pipe(self.patterns))
+        _, _ = self.nlp_dict[language].remove_pipe("sentencizer")
+        matcher = PhraseMatcher(self.nlp_dict[language].vocab)
+        self.patterns = list(self.nlp_dict[language].tokenizer.pipe(self.patterns))
         matcher.add("PatternList", self.patterns)
-        self.matcher_dict[lang] = matcher
+        self.matcher_dict[language] = matcher
 
-    def _matching_method_with_category(self, lang):
+    def _matching_method_with_category(self, language: AnyStr):
         """Instanciates EntityRuler with associated tags and categories"""
-        _, _ = self.nlp_dict[lang].remove_pipe("sentencizer")
-        ruler = self.nlp_dict[lang].add_pipe("entity_ruler")
+        _, _ = self.nlp_dict[language].remove_pipe("sentencizer")
+        ruler = self.nlp_dict[language].add_pipe("entity_ruler")
         ruler.add_patterns(self.patterns)
 
     def _matching_pipeline(self):
@@ -100,6 +103,8 @@ class Tagger:
             # matching
             self._get_patterns()
             if self.category_column:
+                # precision : giving a class attribute argument because those functions will be used with non-attribute class
+                # function in multilingual case
                 self._matching_method_with_category(self.language)
             else:
                 self._matching_method_no_category(self.language)
