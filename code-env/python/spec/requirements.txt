@@ -1,4 +1,4 @@
-spacy==3.0.0
+spacy~=3.0
 emoji==0.6.0
 fastcore==1.3.1
 jieba==0.42.1
@@ -11,4 +11,3 @@ pyvi==0.1
 regex==2020.10.28
 symspellpy==6.7.0
 tqdm==4.50.2
-
