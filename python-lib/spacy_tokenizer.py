@@ -14,7 +14,6 @@ import spacy
 from spacy.language import Language
 from spacy.tokens import Doc, Token
 from spacy.vocab import Vocab
-from spacymoji import Emoji
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
@@ -161,7 +160,7 @@ class MultilingualTokenizer:
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
 
-    def _create_spacy_tokenizer(self, language: AnyStr,sentencizer: bool) -> Language:
+    def _create_spacy_tokenizer(self, language: AnyStr, sentencizer: bool) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
 
         Args:
@@ -187,8 +186,8 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
-            if sentencizer:    
-                nlp.add_pipe("sentencizer") 
+            if sentencizer:
+                nlp.add_pipe("sentencizer")
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
@@ -207,15 +206,6 @@ class MultilingualTokenizer:
                 ).search
         if self.stopwords_folder_path and language in SUPPORTED_LANGUAGES_SPACY:
             self._customize_stopwords(nlp, language)
-        try:
-            nlp.add_pipe(Emoji(nlp), first=True)
-        except (AttributeError, ValueError) as e:
-            logging.warning(
-                f"Spacymoji not available for language '{language}' because of error: '{e}'"
-            )
-        logging.info(
-            f"Loading tokenizer for language '{language}': done in {perf_counter() - start:.2f} seconds"
-        )
         return nlp
 
     def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:
@@ -250,7 +240,7 @@ class MultilingualTokenizer:
                 f"Stopword file for language '{language}' not available because of error: '{e}'"
             )
 
-    def _add_spacy_tokenizer(self, language: AnyStr,sentencizer: bool) -> bool:
+    def _add_spacy_tokenizer(self, language: AnyStr, sentencizer: bool) -> bool:
         """Private method to add a spaCy tokenizer for a given language to the `spacy_nlp_dict` attribute
 
         This method only adds the tokenizer if the language code is valid and recognized among
@@ -273,7 +263,9 @@ class MultilingualTokenizer:
         if language not in SUPPORTED_LANGUAGES_SPACY:
             raise TokenizationError(f"Unsupported language code: '{language}'")
         if language not in self.spacy_nlp_dict:
-            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language,sentencizer)
+            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(
+                language, sentencizer
+            )
             added_tokenizer = True
 
         return added_tokenizer
