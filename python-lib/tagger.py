@@ -70,7 +70,7 @@ class Tagger:
 
     def _matching_method_with_category(self, language: AnyStr):
         """Instanciates EntityRuler with associated tags and categories"""
-        _, _ = self.nlp_dict[language].remove_pipe("sentencizer")
+        self.nlp_dict[language].remove_pipe("sentencizer")
         ruler = self.nlp_dict[language].add_pipe("entity_ruler")
         ruler.add_patterns(self.patterns)
 
