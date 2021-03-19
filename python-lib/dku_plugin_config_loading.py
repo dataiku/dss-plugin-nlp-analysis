@@ -15,7 +15,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
     """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
-        "case_sensitivity",
+        "case_insensitive",
         "lemmatization",
         "unicode_normalization",
     ]

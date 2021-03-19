@@ -1,12 +1,25 @@
-"""Module to prepare the tagging of the documents
-splits on sentences and instanciates a Matcher to tag the documents"""
+"""Main module to tag the documents"""
 
 from spacy_tokenizer import MultilingualTokenizer
 from dkulib_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
 from fastcore.utils import store_attr
-from typing import AnyStr
+from typing import AnyStr, List
 import pandas as pd
+from tagger_formatter import (
+    FormatterByDocumentJson,
+    FormatterByDocument,
+    FormatterByTag,
+)
+from enum import Enum
+from time import perf_counter
+import logging
+
+
+class OutputFormat(Enum):
+    ONE_ROW_PER_TAG = "one_row_per_tag"
+    ONE_ROW_PER_DOCUMENT = "one_row_per_doc"
+    ONE_ROW_PER_DOCUMENT_JSON = "one_row_per_doc_json"
 
 
 class Tagger:
@@ -21,18 +34,15 @@ class Tagger:
         category_column,
         keyword_column,
         lemmatize,
-        case_sensitive,
+        case_insensitive,
         normalize,
         mode,
     ):
-        store_attr(but=["text_df", "ontology_df"])
-        self.text_df = text_df.get_dataframe()
-        self.ontology_df = ontology_df.get_dataframe()
+        store_attr()
         self.matcher_dict = {}
         self.nlp_dict = {}
-        self._matching_pipeline()
 
-    def _get_patterns(self):
+    def _get_patterns(self) -> None:
         """
         Public function called in tagger.py
         Creates the list of patterns :
@@ -52,7 +62,7 @@ class Tagger:
         else:
             self.patterns = list_of_keywords
 
-    def _list_sentences(self, row: pd.Series):
+    def _list_sentences(self, row: pd.Series) -> List[AnyStr]:
         """Auxiliary function called in _matching_pipeline
         Applies sentencizer and return list of sentences"""
         return [
@@ -60,21 +70,79 @@ class Tagger:
             for sentence in self.nlp_dict[self.language](row[self.text_column]).sents
         ]
 
-    def _matching_method_no_category(self, language: AnyStr):
+    def _match_no_category(self, language: AnyStr) -> None:
         """instanciates PhraseMatcher with associated tags"""
-        _, _ = self.nlp_dict[language].remove_pipe("sentencizer")
+        self.nlp_dict[language].remove_pipe("sentencizer")
         matcher = PhraseMatcher(self.nlp_dict[language].vocab)
         self.patterns = list(self.nlp_dict[language].tokenizer.pipe(self.patterns))
         matcher.add("PatternList", self.patterns)
         self.matcher_dict[language] = matcher
 
-    def _matching_method_with_category(self, language: AnyStr):
+    def _match_with_category(self, language: AnyStr) -> None:
         """Instanciates EntityRuler with associated tags and categories"""
         self.nlp_dict[language].remove_pipe("sentencizer")
         ruler = self.nlp_dict[language].add_pipe("entity_ruler")
         ruler.add_patterns(self.patterns)
 
-    def _matching_pipeline(self):
+    def _format_with_category(self) -> pd.DataFrame:
+        self._match_with_category(self.language)
+        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
+            formatter = self.instanciate_class(FormatterByDocumentJson)
+            formatter.tag_columns = ["tag_json_full", "tag_json_categories"]
+
+        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
+            formatter = self.instanciate_class(FormatterByDocument)
+            formatter.tag_columns = ["tag_keywords", "tag_sentences"]
+
+        if self.mode == OutputFormat.ONE_ROW_PER_TAG.value:
+            formatter = self.instanciate_class(FormatterByTag)
+            formatter.tag_columns = [
+                "tag_keyword",
+                "tag_sentence",
+                "tag_category",
+                "tag",
+            ]
+            return formatter.write_df()
+        return formatter.write_df_category()
+
+    def _generate_unique_columns(self, columns):
+        text_df_columns = self.text_df.columns.tolist()
+        return [generate_unique(column, text_df_columns) for column in columns]
+
+    def _format_no_category(self) -> pd.DataFrame:
+        self._match_no_category(self.language)
+        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
+            formatter = self.instanciate_class(FormatterByDocumentJson)
+            formatter.tag_columns = ["tag_json_full"]
+        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
+            formatter = self.instanciate_class(FormatterByDocument)
+            formatter.tag_columns = self._generate_unique_columns(
+                [
+                    "tag_keywords",
+                    "tag_sentences",
+                    "tag_list",
+                ]
+            )
+        if self.mode == OutputFormat.ONE_ROW_PER_TAG.value:
+            formatter = self.instanciate_class(FormatterByTag)
+            formatter.tag_columns = self._generate_unique_columns(
+                ["tag_keyword", "tag_sentence", "tag"]
+            )
+        return formatter.write_df()
+
+    def instanciate_class(self, formatter):
+        return formatter(
+            self.text_df,
+            self.splitted_sentences_column,
+            self.nlp_dict,
+            self.matcher_dict,
+            self.text_column,
+            self.language,
+            self.keyword_to_tag,
+            self.category_column,
+        )
+
+    def tag_and_format(self) -> pd.DataFrame:
         """
         Public function called in tagger.py
         Uses a spacy pipeline
@@ -92,6 +160,8 @@ class Tagger:
         # monolingual case
         else:
             # sentence splitting
+            logging.info(f"Splitting sentences on {len(self.text_df)} documents...")
+            start = perf_counter()
             tokenizer._add_spacy_tokenizer(self.language, True)
             self.nlp_dict = tokenizer.spacy_nlp_dict
             self.splitted_sentences_column = generate_unique(
@@ -100,11 +170,13 @@ class Tagger:
             self.text_df[self.splitted_sentences_column] = self.text_df.apply(
                 self._list_sentences, axis=1
             )
+            logging.info(
+                f"Splitting sentences on {len(self.text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
+            )
             # matching
             self._get_patterns()
+            logging.info(f"Tagging {len(self.text_df)} documents...")
             if self.category_column:
-                # precision : giving a class attribute argument because those functions will be used with non-attribute class
-                # function in multilingual case
-                self._matching_method_with_category(self.language)
+                return self._format_with_category()
             else:
-                self._matching_method_no_category(self.language)
+                return self._format_no_category()

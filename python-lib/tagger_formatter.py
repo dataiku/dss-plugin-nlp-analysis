@@ -2,110 +2,173 @@
 Module to write the output dataframe depending on the output format
 This module inherits from Tagger where the tokenization, sentence splitting and Matcher instanciation has been done
 """
-from tagger import Tagger
-from collections import defaultdict
-import pandas as pd, numpy as np
-from enum import Enum
-from typing import List, AnyStr, Dict
+from fastcore.utils import store_attr
+import pandas as pd
+from collections import defaultdict, Counter
 from spacy.tokens import Span, Doc
+from typing import AnyStr, Dict, List, Tuple
+import numpy as np
+from time import perf_counter
+import logging
 
 
-class OutputFormat(Enum):
-    ONE_ROW_PER_DOC = "one_row_per_doc"
-    ONE_ROW_PER_DOC_JSON = "one_row_per_doc_json"
-    ONE_ROW_PER_TAG = "one_row_per_tag"
-
-
-class TaggerFormatter:
-    def __init__(self, tagger: Tagger):
-        self.tagger = tagger
-        self.df_duplicated_lines = (
-            pd.DataFrame()
-        )  # useful for mode one row/tag with duplicated documents
+class Formatter:
+    def __init__(
+        self,
+        input_df,
+        splitted_sentences,
+        nlp_dict,
+        matcher_dict,
+        text_column,
+        language,
+        keyword_to_tag,
+        category_column,
+    ):
+        store_attr()
         self.output_df = pd.DataFrame()
-        self.tag_sentences = []
-        self.tag_keywords = []
-        self.matches = False
-        self.output_dataset_columns = self._get_output_dataset_columns()
+        self.duplicate_df = pd.DataFrame()
+        self.contains_match = False
+        self.tag_columns = []
+        self.tag_keywords, self.tag_sentences = [], []
 
-    def formatting_procedure(self):
-        """
-        Public function called by recipe.py
-        Returns the output dataframe depending on the given output format
-        """
+    def _arrange_columns_order(
+        self, df: pd.DataFrame, columns: List[AnyStr]
+    ) -> pd.DataFrame:
+        """Put columns in the right order in the Output dataframe"""
+        for column in columns:
+            df.set_index(column, inplace=True)
+            df.reset_index(inplace=True)
+        return df
 
-        if self.tagger.mode == OutputFormat.ONE_ROW_PER_TAG.value:
-            return self._row_per_keyword()
-        elif self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value:
-            if self.tagger.category_column:
-                return self._row_per_document_category()
-            else:
-                return self._row_per_document_json()
-        else:
-            if (
-                self.tagger.category_column
-            ):  # one_row_per_doc with category /  one_row_per_doc_json
-                self._row_per_document_category()
-                return self._row_per_document_category_output()
-            else:
-                return self._row_per_document()
 
-    def _row_per_document_json(self):
-        """
-        Writes the output dataframe for the json format without category
-        """
-        self.tagger.text_df.apply(self._write_row_per_document_json, axis=1)
-        return self._arrange_columns_order(
+class FormatterByTag(Formatter):
+    def __init__(self, *args, **kwargs):
+        super(FormatterByTag, self).__init__(*args, **kwargs)
+
+    def write_df(self) -> pd.DataFrame:
+        """Write the output dataframe for one_row_per_tag format (with or without categories)"""
+        start = perf_counter()
+        self.input_df.apply(self._write_row, axis=1)
+        logging.info(
+            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+        )
+        self.output_df.reset_index(drop=True, inplace=True)
+        self.duplicate_df.reset_index(drop=True, inplace=True)
+        return super()._arrange_columns_order(
             pd.concat(
                 [
                     self.output_df,
-                    self.tagger.text_df.drop(
-                        columns=[self.tagger.splitted_sentences_column]
-                    ),
+                    self.duplicate_df.drop(columns=[self.splitted_sentences]),
                 ],
                 axis=1,
             ),
-            self.output_dataset_columns + [self.tagger.text_column],
+            self.tag_columns + [self.text_column],
         )
 
-    def _write_row_per_document_json(self, row: pd.Series):
+    def _write_row(self, row: pd.Series) -> None:
         """
-        Called by _row_per_document_json on each row
-        Updates column tag_json_full with informations about the founded tags
+        Called by _format_by_keyword on each row
+        Updates the output dataframes which will be concatenated after :
+        -> output_df contains the columns with informations about the tags
+        -> df_duplicated_lines contains the original rows of the Document Dataset, with copies
+        There are as many copies of a document as there are keywords in this document
         """
-        document = list(
-            self.tagger.nlp_dict[self.tagger.language].pipe(
-                row[self.tagger.splitted_sentences_column]
-            )
-        )
-        line_full, tag_column_for_json = defaultdict(defaultdict), {}
-        for sentence in document:
-            matches = self.tagger.matcher_dict[self.tagger.language](
-                sentence, as_spans=True
-            )
-            for keyword in matches:
-                line_full = self._get_tags_row_per_document_json(
-                    keyword, line_full, sentence
+        self.contains_match = False
+        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        matches = []
+        empty_row = {column: np.nan for column in self.tag_columns}
+        if not self.category_column:
+            matches = [
+                (
+                    self.matcher_dict[self.language](sentence, as_spans=True),
+                    sentence,
                 )
-        if line_full:
-            tag_column_for_json["tag_json_full"] = {
-                column_name: dict(value) for column_name, value in line_full.items()
-            }
-        self.output_df = self.output_df.append(tag_column_for_json, ignore_index=True)
+                for sentence in document
+            ]
+            self._get_tags_in_row(matches, row)
+        else:
+            self._get_tags_in_row_category(document, row)
+        if not self.contains_match:
+            self.output_df = self.output_df.append(empty_row, ignore_index=True)
+            self.duplicate_df = self.duplicate_df.append(row)
 
-    def _row_per_document(self):
+    def _get_tags_in_row(self, matches: List, row: pd.Series) -> None:
+        """
+        Called by _format_by_keyword
+        Creates the list of new rows with infos about the tags and gives it to _update_output_df function
+        """
+        values = []
+        for match, sentence in matches:
+            values = [
+                self._list_to_dict(
+                    [
+                        keyword.text,
+                        sentence.text,
+                        self.keyword_to_tag[keyword.text],
+                    ]
+                )
+                for keyword in match
+            ]
+            self._update_df(match, values, row)
+
+    def _get_tags_in_row_category(self, document: List, row: pd.Series) -> None:
+        """
+        Called by _format_by_keyword_category
+        Creates the list of new rows with infos about the tags and gives it to _update_output_df function
+        """
+        tag_rows = []
+        for sentence in document:
+            tag_rows = [
+                self._list_to_dict(
+                    [
+                        keyword.text,
+                        sentence.text,
+                        keyword.label_,
+                        self.keyword_to_tag[keyword.text],
+                    ]
+                )
+                for keyword in sentence.ents
+            ]
+            self._update_df(tag_rows, tag_rows, row)
+
+    def _update_df(self, match: List, values: List[dict], row: pd.Series) -> None:
+        """
+        Called by _get_tags_format_by_keyword_category and _get_tags_format_by_keyword
+        Appends:
+        -row with infos about the founded tags to output_df
+        -duplicated initial row from the Document dataframe(input_df) to df.duplicated_lines
+        """
+        if match:
+            self.output_df = self.output_df.append(values, ignore_index=True)
+            self.duplicate_df = self.duplicate_df.append(
+                [row for i in range(len(values))]
+            )
+            self.contains_match = True
+
+    def _list_to_dict(self, tag_infos):
+        return {
+            column_name: tag_info
+            for column_name, tag_info in zip(self.tag_columns, tag_infos)
+        }
+
+
+class FormatterByDocument(Formatter):
+    def __init__(self, *args, **kwargs):
+        super(FormatterByDocument, self).__init__(*args, **kwargs)
+
+    def write_df(self) -> pd.DataFrame():
         """Write the output dataframe for One row per document format (without categories)"""
-        self.tagger.text_df.apply(self._write_row_per_document, axis=1)
+        start = perf_counter()
+        self.input_df.apply(self._write_row, axis=1)
+        logging.info(
+            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+        )
         return self._merge_df_columns()
 
-    def _write_row_per_document(self, row: pd.Series):
+    def _write_row(self, row: pd.Series) -> None:
         """Called by _row_per_document on each row
         Appends columns of sentences,keywords and tags to the output dataframe"""
-        document = list(
-            self.tagger.nlp_dict[self.tagger.language].pipe(
-                row[self.tagger.splitted_sentences_column]
-            )
-        )
+        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
         tag_columns_in_document = defaultdict(list)
         list_matched_tags = []
         string_sentence, string_keywords = "", ""
@@ -114,7 +177,7 @@ class TaggerFormatter:
                 tag_columns_in_document,
                 string_sentence,
                 string_keywords,
-            ) = self._get_tags_row_per_document(
+            ) = self._get_tags_in_row(
                 sentence,
                 list_matched_tags,
                 tag_columns_in_document,
@@ -127,37 +190,53 @@ class TaggerFormatter:
             tag_columns_in_document, ignore_index=True
         )
 
-    def _row_per_document_category(self):
+    def _get_tags_in_row(
+        self,
+        sentence: Doc,
+        list_matched_tags: List,
+        tag_columns_in_document: Dict[AnyStr, List],
+        string_sentence: AnyStr,
+        string_keywords: AnyStr,
+    ) -> Tuple[Dict[AnyStr, List], AnyStr, AnyStr]:
+        """
+        Called by _row_per_document on each sentence
+        Returns the tags, sentences and keywords linked to the given sentence
+        """
+        tag_columns_in_sentence = defaultdict(list)
+        matches = self.matcher_dict[self.language](sentence, as_spans=True)
+        for match in matches:
+            keyword = match.text
+            tag = self.keyword_to_tag[keyword]
+            if tag not in list_matched_tags:
+                list_matched_tags.append(tag)
+                tag_columns_in_sentence[self.tag_columns[2]].append(tag)
+            string_keywords = string_keywords + " " + keyword
+            string_sentence = string_sentence + sentence.text
+
+        if tag_columns_in_sentence != {}:
+            tag_columns_in_document[self.tag_columns[2]].extend(
+                tag_columns_in_sentence[self.tag_columns[2]]
+            )
+        return tag_columns_in_document, string_sentence, string_keywords
+
+    def write_df_category(self) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
-        format one_row_per_doc_tag_lists / format JSON
+        format one_row_per_doc_tag_lists
         """
-        self.tagger.text_df.apply(self._write_row_per_document_category, axis=1)
-        if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value:
-            return self._arrange_columns_order(
-                pd.concat(
-                    [
-                        self.output_df,
-                        self.tagger.text_df.drop(
-                            columns=[self.tagger.splitted_sentences_column]
-                        ),
-                    ],
-                    axis=1,
-                ),
-                self.output_dataset_columns + [self.tagger.text_column],
-            )
-        return self._row_per_document_category_output()
+        start = perf_counter()
+        self.input_df.apply(self._write_row_category, args=[False], axis=1)
+        logging.info(
+            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+        )
+        return self._merge_df_columns_category()
 
-    def _write_row_per_document_category(self, row: pd.Series):
+    def _write_row_category(self, row: pd.Series, one_row_per_doc_json) -> None:
         """
         Called by _row_per_document category
         Appends columns to the output dataframe, depending on the output format
         """
-        document = list(
-            self.tagger.nlp_dict[self.tagger.language].pipe(
-                row[self.tagger.splitted_sentences_column]
-            )
-        )
+        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
         string_sentence, string_keywords = "", ""
         tag_columns_for_json, line, line_full = (
             defaultdict(),
@@ -166,12 +245,12 @@ class TaggerFormatter:
         )
         for sentence in document:
             for keyword in sentence.ents:
-                line, line_full = self._get_tags_row_per_document_category(
+                line, line_full = self._get_tags_in_row_category(
                     keyword, line, line_full, sentence
                 )
                 string_keywords = string_keywords + " " + keyword.text
                 string_sentence += sentence.text
-            if line and self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value:
+            if line and one_row_per_doc_json:
                 tag_columns_for_json["tag_json_categories"] = dict(line)
                 tag_columns_for_json["tag_json_full"] = {
                     column_name: dict(value) for column_name, value in line_full.items()
@@ -180,145 +259,13 @@ class TaggerFormatter:
         self.tag_keywords.append(string_keywords)
         self.output_df = (
             self.output_df.append(tag_columns_for_json, ignore_index=True)
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value
+            if one_row_per_doc_json
             else self.output_df.append(line, ignore_index=True)
         )
 
-    def _row_per_document_category_output(self):
-        """
-        Called by _row_per_document_category,
-        when the format is one row per document.
-        Insert columns tag_sentences and tag_keywords, and returns the complete output dataframe
-        """
-        output_df_copy = self.output_df.copy().add_prefix("tag_list_")
-        output_df_copy.insert(
-            len(self.output_df.columns), "tag_keywords", self.tag_keywords, True
-        )
-        output_df_copy.insert(
-            len(self.output_df.columns), "tag_sentences", self.tag_sentences, True
-        )
-        output_df_copy = pd.concat(
-            [
-                output_df_copy,
-                self.tagger.text_df.drop(
-                    columns=[self.tagger.splitted_sentences_column]
-                ),
-            ],
-            axis=1,
-        )
-        output_df_copy.set_index(self.tagger.text_column, inplace=True)
-        output_df_copy.reset_index(inplace=True)
-        return output_df_copy
-
-    def _row_per_keyword(self):
-        """Write the output dataframe for one_row_per_tag format (with or without categories)"""
-        self.tagger.text_df.apply(self._write_row_per_keyword, axis=1)
-        self.output_df.reset_index(drop=True, inplace=True)
-        self.df_duplicated_lines.reset_index(drop=True, inplace=True)
-        return self._arrange_columns_order(
-            pd.concat(
-                [
-                    self.output_df,
-                    self.df_duplicated_lines.drop(
-                        columns=[self.tagger.splitted_sentences_column]
-                    ),
-                ],
-                axis=1,
-            ),
-            self.output_dataset_columns + [self.tagger.text_column],
-        )
-
-    def _write_row_per_keyword(self, row: pd.Series):
-        """
-        Called by _row_per_keyword on each row
-        Updates the output dataframes which will be concatenated after :
-        -> output_df contains the columns with informations about the tags
-        -> df_duplicated_lines contains the original rows of the Document Dataset, with copies
-        There are as many copies of a document as there are keywords in this document
-        """
-        self.matches = False
-        document = list(
-            self.tagger.nlp_dict[self.tagger.language].pipe(
-                row[self.tagger.splitted_sentences_column]
-            )
-        )
-        matches = []
-        empty_row = {column: np.nan for column in self.output_dataset_columns}
-        if not self.tagger.category_column:
-            matches = [
-                (
-                    self.tagger.matcher_dict[self.tagger.language](
-                        sentence, as_spans=True
-                    ),
-                    sentence,
-                )
-                for sentence in document
-            ]
-            self._get_tags_row_per_keyword(matches, row)
-        else:
-            self._get_tags_row_per_keyword_category(document, row)
-        if not self.matches:
-            self.output_df = self.output_df.append(empty_row, ignore_index=True)
-            self.df_duplicated_lines = self.df_duplicated_lines.append(row)
-
-    def _get_tags_row_per_document_json(
-        self, match: Span, line_full: dict, sentence: Doc
-    ):
-        """
-        Called by _row_per_document_json on each sentence
-        Returns a dictionary containing precisions about each tag
-        """
-        keyword = match.text
-        tag = self.tagger.keyword_to_tag[keyword]
-        sentence = sentence.text
-        if tag not in line_full.keys():
-            json_dictionary = {
-                "occurence": 1,
-                "sentences": [sentence],
-                "keywords": [keyword],
-            }
-            line_full[tag] = json_dictionary
-        else:
-            line_full[tag]["occurence"] += 1
-            line_full[tag]["sentences"].append(sentence)
-            line_full[tag]["keywords"].append(keyword)
-
-        return line_full
-
-    def _get_tags_row_per_document(
-        self,
-        sentence: Doc,
-        list_matched_tags: List,
-        tag_columns_in_document: Dict[AnyStr, List],
-        string_sentence: AnyStr,
-        string_keywords: AnyStr,
-    ):
-        """
-        Called by _row_per_document on each sentence
-        Returns the tags, sentences and keywords linked to the given sentence
-        """
-        tag_columns_in_sentence = defaultdict(list)
-        matches = self.tagger.matcher_dict[self.tagger.language](
-            sentence, as_spans=True
-        )
-        for match in matches:
-            keyword = match.text
-            tag = self.tagger.keyword_to_tag[keyword]
-            if tag not in list_matched_tags:
-                list_matched_tags.append(tag)
-                tag_columns_in_sentence[self.output_dataset_columns[2]].append(tag)
-            string_keywords = string_keywords + " " + keyword
-            string_sentence = string_sentence + sentence.text
-
-        if tag_columns_in_sentence != {}:
-            tag_columns_in_document[self.output_dataset_columns[2]].extend(
-                tag_columns_in_sentence[self.output_dataset_columns[2]]
-            )
-        return tag_columns_in_document, string_sentence, string_keywords
-
-    def _get_tags_row_per_document_category(
+    def _get_tags_in_row_category(
         self, match: Span, line: dict, line_full: dict, sentence: Doc
-    ):
+    ) -> Tuple[dict, dict]:
         """
         Called by _row_per_document_category
         Writes the needed informations about founded tags:
@@ -326,16 +273,13 @@ class TaggerFormatter:
         -line_full is a dictionary containing full information about the founded tags
         """
         keyword = match.text
-        tag = self.tagger.keyword_to_tag[keyword]
+        tag = self.keyword_to_tag[keyword]
         category = match.label_
         sentence = sentence.text
         if tag not in line_full[category]:
-            json_dictionary = {
-                "occurence": 1,
-                "sentences": [sentence],
-                "keywords": [keyword],
-            }
-            line_full[category][tag] = json_dictionary
+            line_full[category][tag] = Counter(
+                {"occurence": 1, "sentences": [sentence], "keywords": [keyword]}
+            )
             line[category].append(tag)
         else:
             line_full[category][tag]["occurence"] += 1
@@ -343,101 +287,132 @@ class TaggerFormatter:
             line_full[category][tag]["keywords"].append(keyword)
         return line, line_full
 
-    def _get_tags_row_per_keyword(self, matches: List, row: pd.Series):
+    def _merge_df_columns_category(self) -> pd.DataFrame:
         """
-        Called by _row_per_keyword
-        Creates the list of new rows with infos about the tags and gives it to _update_output_df function
+        Called by _row_per_document_category,
+        when the format is one row per document.
+        Insert columns tag_sentences and tag_keywords, and returns the complete output dataframe
         """
-        values = []
-        for match, sentence in matches:
-            values = [
-                {
-                    "tag_keyword": keyword.text,
-                    "tag_sentence": sentence.text,
-                    "tag": self.tagger.keyword_to_tag[keyword.text],
-                }
-                for keyword in match
-            ]
-            self._update_output_df(match, values, row)
+        output_df_copy = self.output_df.copy().add_prefix("tag_list_")
+        output_df_copy.insert(
+            len(self.output_df.columns), self.tag_columns[0], self.tag_keywords, True
+        )
+        output_df_copy.insert(
+            len(self.output_df.columns), self.tag_columns[1], self.tag_sentences, True
+        )
+        output_df_copy = pd.concat(
+            [
+                output_df_copy,
+                self.input_df.drop(columns=[self.splitted_sentences]),
+            ],
+            axis=1,
+        )
+        output_df_copy.set_index(self.text_column, inplace=True)
+        output_df_copy.reset_index(inplace=True)
+        return output_df_copy
 
-    def _get_tags_row_per_keyword_category(self, document: List, row: pd.Series):
-        """
-        Called by _row_per_keyword_category
-        Creates the list of new rows with infos about the tags and gives it to _update_output_df function
-        """
-        tag_rows = []
-        for sentence in document:
-            tag_rows = [
-                {
-                    "tag_keyword": keyword.text,
-                    "tag_sentence": sentence.text,
-                    "tag_category": keyword.label_,
-                    "tag": self.tagger.keyword_to_tag[keyword.text],
-                }
-                for keyword in sentence.ents
-            ]
-            self._update_output_df(tag_rows, tag_rows, row)
-
-    def _update_output_df(self, match: List, values: List[dict], row: pd.Series):
-        """
-        Called by _get_tags_row_per_keyword_category and _get_tags_row_per_keyword
-        Appends:
-        -row with infos about the founded tags to output_df
-        -duplicated initial row from the Document dataframe(text_df) to df.duplicated_lines
-        """
-        if match:
-            self.output_df = self.output_df.append(values, ignore_index=True)
-            self.df_duplicated_lines = self.df_duplicated_lines.append(
-                [row for i in range(len(values))]
-            )
-            self.matches = True
-
-    def _merge_df_columns(self):
+    def _merge_df_columns(self) -> pd.DataFrame:
         """
         Called by _row_per_document
         insert columns tag_sentences and tag_keywords
         returns the complete output dataframe
         """
-        self.output_df.insert(
-            0, self.output_dataset_columns[1], self.tag_sentences, True
-        )
-        self.output_df.insert(
-            1, self.output_dataset_columns[0], self.tag_keywords, True
-        )
+        self.output_df.insert(0, self.tag_columns[1], self.tag_sentences, True)
+        self.output_df.insert(1, self.tag_columns[0], self.tag_keywords, True)
         self.output_df = pd.concat(
             [
-                self.tagger.text_df.drop(
-                    columns=[self.tagger.splitted_sentences_column]
-                ),
+                self.input_df.drop(columns=[self.splitted_sentences]),
                 self.output_df,
             ],
             axis=1,
         )
-        return self._arrange_columns_order(
+        return super()._arrange_columns_order(
             self.output_df,
-            self.output_dataset_columns + [self.tagger.text_column],
+            self.tag_columns + [self.text_column],
         )
 
-    def _arrange_columns_order(self, df: pd.DataFrame, columns: List[AnyStr]):
-        """Put columns in the right order in the Output dataframe"""
-        for column in columns:
-            df.set_index(column, inplace=True)
-            df.reset_index(inplace=True)
-        return df
 
-    def _get_output_dataset_columns(self):
-        """Returns the list of additional columns for the output dataframe"""
-        if self.tagger.category_column:
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value:
-                return ["tag_json_full", "tag_json_categories"]
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC.value:
-                return ["tag_keywords", "tag_sentences"]
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_TAG.value:
-                return ["tag_keyword", "tag_sentence", "tag_category", "tag"]
+class FormatterByDocumentJson(FormatterByDocument):
+    def __init__(self, *args, **kwargs):
+        super(FormatterByDocumentJson, self).__init__(*args, **kwargs)
+
+    def write_df(self) -> pd.DataFrame:
+        """
+        Writes the output dataframe for the json format without category
+        """
+        start = perf_counter()
+        self.input_df.apply(self._write_row, axis=1)
+        logging.info(
+            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+        )
+        return super()._arrange_columns_order(
+            pd.concat(
+                [
+                    self.output_df,
+                    self.input_df.drop(columns=[self.splitted_sentences]),
+                ],
+                axis=1,
+            ),
+            self.tag_columns + [self.text_column],
+        )
+
+    def _write_row(self, row: pd.Series) -> None:
+        """
+        Called by _row_per_document_json on each row
+        Updates column tag_json_full with informations about the founded tags
+        """
+        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        line_full, tag_column_for_json = defaultdict(defaultdict), {}
+        for sentence in document:
+            matches = self.matcher_dict[self.language](sentence, as_spans=True)
+            for keyword in matches:
+                line_full = self._get_tags_in_row(keyword, line_full, sentence)
+        if line_full:
+            tag_column_for_json["tag_json_full"] = {
+                column_name: dict(value) for column_name, value in line_full.items()
+            }
+        self.output_df = self.output_df.append(tag_column_for_json, ignore_index=True)
+
+    def write_df_category(self) -> pd.DataFrame:
+        """
+        Write the output dataframe for One row per document with category :
+        format one_row_per_doc_json
+        """
+        start = perf_counter()
+        self.input_df.apply(super()._write_row_category, args=[True], axis=1)
+        logging.info(
+            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+        )
+        return super()._arrange_columns_order(
+            pd.concat(
+                [
+                    self.output_df,
+                    self.input_df.drop(columns=[self.splitted_sentences]),
+                ],
+                axis=1,
+            ),
+            self.tag_columns + [self.text_column],
+        )
+
+    def _get_tags_in_row(self, match: Span, line_full: dict, sentence: Doc) -> dict:
+        """
+        Called by _row_per_document_json on each sentence
+        Returns a dictionary containing precisions about each tag
+        """
+        keyword = match.text
+        tag = self.keyword_to_tag[keyword]
+        sentence = sentence.text
+        if tag not in line_full.keys():
+            line_full[tag] = Counter(
+                {
+                    "occurence": 1,
+                    "sentences": [sentence],
+                    "keywords": [keyword],
+                }
+            )
         else:
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC_JSON.value:
-                return ["tag_json_full"]
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_DOC.value:
-                return ["tag_keywords", "tag_sentences", "tag_list"]
-            if self.tagger.mode == OutputFormat.ONE_ROW_PER_TAG.value:
-                return ["tag_keyword", "tag_sentence", "tag"]
+            line_full[tag]["occurence"] += 1
+            line_full[tag]["sentences"].append(sentence)
+            line_full[tag]["keywords"].append(keyword)
+
+        return line_full

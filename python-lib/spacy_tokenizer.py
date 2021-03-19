@@ -270,7 +270,9 @@ class MultilingualTokenizer:
 
         return added_tokenizer
 
-    def tokenize_list(self, text_list: List[AnyStr], language: AnyStr) -> List[Doc]:
+    def tokenize_list(
+        self, text_list: List[AnyStr], language: AnyStr, sentencizer: bool
+    ) -> List[Doc]:
         """Public method to tokenize a list of strings for a given language
 
         This method calls `_add_spacy_tokenizer` in case the requested language has not already been added.
@@ -290,7 +292,7 @@ class MultilingualTokenizer:
         )
         text_list = [str(t) if pd.notnull(t) else "" for t in text_list]
         try:
-            self._add_spacy_tokenizer(language)
+            self._add_spacy_tokenizer(language, sentencizer)
             tokenized = list(
                 self.spacy_nlp_dict[language].pipe(
                     text_list,
@@ -311,6 +313,7 @@ class MultilingualTokenizer:
         self,
         df: pd.DataFrame,
         text_column: AnyStr,
+        sentencizer: bool,
         language_column: AnyStr = "",
         language: AnyStr = "language_column",
     ) -> pd.DataFrame:
@@ -350,8 +353,9 @@ class MultilingualTokenizer:
                 ]  # slicing input df by language
                 if len(text_slice) != 0:
                     tokenized_list = self.tokenize_list(
-                        text_list=text_slice, language=lang
+                        text_list=text_slice, language=lang, sentencizer=sentencizer
                     )
+
                     df.loc[language_indices, self.tokenized_column] = pd.Series(
                         tokenized_list,
                         dtype="object",
@@ -359,7 +363,7 @@ class MultilingualTokenizer:
                     )
         else:
             tokenized_list = self.tokenize_list(
-                text_list=df[text_column], language=language
+                text_list=df[text_column], language=language, sentencizer=sentencizer
             )
             df[self.tokenized_column] = tokenized_list
         return df
