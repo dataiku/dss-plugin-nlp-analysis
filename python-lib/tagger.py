@@ -49,10 +49,14 @@ class Tagger:
         - If there aren't category -> list of the keywords (string list)
         - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
         """
+        #remove rows with missing values 
+        self.ontology_df.replace("", float("nan"), inplace=True) 
+        self.ontology_df.dropna(inplace=True)
+        assert not(self.ontology_df.empty),"No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and restart the plugin"
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         self.keyword_to_tag = dict(zip(list_of_keywords, list_of_tags))
-
+        
         if self.category_column:
             list_of_categories = self.ontology_df[self.category_column].values.tolist()
             self.patterns = [
@@ -65,10 +69,14 @@ class Tagger:
     def _list_sentences(self, row: pd.Series) -> List[AnyStr]:
         """Auxiliary function called in _matching_pipeline
         Applies sentencizer and return list of sentences"""
-        return [
-            sentence.text
-            for sentence in self.nlp_dict[self.language](row[self.text_column]).sents
-        ]
+        document = row[self.text_column]
+        if type(document) != str:
+            return []
+        else:
+            return [
+                sentence.text
+                for sentence in self.nlp_dict[self.language](document).sents
+            ]
 
     def _match_no_category(self, language: AnyStr) -> None:
         """instanciates PhraseMatcher with associated tags"""
