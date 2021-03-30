@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_recipe_config
+from dataiku.customrecipe import get_recipe_config, get_output_names_for_role
 from language_dict import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
 
@@ -182,6 +182,12 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             value=output,
             required=True,
         )
+    
+    def _add_output_dataset(self):
+        output_dataset_name = get_output_names_for_role("tagged_documents")[0]
+        self.dku_config.add_param(
+            name="output_dataset", value=dataiku.Dataset(output_dataset_name), required=True
+        )
 
     def load_settings(self):
         """Public function to load all given parameters for Ontology Tagging Plugin"""
@@ -200,4 +206,5 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             
         self._add_ontology_columns()
         self._add_output_format()
+        self._add_output_dataset()
         return self.dku_config

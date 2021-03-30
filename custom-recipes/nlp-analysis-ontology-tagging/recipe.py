@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
+from dataiku.customrecipe import get_input_names_for_role
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
 from tagger import Tagger
 
@@ -26,7 +26,4 @@ tagger = Tagger(
     settings.output_format,
 )
 output_df = tagger.tag_and_format()
-
-output_dataset = get_output_names_for_role("tagged_documents")[0]
-output_dataset = dataiku.Dataset(output_dataset)
-output_dataset.write_with_schema(output_df)
+settings.output_dataset.write_with_schema(output_df)
