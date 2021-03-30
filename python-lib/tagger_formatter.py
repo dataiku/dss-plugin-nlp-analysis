@@ -4,7 +4,7 @@ This module inherits from Tagger where the tokenization, sentence splitting and 
 """
 from fastcore.utils import store_attr
 import pandas as pd
-from collections import defaultdict, Counter
+from collections import defaultdict
 from spacy.tokens import Span, Doc
 from typing import AnyStr, Dict, List, Tuple
 import numpy as np
@@ -277,9 +277,12 @@ class FormatterByDocument(Formatter):
         category = match.label_
         sentence = sentence.text
         if tag not in line_full[category]:
-            line_full[category][tag] = Counter(
-                {"occurence": 1, "sentences": [sentence], "keywords": [keyword]}
-            )
+            line_full[category][tag] = {
+                "occurence": 1,
+                "sentences": [sentence],
+                "keywords": [keyword],
+            }
+
             line[category].append(tag)
         else:
             line_full[category][tag]["occurence"] += 1
@@ -403,13 +406,12 @@ class FormatterByDocumentJson(FormatterByDocument):
         tag = self.keyword_to_tag[keyword]
         sentence = sentence.text
         if tag not in line_full.keys():
-            line_full[tag] = Counter(
-                {
-                    "occurence": 1,
-                    "sentences": [sentence],
-                    "keywords": [keyword],
-                }
-            )
+            line_full[tag] = {
+                "occurence": 1,
+                "sentences": [sentence],
+                "keywords": [keyword],
+            }
+
         else:
             line_full[tag]["occurence"] += 1
             line_full[tag]["sentences"].append(sentence)
