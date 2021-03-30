@@ -159,7 +159,7 @@ class Tagger:
         -nlp_dict and matcher_dict are dictionaries with language_codes for keys
         (-> Storage is in dictionary structures in prevision of the Multilingual implementation)
         """
-        tokenizer = MultilingualTokenizer()
+        tokenizer = MultilingualTokenizer(split_sentences=True)
         # multilingual case
         if self.language == "language_column":
             raise NotImplementedError(
@@ -170,7 +170,7 @@ class Tagger:
             # sentence splitting
             logging.info(f"Splitting sentences on {len(self.text_df)} documents...")
             start = perf_counter()
-            tokenizer._add_spacy_tokenizer(self.language, True)
+            tokenizer._add_spacy_tokenizer(self.language)
             self.nlp_dict = tokenizer.spacy_nlp_dict
             self.splitted_sentences_column = generate_unique(
                 "list_sentences", self.text_df.columns.tolist()

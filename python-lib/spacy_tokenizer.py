@@ -142,6 +142,7 @@ class MultilingualTokenizer:
         use_models: bool = False,
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
+        split_sentences: bool = False,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -160,7 +161,7 @@ class MultilingualTokenizer:
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
 
-    def _create_spacy_tokenizer(self, language: AnyStr, sentencizer: bool) -> Language:
+    def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
 
         Args:
@@ -186,7 +187,7 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
-            if sentencizer:
+            if self.split_sentences:
                 nlp.add_pipe("sentencizer")
         except (ValueError, OSError) as e:
             raise TokenizationError(
@@ -240,7 +241,7 @@ class MultilingualTokenizer:
                 f"Stopword file for language '{language}' not available because of error: '{e}'"
             )
 
-    def _add_spacy_tokenizer(self, language: AnyStr, sentencizer: bool) -> bool:
+    def _add_spacy_tokenizer(self, language: AnyStr) -> bool:
         """Private method to add a spaCy tokenizer for a given language to the `spacy_nlp_dict` attribute
 
         This method only adds the tokenizer if the language code is valid and recognized among
@@ -264,14 +265,14 @@ class MultilingualTokenizer:
             raise TokenizationError(f"Unsupported language code: '{language}'")
         if language not in self.spacy_nlp_dict:
             self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(
-                language, sentencizer
+                language
             )
             added_tokenizer = True
 
         return added_tokenizer
 
     def tokenize_list(
-        self, text_list: List[AnyStr], language: AnyStr, sentencizer: bool
+        self, text_list: List[AnyStr], language: AnyStr
     ) -> List[Doc]:
         """Public method to tokenize a list of strings for a given language
 
@@ -292,7 +293,7 @@ class MultilingualTokenizer:
         )
         text_list = [str(t) if pd.notnull(t) else "" for t in text_list]
         try:
-            self._add_spacy_tokenizer(language, sentencizer)
+            self._add_spacy_tokenizer(language)
             tokenized = list(
                 self.spacy_nlp_dict[language].pipe(
                     text_list,
@@ -313,7 +314,6 @@ class MultilingualTokenizer:
         self,
         df: pd.DataFrame,
         text_column: AnyStr,
-        sentencizer: bool,
         language_column: AnyStr = "",
         language: AnyStr = "language_column",
     ) -> pd.DataFrame:
@@ -353,7 +353,7 @@ class MultilingualTokenizer:
                 ]  # slicing input df by language
                 if len(text_slice) != 0:
                     tokenized_list = self.tokenize_list(
-                        text_list=text_slice, language=lang, sentencizer=sentencizer
+                        text_list=text_slice, language=lang
                     )
 
                     df.loc[language_indices, self.tokenized_column] = pd.Series(
@@ -363,7 +363,7 @@ class MultilingualTokenizer:
                     )
         else:
             tokenized_list = self.tokenize_list(
-                text_list=df[text_column], language=language, sentencizer=sentencizer
+                text_list=df[text_column], language=language
             )
             df[self.tokenized_column] = tokenized_list
         return df
