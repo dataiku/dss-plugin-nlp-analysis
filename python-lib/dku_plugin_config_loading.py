@@ -145,7 +145,14 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._ontology_columns_mandatory(
             "keyword_column", "Keyword column", input_columns
         )
+        ontology_columns = [self.dku_config.tag_column,self.dku_config.keyword_column]
         self._add_category_column()
+        category_column = self.dku_config.category_column
+        if category_column : 
+            ontology_columns.append(category_column)
+        self.dku_config.add_param(
+        name="ontology_columns",
+        value=ontology_columns)
 
     def _add_category_column(self):
         """Load category column if exists"""
