@@ -3,9 +3,10 @@
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
 
-from dummy_module import dummy_function
+from tagger import Tagger
 
 
-def test_dummy_function():
-    dummy_results = dummy_function()
-    assert dummy_results == "foo"
+def test_tagger():
+    # TODO write a real test
+    tagger = Tagger()
+    assert True
