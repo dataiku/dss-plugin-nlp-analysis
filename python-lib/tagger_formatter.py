@@ -155,7 +155,7 @@ class FormatterByDocument(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByDocument, self).__init__(*args, **kwargs)
 
-    def _fill_tags(self, condition, value)  #TODO put in an utility py file later
+    def _fill_tags(self, condition, value):  #TODO put in an utility py file later
         return value if condition else np.nan
 
     def write_df(self) -> pd.DataFrame():
@@ -219,7 +219,7 @@ class FormatterByDocument(Formatter):
         if tags_in_sentence != []:
             tags_in_document.extend(tags_in_sentence)
         return tags_in_document, string_sentence, string_keywords
-
+    
     def write_df_category(self) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
@@ -374,7 +374,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             for keyword in matches:
                 line_full = self._get_tags_in_row(keyword, line_full, sentence)
 
-        tag_column_for_json["tag_json_full"] = self._fill_tags(
+        tag_column_for_json["tag_json_full"] = super()._fill_tags(
             line_full,
             {column_name: dict(value) for column_name, value in line_full.items()},
         )
