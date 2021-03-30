@@ -182,8 +182,15 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_matching_settings()
         self._add_text_column()
         self._add_language()
+        
         if self.dku_config.language == "language_column":
             self._add_language_column()
+        else:
+            self.dku_config.add_param(
+                name="language_column",
+                value="",
+            )
+            
         self._add_ontology_columns()
         self._add_output_format()
         return self.dku_config

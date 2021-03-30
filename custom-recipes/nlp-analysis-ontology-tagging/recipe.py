@@ -8,17 +8,13 @@ text_input = get_input_names_for_role("document_dataset")[0]
 ontology_input = get_input_names_for_role("ontology_dataset")[0]
 
 settings = DkuConfigLoadingOntologyTagging(text_input, ontology_input).load_settings()
-if settings.language == "language_column":
-    lang, lang_column = settings.language, settings.language_column
-else:
-    lang, lang_column = settings.language, ""
 
 tagger = Tagger(
     settings.text_input.get_dataframe(),
     settings.ontology_input.get_dataframe(),
     settings.text_column,
-    lang,
-    lang_column,
+    settings.language,
+    settings.language_column,
     settings.tag_column,
     settings.category_column,
     settings.keyword_column,
