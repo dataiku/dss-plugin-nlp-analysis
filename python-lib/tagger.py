@@ -42,6 +42,14 @@ class Tagger:
         self.matcher_dict = {}
         self.nlp_dict = {}
 
+        # remove rows with missing values
+        self.ontology_df.replace("", float("nan"), inplace=True)
+        self.ontology_df.dropna(inplace=True)
+        if self.ontology_df.empty:
+            raise ValueError(
+                "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
+            )
+
     def _get_patterns(self) -> None:
         """
         Public function called in tagger.py
@@ -49,12 +57,6 @@ class Tagger:
         - If there aren't category -> list of the keywords (string list)
         - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
         """
-        # remove rows with missing values
-        self.ontology_df.replace("", float("nan"), inplace=True)
-        self.ontology_df.dropna(inplace=True)
-        assert not (
-            self.ontology_df.empty
-        ), "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and restart the plugin"
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         self.keyword_to_tag = dict(zip(list_of_keywords, list_of_tags))
