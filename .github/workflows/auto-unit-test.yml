@@ -2,6 +2,10 @@ name: Auto unit test
 
 on: [push, pull_request]
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
   unit-tests:
     runs-on: ubuntu-20.04
