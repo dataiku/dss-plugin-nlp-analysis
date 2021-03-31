@@ -36,7 +36,7 @@ class Tagger:
         lemmatization: bool,
         case_insensitive: bool,
         normalization: bool,
-        mode: AnyStr,
+        output_format: AnyStr,
     ):
         store_attr()
         self.matcher_dict = {}
@@ -98,15 +98,15 @@ class Tagger:
 
     def _format_with_category(self) -> pd.DataFrame:
         self._match_with_category(self.language)
-        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
             formatter = self.instanciate_class(FormatterByDocumentJson)
             formatter.tag_columns = ["tag_json_full", "tag_json_categories"]
 
-        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
             formatter = self.instanciate_class(FormatterByDocument)
             formatter.tag_columns = ["tag_keywords", "tag_sentences"]
 
-        if self.mode == OutputFormat.ONE_ROW_PER_TAG.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_TAG.value:
             formatter = self.instanciate_class(FormatterByTag)
             formatter.tag_columns = [
                 "tag_keyword",
@@ -123,10 +123,10 @@ class Tagger:
 
     def _format_no_category(self) -> pd.DataFrame:
         self._match_no_category(self.language)
-        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
             formatter = self.instanciate_class(FormatterByDocumentJson)
             formatter.tag_columns = ["tag_json_full"]
-        if self.mode == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
             formatter = self.instanciate_class(FormatterByDocument)
             formatter.tag_columns = self._generate_unique_columns(
                 [
@@ -135,7 +135,7 @@ class Tagger:
                     "tag_list",
                 ]
             )
-        if self.mode == OutputFormat.ONE_ROW_PER_TAG.value:
+        if self.output_format == OutputFormat.ONE_ROW_PER_TAG.value:
             formatter = self.instanciate_class(FormatterByTag)
             formatter.tag_columns = self._generate_unique_columns(
                 ["tag_keyword", "tag_sentence", "tag"]

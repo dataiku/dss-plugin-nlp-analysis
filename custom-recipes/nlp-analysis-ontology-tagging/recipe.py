@@ -25,7 +25,7 @@ tagger = Tagger(
     lemmatization=settings.lemmatization,
     case_insensitive=settings.case_insensitive,
     normalization=settings.unicode_normalization,
-    mode=settings.output_format,
+    output_format=settings.output_format,
 )
 
 output_df = tagger.tag_and_format()
