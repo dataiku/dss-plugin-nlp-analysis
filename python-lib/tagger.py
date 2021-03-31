@@ -25,18 +25,18 @@ class OutputFormat(Enum):
 class Tagger:
     def __init__(
         self,
-        text_df,
-        ontology_df,
-        text_column,
-        language,
-        language_column,
-        tag_column,
-        category_column,
-        keyword_column,
-        lemmatize,
-        case_insensitive,
-        normalize,
-        mode,
+        text_df: pd.DataFrame,
+        ontology_df: pd.DataFrame,
+        text_column: AnyStr,
+        language: AnyStr,
+        language_column: AnyStr,
+        tag_column: AnyStr,
+        category_column: AnyStr,
+        keyword_column: AnyStr,
+        lemmatization: bool,
+        case_insensitive: bool,
+        normalization: bool,
+        mode: AnyStr,
     ):
         store_attr()
         self.matcher_dict = {}
@@ -49,14 +49,16 @@ class Tagger:
         - If there aren't category -> list of the keywords (string list)
         - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
         """
-        #remove rows with missing values 
-        self.ontology_df.replace("", float("nan"), inplace=True) 
+        # remove rows with missing values
+        self.ontology_df.replace("", float("nan"), inplace=True)
         self.ontology_df.dropna(inplace=True)
-        assert not(self.ontology_df.empty),"No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and restart the plugin"
+        assert not (
+            self.ontology_df.empty
+        ), "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and restart the plugin"
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         self.keyword_to_tag = dict(zip(list_of_keywords, list_of_tags))
-        
+
         if self.category_column:
             list_of_categories = self.ontology_df[self.category_column].values.tolist()
             self.patterns = [
@@ -140,14 +142,14 @@ class Tagger:
 
     def instanciate_class(self, formatter):
         return formatter(
-            self.text_df,
-            self.splitted_sentences_column,
-            self.nlp_dict,
-            self.matcher_dict,
-            self.text_column,
-            self.language,
-            self.keyword_to_tag,
-            self.category_column,
+            input_df=self.text_df,
+            splitted_sentences_column=self.splitted_sentences_column,
+            nlp_dict=self.nlp_dict,
+            matcher_dict=self.matcher_dict,
+            text_column=self.text_column,
+            language=self.language,
+            keyword_to_tag=self.keyword_to_tag,
+            category_column=self.category_column,
         )
 
     def tag_and_format(self) -> pd.DataFrame:

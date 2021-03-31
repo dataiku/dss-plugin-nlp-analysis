@@ -15,14 +15,14 @@ import logging
 class Formatter:
     def __init__(
         self,
-        input_df,
-        splitted_sentences,
-        nlp_dict,
-        matcher_dict,
-        text_column,
-        language,
-        keyword_to_tag,
-        category_column,
+        input_df: pd.DataFrame,
+        splitted_sentences_column: AnyStr,
+        nlp_dict: dict,
+        matcher_dict: dict,
+        text_column: AnyStr,
+        language: AnyStr,
+        keyword_to_tag: dict,
+        category_column: AnyStr,
     ):
         store_attr()
         self.output_df = pd.DataFrame()
@@ -58,7 +58,7 @@ class FormatterByTag(Formatter):
             pd.concat(
                 [
                     self.output_df,
-                    self.duplicate_df.drop(columns=[self.splitted_sentences]),
+                    self.duplicate_df.drop(columns=[self.splitted_sentences_column]),
                 ],
                 axis=1,
             ),
@@ -74,7 +74,9 @@ class FormatterByTag(Formatter):
         There are as many copies of a document as there are keywords in this document
         """
         self.contains_match = False
-        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        document = list(
+            self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
+        )
         matches = []
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
@@ -155,7 +157,7 @@ class FormatterByDocument(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByDocument, self).__init__(*args, **kwargs)
 
-    def _fill_tags(self, condition, value):  #TODO put in an utility py file later
+    def _fill_tags(self, condition, value):  # TODO put in an utility py file later
         return value if condition else np.nan
 
     def write_df(self) -> pd.DataFrame():
@@ -170,7 +172,9 @@ class FormatterByDocument(Formatter):
     def _write_row(self, row: pd.Series) -> None:
         """Called by write_df on each row
         Appends columns of sentences,keywords and tags to the output dataframe"""
-        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        document = list(
+            self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
+        )
         tags_in_document = []
         list_matched_tags = []
         string_sentence, string_keywords = "", ""
@@ -219,7 +223,7 @@ class FormatterByDocument(Formatter):
         if tags_in_sentence != []:
             tags_in_document.extend(tags_in_sentence)
         return tags_in_document, string_sentence, string_keywords
-    
+
     def write_df_category(self) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
@@ -237,7 +241,9 @@ class FormatterByDocument(Formatter):
         Called by write_df_category
         Appends columns to the output dataframe, depending on the output format
         """
-        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        document = list(
+            self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
+        )
         string_sentence, string_keywords = "", ""
         tag_columns_for_json, line, line_full = (
             defaultdict(),
@@ -309,7 +315,7 @@ class FormatterByDocument(Formatter):
         output_df_copy = pd.concat(
             [
                 output_df_copy,
-                self.input_df.drop(columns=[self.splitted_sentences]),
+                self.input_df.drop(columns=[self.splitted_sentences_column]),
             ],
             axis=1,
         )
@@ -327,7 +333,7 @@ class FormatterByDocument(Formatter):
         self.output_df.insert(1, self.tag_columns[0], self.tag_keywords, True)
         self.output_df = pd.concat(
             [
-                self.input_df.drop(columns=[self.splitted_sentences]),
+                self.input_df.drop(columns=[self.splitted_sentences_column]),
                 self.output_df,
             ],
             axis=1,
@@ -355,7 +361,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             pd.concat(
                 [
                     self.output_df,
-                    self.input_df.drop(columns=[self.splitted_sentences]),
+                    self.input_df.drop(columns=[self.splitted_sentences_column]),
                 ],
                 axis=1,
             ),
@@ -367,7 +373,9 @@ class FormatterByDocumentJson(FormatterByDocument):
         Called by write_df on each row
         Updates column tag_json_full with informations about the founded tags
         """
-        document = list(self.nlp_dict[self.language].pipe(row[self.splitted_sentences]))
+        document = list(
+            self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
+        )
         line_full, tag_column_for_json = defaultdict(defaultdict), {}
         for sentence in document:
             matches = self.matcher_dict[self.language](sentence, as_spans=True)
@@ -395,7 +403,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             pd.concat(
                 [
                     self.output_df,
-                    self.input_df.drop(columns=[self.splitted_sentences]),
+                    self.input_df.drop(columns=[self.splitted_sentences_column]),
                 ],
                 axis=1,
             ),

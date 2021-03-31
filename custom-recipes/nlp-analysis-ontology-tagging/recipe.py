@@ -12,18 +12,19 @@ text_dataframe = settings.text_input.get_dataframe()
 ontology_dataframe = settings.ontology_input.get_dataframe()[settings.ontology_columns]
 
 tagger = Tagger(
-    text_dataframe,
-    ontology_dataframe,
-    settings.text_column,
-    settings.language,
-    settings.language_column,
-    settings.tag_column,
-    settings.category_column,
-    settings.keyword_column,
-    settings.lemmatization,
-    settings.case_insensitive,
-    settings.unicode_normalization,
-    settings.output_format,
+    text_df=text_dataframe,
+    ontology_df=ontology_dataframe,
+    text_column=settings.text_column,
+    language=settings.language,
+    language_column=settings.language_column,
+    tag_column=settings.tag_column,
+    category_column=settings.category_column,
+    keyword_column=settings.keyword_column,
+    lemmatization=settings.lemmatization,
+    case_insensitive=settings.case_insensitive,
+    normalization=settings.unicode_normalization,
+    mode=settings.output_format,
 )
+
 output_df = tagger.tag_and_format()
 settings.output_dataset.write_with_schema(output_df)
