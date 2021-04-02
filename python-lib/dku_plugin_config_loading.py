@@ -182,6 +182,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             name="output_format",
             value=output,
             required=True,
+        )
     
     def _add_output_dataset(self):
         output_dataset_name = get_output_names_for_role("tagged_documents")[0]

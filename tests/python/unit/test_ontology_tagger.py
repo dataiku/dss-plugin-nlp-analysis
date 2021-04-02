@@ -10,7 +10,7 @@ import pandas as pd
 
     
 def test_list_sentences():
-    ontology_df=pd.DataFrame({"tag":["tag1"],"keyword":["keyword1"]})
+    ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column=None,
@@ -20,21 +20,21 @@ def test_list_sentences():
         lemmatization=None,
         case_insensitive=None,
         normalization=None,
-        output_format=None,
     )
-    assert isinstance(tagger,Tagger)
-    text_df = pd.DataFrame({"text":[float("nan")]})
+    assert isinstance(tagger, Tagger)
+    text_df = pd.DataFrame({"text": [float("nan")]})
     text_column = "text"
     tagger.nlp_dict[tagger.language] = spacy.load("en_core_web_sm")
     text_df["splitted_sentences"] = text_df.apply(
-        tagger._list_sentences,args=[text_column], axis=1
+        tagger._list_sentences, args=[text_column], axis=1
     )
     assert text_df["splitted_sentences"].iloc[0] == []
-    
+
+
 def test_missing_keyword_in_ontology():
     ontology_df = pd.DataFrame(
-            {"tag": ["tag1", "tag2", "tag3"], "keyword": [float("nan"), "keyword2", ""]}
-        )
+        {"tag": ["tag1", "tag2", "tag3"], "keyword": [float("nan"), "keyword2", ""]}
+    )
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column="tag",
@@ -44,13 +44,12 @@ def test_missing_keyword_in_ontology():
         lemmatization=None,
         case_insensitive=None,
         normalization=None,
-        output_format=None,
     )
-    assert isinstance(tagger,Tagger)
+    assert isinstance(tagger, Tagger)
     tagger.nlp_dict[tagger.language] = spacy.load("en_core_web_sm")
     tagger.nlp_dict[tagger.language].add_pipe("sentencizer")
     tagger._get_patterns()
-    assert(len(tagger.patterns)==1==len(ontology_df))
+    assert len(tagger.patterns) == 1 == len(ontology_df)
     tagger._match_no_category(tagger.language)
-    assert isinstance(tagger.matcher_dict[tagger.language],PhraseMatcher)
-    assert len(tagger.matcher_dict[tagger.language])==1
+    assert isinstance(tagger.matcher_dict[tagger.language], PhraseMatcher)
+    assert len(tagger.matcher_dict[tagger.language]) == 1
