@@ -22,7 +22,6 @@ class Tagger:
         lemmatization: bool,
         case_insensitive: bool,
         normalization: bool,
-        output_format: AnyStr,
     ):
         store_attr()
         self.matcher_dict = {}
@@ -91,24 +90,32 @@ class Tagger:
             "keyword_to_tag": self.keyword_to_tag,
             "category_column": self.category_column,
         }
-
-    def _format_with_category(self, arguments, text_df, text_column) -> pd.DataFrame:
+    
+    def _generate_unique_columns(self, text_df,columns):
+        text_df_columns = text_df.columns.tolist()
+        return [generate_unique(column, text_df_columns) for column in columns]
+    
+    def _format_with_category(
+        self, arguments, text_df, text_column, output_format
+    ) -> pd.DataFrame:
         formatter = FormatterInstanciator().get_formatter(
-            arguments, self.output_format, "category"
+            arguments, output_format, "category"
         )
+        formatter.tag_columns = self._generate_unique_columns(text_df,formatter.tag_columns)
         return formatter.write_df_category(text_df, text_column)
 
-    def _generate_unique_columns(self, columns):
-        text_df_columns = self.text_df.columns.tolist()
-        return [generate_unique(column, text_df_columns) for column in columns]
-
-    def _format_no_category(self, arguments, text_df, text_column) -> pd.DataFrame:
+    def _format_no_category(
+        self, arguments, text_df, text_column, output_format
+    ) -> pd.DataFrame:
         formatter = FormatterInstanciator().get_formatter(
-            arguments, self.output_format, "no_category"
+            arguments, output_format, "no_category"
         )
+        formatter.tag_columns = self._generate_unique_columns(text_df,formatter.tag_columns)
         return formatter.write_df(text_df, text_column)
 
-    def tag_and_format(self, text_df, text_column, language_column) -> pd.DataFrame:
+    def tag_and_format(
+        self, text_df, text_column, language_column, output_format
+    ) -> pd.DataFrame:
         """
         Public function called in tagger.py
         Uses a spacy pipeline
@@ -146,8 +153,10 @@ class Tagger:
             if self.category_column:
                 self._match_with_category(self.language)
                 return self._format_with_category(
-                    formatter_config, text_df, text_column
+                    formatter_config, text_df, text_column, output_format
                 )
             else:
                 self._match_no_category(self.language)
-                return self._format_no_category(formatter_config, text_df, text_column)
+                return self._format_no_category(
+                    formatter_config, text_df, text_column, output_format
+                )

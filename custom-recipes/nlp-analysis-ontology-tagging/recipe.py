@@ -19,10 +19,12 @@ tagger = Tagger(
     lemmatization=settings.lemmatization,
     case_insensitive=settings.case_insensitive,
     normalization=settings.unicode_normalization,
-    output_format=settings.output_format,
 )
 
 output_df = tagger.tag_and_format(
-    text_dataframe, settings.text_column, settings.language_column
+    text_dataframe,
+    settings.text_column,
+    settings.language_column,
+    settings.output_format,
 )
 settings.output_dataset.write_with_schema(output_df)
