@@ -347,11 +347,11 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "case_sensitivity",
-            "label": "Case-sensitive",
-            "description": "Match keywords with the same case (upper or lower)",
+            "name": "case_insensitive",
+            "label": "Case-insensitive",
+            "description": "Match keywords whatever the case (upper or lower)",
             "type": "BOOLEAN",
-            "defaultValue": true
+            "defaultValue": false
         },
         {
             "name": "lemmatization",
