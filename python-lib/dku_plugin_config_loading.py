@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_recipe_config, get_output_names_for_role
+from dataiku.customrecipe import get_recipe_config,get_input_names_for_role, get_output_names_for_role
 from language_dict import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
 
@@ -20,13 +20,15 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         "unicode_normalization",
     ]
 
-    def __init__(self, text_input, ontology_input):
+    def __init__(self):
         """Instanciate class with DkuConfigLoading and add input datasets to dku_config"""
 
         super().__init__()
+        text_input = get_input_names_for_role("document_dataset")[0]
         self.dku_config.add_param(
             name="text_input", value=dataiku.Dataset(text_input), required=True
         )
+        ontology_input = get_input_names_for_role("ontology_dataset")[0]
         self.dku_config.add_param(
             name="ontology_input", value=dataiku.Dataset(ontology_input), required=True
         )

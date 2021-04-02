@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_input_names_for_role
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
 from tagger import Tagger
 
-text_input = get_input_names_for_role("document_dataset")[0]
-ontology_input = get_input_names_for_role("ontology_dataset")[0]
 
-settings = DkuConfigLoadingOntologyTagging(text_input, ontology_input).load_settings()
+settings = DkuConfigLoadingOntologyTagging().load_settings()
 text_dataframe = settings.text_input.get_dataframe(infer_with_pandas=False)
 ontology_dataframe = settings.ontology_input.get_dataframe(
     columns=settings.ontology_columns, infer_with_pandas=False
