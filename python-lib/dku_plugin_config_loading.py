@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_recipe_config
+from dataiku.customrecipe import get_recipe_config,get_input_names_for_role, get_output_names_for_role
 from language_dict import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
 
@@ -15,18 +15,20 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
     """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
-        "case_sensitivity",
+        "case_insensitive",
         "lemmatization",
         "unicode_normalization",
     ]
 
-    def __init__(self, text_input, ontology_input):
+    def __init__(self):
         """Instanciate class with DkuConfigLoading and add input datasets to dku_config"""
 
         super().__init__()
+        text_input = get_input_names_for_role("document_dataset")[0]
         self.dku_config.add_param(
             name="text_input", value=dataiku.Dataset(text_input), required=True
         )
+        ontology_input = get_input_names_for_role("ontology_dataset")[0]
         self.dku_config.add_param(
             name="ontology_input", value=dataiku.Dataset(ontology_input), required=True
         )
@@ -145,7 +147,14 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._ontology_columns_mandatory(
             "keyword_column", "Keyword column", input_columns
         )
+        ontology_columns = [self.dku_config.tag_column,self.dku_config.keyword_column]
         self._add_category_column()
+        category_column = self.dku_config.category_column
+        if category_column : 
+            ontology_columns.append(category_column)
+        self.dku_config.add_param(
+        name="ontology_columns",
+        value=ontology_columns)
 
     def _add_category_column(self):
         """Load category column if exists"""
@@ -175,6 +184,12 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             value=output,
             required=True,
         )
+    
+    def _add_output_dataset(self):
+        output_dataset_name = get_output_names_for_role("tagged_documents")[0]
+        self.dku_config.add_param(
+            name="output_dataset", value=dataiku.Dataset(output_dataset_name), required=True
+        )
 
     def load_settings(self):
         """Public function to load all given parameters for Ontology Tagging Plugin"""
@@ -182,8 +197,16 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_matching_settings()
         self._add_text_column()
         self._add_language()
+        
         if self.dku_config.language == "language_column":
             self._add_language_column()
+        else:
+            self.dku_config.add_param(
+                name="language_column",
+                value="",
+            )
+            
         self._add_ontology_columns()
         self._add_output_format()
+        self._add_output_dataset()
         return self.dku_config

@@ -1,36 +1,28 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
-from tagger_formatter import TaggerFormatter
-from tagger import Tagger
+from ontology_tagger import Tagger
 
-text_input = get_input_names_for_role("document_dataset")[0]
-ontology_input = get_input_names_for_role("ontology_dataset")[0]
 
-settings = DkuConfigLoadingOntologyTagging(text_input, ontology_input).load_settings()
-if settings.language == "language_column":
-    lang, lang_column = settings.language, settings.language_column
-else:
-    lang, lang_column = settings.language, ""
+settings = DkuConfigLoadingOntologyTagging().load_settings()
+text_dataframe = settings.text_input.get_dataframe(infer_with_pandas=False)
+ontology_dataframe = settings.ontology_input.get_dataframe(
+    columns=settings.ontology_columns, infer_with_pandas=False
+)
 
 tagger = Tagger(
-    settings.text_input,
-    settings.ontology_input,
-    settings.text_column,
-    lang,
-    lang_column,
-    settings.tag_column,
-    settings.category_column,
-    settings.keyword_column,
-    settings.lemmatization,
-    settings.case_sensitivity,
-    settings.unicode_normalization,
-    settings.output_format,
+    ontology_df=ontology_dataframe,
+    tag_column=settings.tag_column,
+    category_column=settings.category_column,
+    keyword_column=settings.keyword_column,
+    language=settings.language,
+    lemmatization=settings.lemmatization,
+    case_insensitive=settings.case_insensitive,
+    normalization=settings.unicode_normalization,
+    output_format=settings.output_format,
 )
-tagging_formatter = TaggerFormatter(tagger)
-output_df = tagging_formatter.formatting_procedure()
 
-output_dataset = get_output_names_for_role("tagged_documents")[0]
-output_dataset = dataiku.Dataset(output_dataset)
-output_dataset.write_with_schema(output_df)
+output_df = tagger.tag_and_format(
+    text_dataframe, settings.text_column, settings.language_column
+)
+settings.output_dataset.write_with_schema(output_df)
