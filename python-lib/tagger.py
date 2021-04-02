@@ -6,20 +6,9 @@ from spacy.matcher import PhraseMatcher
 from fastcore.utils import store_attr
 from typing import AnyStr, List
 import pandas as pd
-from tagger_formatter import (
-    FormatterByDocumentJson,
-    FormatterByDocument,
-    FormatterByTag,
-)
-from enum import Enum
 from time import perf_counter
 import logging
-
-
-class OutputFormat(Enum):
-    ONE_ROW_PER_TAG = "one_row_per_tag"
-    ONE_ROW_PER_DOCUMENT = "one_row_per_doc"
-    ONE_ROW_PER_DOCUMENT_JSON = "one_row_per_doc_json"
+from formatter_instanciator import FormatterInstanciator
 
 
 class Tagger:
@@ -96,63 +85,33 @@ class Tagger:
         ruler = self.nlp_dict[language].add_pipe("entity_ruler")
         ruler.add_patterns(self.patterns)
 
-    def _format_with_category(self) -> pd.DataFrame:
-        self._match_with_category(self.language)
-        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
-            formatter = self.instanciate_class(FormatterByDocumentJson)
-            formatter.tag_columns = ["tag_json_full", "tag_json_categories"]
+    def get_formatter_config(self):
+        return {
+            "input_df": self.text_df,
+            "splitted_sentences_column": self.splitted_sentences_column,
+            "nlp_dict": self.nlp_dict,
+            "matcher_dict": self.matcher_dict,
+            "text_column": self.text_column,
+            "language": self.language,
+            "keyword_to_tag": self.keyword_to_tag,
+            "category_column": self.category_column,
+        }
 
-        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
-            formatter = self.instanciate_class(FormatterByDocument)
-            formatter.tag_columns = ["tag_keywords", "tag_sentences"]
-
-        if self.output_format == OutputFormat.ONE_ROW_PER_TAG.value:
-            formatter = self.instanciate_class(FormatterByTag)
-            formatter.tag_columns = [
-                "tag_keyword",
-                "tag_sentence",
-                "tag_category",
-                "tag",
-            ]
-            return formatter.write_df()
+    def _format_with_category(self, arguments) -> pd.DataFrame:
+        formatter = FormatterInstanciator().get_formatter(
+            arguments, self.output_format, "category"
+        )
         return formatter.write_df_category()
 
     def _generate_unique_columns(self, columns):
         text_df_columns = self.text_df.columns.tolist()
         return [generate_unique(column, text_df_columns) for column in columns]
 
-    def _format_no_category(self) -> pd.DataFrame:
-        self._match_no_category(self.language)
-        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value:
-            formatter = self.instanciate_class(FormatterByDocumentJson)
-            formatter.tag_columns = ["tag_json_full"]
-        if self.output_format == OutputFormat.ONE_ROW_PER_DOCUMENT.value:
-            formatter = self.instanciate_class(FormatterByDocument)
-            formatter.tag_columns = self._generate_unique_columns(
-                [
-                    "tag_keywords",
-                    "tag_sentences",
-                    "tag_list",
-                ]
-            )
-        if self.output_format == OutputFormat.ONE_ROW_PER_TAG.value:
-            formatter = self.instanciate_class(FormatterByTag)
-            formatter.tag_columns = self._generate_unique_columns(
-                ["tag_keyword", "tag_sentence", "tag"]
-            )
-        return formatter.write_df()
-
-    def instanciate_class(self, formatter):
-        return formatter(
-            input_df=self.text_df,
-            splitted_sentences_column=self.splitted_sentences_column,
-            nlp_dict=self.nlp_dict,
-            matcher_dict=self.matcher_dict,
-            text_column=self.text_column,
-            language=self.language,
-            keyword_to_tag=self.keyword_to_tag,
-            category_column=self.category_column,
+    def _format_no_category(self, arguments) -> pd.DataFrame:
+        formatter = FormatterInstanciator().get_formatter(
+            arguments, self.output_format, "no_category"
         )
+        return formatter.write_df()
 
     def tag_and_format(self) -> pd.DataFrame:
         """
@@ -188,7 +147,10 @@ class Tagger:
             # matching
             self._get_patterns()
             logging.info(f"Tagging {len(self.text_df)} documents...")
+            formatter_config = self.get_formatter_config()
             if self.category_column:
-                return self._format_with_category()
+                self._match_with_category(self.language)
+                return self._format_with_category(formatter_config)
             else:
-                return self._format_no_category()
+                self._match_no_category(self.language)
+                return self._format_no_category(formatter_config)

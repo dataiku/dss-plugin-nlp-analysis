@@ -45,6 +45,9 @@ class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByTag, self).__init__(*args, **kwargs)
 
+    def write_df_category(self) -> pd.DataFrame:
+        return self.write_df()
+
     def write_df(self) -> pd.DataFrame:
         """Write the output dataframe for one_row_per_tag format (with or without categories)"""
         start = perf_counter()
