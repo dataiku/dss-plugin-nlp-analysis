@@ -14,14 +14,11 @@ from formatter_instanciator import FormatterInstanciator
 class Tagger:
     def __init__(
         self,
-        text_df: pd.DataFrame,
         ontology_df: pd.DataFrame,
-        text_column: AnyStr,
-        language: AnyStr,
-        language_column: AnyStr,
         tag_column: AnyStr,
         category_column: AnyStr,
         keyword_column: AnyStr,
+        language: AnyStr,
         lemmatization: bool,
         case_insensitive: bool,
         normalization: bool,
@@ -59,10 +56,10 @@ class Tagger:
         else:
             self.patterns = list_of_keywords
 
-    def _list_sentences(self, row: pd.Series) -> List[AnyStr]:
+    def _list_sentences(self, row: pd.Series, text_column: AnyStr) -> List[AnyStr]:
         """Auxiliary function called in _matching_pipeline
         Applies sentencizer and return list of sentences"""
-        document = row[self.text_column]
+        document = row[text_column]
         if type(document) != str:
             return []
         else:
@@ -71,7 +68,7 @@ class Tagger:
                 for sentence in self.nlp_dict[self.language](document).sents
             ]
 
-    def _match_no_category(self, language: AnyStr) -> None:
+    def _match_no_category(self, language) -> None:
         """instanciates PhraseMatcher with associated tags"""
         self.nlp_dict[language].remove_pipe("sentencizer")
         matcher = PhraseMatcher(self.nlp_dict[language].vocab)
@@ -79,7 +76,7 @@ class Tagger:
         matcher.add("PatternList", self.patterns)
         self.matcher_dict[language] = matcher
 
-    def _match_with_category(self, language: AnyStr) -> None:
+    def _match_with_category(self, language) -> None:
         """Instanciates EntityRuler with associated tags and categories"""
         self.nlp_dict[language].remove_pipe("sentencizer")
         ruler = self.nlp_dict[language].add_pipe("entity_ruler")
@@ -87,33 +84,31 @@ class Tagger:
 
     def get_formatter_config(self):
         return {
-            "input_df": self.text_df,
+            "language": self.language,
             "splitted_sentences_column": self.splitted_sentences_column,
             "nlp_dict": self.nlp_dict,
             "matcher_dict": self.matcher_dict,
-            "text_column": self.text_column,
-            "language": self.language,
             "keyword_to_tag": self.keyword_to_tag,
             "category_column": self.category_column,
         }
 
-    def _format_with_category(self, arguments) -> pd.DataFrame:
+    def _format_with_category(self, arguments, text_df, text_column) -> pd.DataFrame:
         formatter = FormatterInstanciator().get_formatter(
             arguments, self.output_format, "category"
         )
-        return formatter.write_df_category()
+        return formatter.write_df_category(text_df, text_column)
 
     def _generate_unique_columns(self, columns):
         text_df_columns = self.text_df.columns.tolist()
         return [generate_unique(column, text_df_columns) for column in columns]
 
-    def _format_no_category(self, arguments) -> pd.DataFrame:
+    def _format_no_category(self, arguments, text_df, text_column) -> pd.DataFrame:
         formatter = FormatterInstanciator().get_formatter(
             arguments, self.output_format, "no_category"
         )
-        return formatter.write_df()
+        return formatter.write_df(text_df, text_column)
 
-    def tag_and_format(self) -> pd.DataFrame:
+    def tag_and_format(self, text_df, text_column, language_column) -> pd.DataFrame:
         """
         Public function called in tagger.py
         Uses a spacy pipeline
@@ -131,26 +126,28 @@ class Tagger:
         # monolingual case
         else:
             # sentence splitting
-            logging.info(f"Splitting sentences on {len(self.text_df)} documents...")
+            logging.info(f"Splitting sentences on {len(text_df)} documents...")
             start = perf_counter()
             tokenizer._add_spacy_tokenizer(self.language)
             self.nlp_dict = tokenizer.spacy_nlp_dict
             self.splitted_sentences_column = generate_unique(
-                "list_sentences", self.text_df.columns.tolist()
+                "list_sentences", text_df.columns.tolist()
             )
-            self.text_df[self.splitted_sentences_column] = self.text_df.apply(
-                self._list_sentences, axis=1
+            text_df[self.splitted_sentences_column] = text_df.apply(
+                self._list_sentences, args=[text_column], axis=1
             )
             logging.info(
-                f"Splitting sentences on {len(self.text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
+                f"Splitting sentences on {len(text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
             )
             # matching
             self._get_patterns()
-            logging.info(f"Tagging {len(self.text_df)} documents...")
+            logging.info(f"Tagging {len(text_df)} documents...")
             formatter_config = self.get_formatter_config()
             if self.category_column:
                 self._match_with_category(self.language)
-                return self._format_with_category(formatter_config)
+                return self._format_with_category(
+                    formatter_config, text_df, text_column
+                )
             else:
                 self._match_no_category(self.language)
-                return self._format_no_category(formatter_config)
+                return self._format_no_category(formatter_config, text_df, text_column)

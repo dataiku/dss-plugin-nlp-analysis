@@ -15,12 +15,10 @@ import logging
 class Formatter:
     def __init__(
         self,
-        input_df: pd.DataFrame,
+        language: AnyStr,
         splitted_sentences_column: AnyStr,
         nlp_dict: dict,
         matcher_dict: dict,
-        text_column: AnyStr,
-        language: AnyStr,
         keyword_to_tag: dict,
         category_column: AnyStr,
     ):
@@ -45,15 +43,15 @@ class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByTag, self).__init__(*args, **kwargs)
 
-    def write_df_category(self) -> pd.DataFrame:
-        return self.write_df()
+    def write_df_category(self, input_df, text_column) -> pd.DataFrame:
+        return self.write_df(input_df, text_column)
 
-    def write_df(self) -> pd.DataFrame:
+    def write_df(self, input_df, text_column) -> pd.DataFrame:
         """Write the output dataframe for one_row_per_tag format (with or without categories)"""
         start = perf_counter()
-        self.input_df.apply(self._write_row, axis=1)
+        input_df.apply(self._write_row, axis=1)
         logging.info(
-            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
         self.output_df.reset_index(drop=True, inplace=True)
         self.duplicate_df.reset_index(drop=True, inplace=True)
@@ -65,7 +63,7 @@ class FormatterByTag(Formatter):
                 ],
                 axis=1,
             ),
-            self.tag_columns + [self.text_column],
+            self.tag_columns + [text_column],
         )
 
     def _write_row(self, row: pd.Series) -> None:
@@ -163,14 +161,14 @@ class FormatterByDocument(Formatter):
     def _fill_tags(self, condition, value):  # TODO put in an utility py file later
         return value if condition else np.nan
 
-    def write_df(self) -> pd.DataFrame():
+    def write_df(self, input_df, text_column) -> pd.DataFrame():
         """Write the output dataframe for One row per document format (without categories)"""
         start = perf_counter()
-        self.input_df.apply(self._write_row, axis=1)
+        input_df.apply(self._write_row, axis=1)
         logging.info(
-            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
-        return self._merge_df_columns()
+        return self._merge_df_columns(input_df, text_column)
 
     def _write_row(self, row: pd.Series) -> None:
         """Called by write_df on each row
@@ -227,17 +225,17 @@ class FormatterByDocument(Formatter):
             tags_in_document.extend(tags_in_sentence)
         return tags_in_document, string_sentence, string_keywords
 
-    def write_df_category(self) -> pd.DataFrame:
+    def write_df_category(self, input_df, text_column) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
         format one_row_per_doc_tag_lists
         """
         start = perf_counter()
-        self.input_df.apply(self._write_row_category, args=[False], axis=1)
+        input_df.apply(self._write_row_category, args=[False], axis=1)
         logging.info(
-            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
-        return self._merge_df_columns_category()
+        return self._merge_df_columns_category(input_df, text_column)
 
     def _write_row_category(self, row: pd.Series, one_row_per_doc_json) -> None:
         """
@@ -302,7 +300,7 @@ class FormatterByDocument(Formatter):
             line_full[category][tag]["keywords"].append(keyword)
         return line, line_full
 
-    def _merge_df_columns_category(self) -> pd.DataFrame:
+    def _merge_df_columns_category(self, input_df, text_column) -> pd.DataFrame:
         """
         Called by _write_row_category,
         when the format is one row per document.
@@ -318,15 +316,15 @@ class FormatterByDocument(Formatter):
         output_df_copy = pd.concat(
             [
                 output_df_copy,
-                self.input_df.drop(columns=[self.splitted_sentences_column]),
+                input_df.drop(columns=[self.splitted_sentences_column]),
             ],
             axis=1,
         )
-        output_df_copy.set_index(self.text_column, inplace=True)
+        output_df_copy.set_index(text_column, inplace=True)
         output_df_copy.reset_index(inplace=True)
         return output_df_copy
 
-    def _merge_df_columns(self) -> pd.DataFrame:
+    def _merge_df_columns(self, input_df, text_column) -> pd.DataFrame:
         """
         Called by write_df
         insert columns tag_sentences and tag_keywords
@@ -336,14 +334,14 @@ class FormatterByDocument(Formatter):
         self.output_df.insert(1, self.tag_columns[0], self.tag_keywords, True)
         self.output_df = pd.concat(
             [
-                self.input_df.drop(columns=[self.splitted_sentences_column]),
+                input_df.drop(columns=[self.splitted_sentences_column]),
                 self.output_df,
             ],
             axis=1,
         )
         return super()._arrange_columns_order(
             self.output_df,
-            self.tag_columns + [self.text_column],
+            self.tag_columns + [text_column],
         )
 
 
@@ -351,24 +349,24 @@ class FormatterByDocumentJson(FormatterByDocument):
     def __init__(self, *args, **kwargs):
         super(FormatterByDocumentJson, self).__init__(*args, **kwargs)
 
-    def write_df(self) -> pd.DataFrame:
+    def write_df(self, input_df, text_column) -> pd.DataFrame:
         """
         Writes the output dataframe for the json format without category
         """
         start = perf_counter()
-        self.input_df.apply(self._write_row, axis=1)
+        input_df.apply(self._write_row, axis=1)
         logging.info(
-            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
         return super()._arrange_columns_order(
             pd.concat(
                 [
                     self.output_df,
-                    self.input_df.drop(columns=[self.splitted_sentences_column]),
+                    input_df.drop(columns=[self.splitted_sentences_column]),
                 ],
                 axis=1,
             ),
-            self.tag_columns + [self.text_column],
+            self.tag_columns + [text_column],
         )
 
     def _write_row(self, row: pd.Series) -> None:
@@ -392,25 +390,25 @@ class FormatterByDocumentJson(FormatterByDocument):
 
         self.output_df = self.output_df.append(tag_column_for_json, ignore_index=True)
 
-    def write_df_category(self) -> pd.DataFrame:
+    def write_df_category(self, input_df, text_column) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
         format one_row_per_doc_json
         """
         start = perf_counter()
-        self.input_df.apply(super()._write_row_category, args=[True], axis=1)
+        input_df.apply(super()._write_row_category, args=[True], axis=1)
         logging.info(
-            f"Tagging {len(self.input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
         return super()._arrange_columns_order(
             pd.concat(
                 [
                     self.output_df,
-                    self.input_df.drop(columns=[self.splitted_sentences_column]),
+                    input_df.drop(columns=[self.splitted_sentences_column]),
                 ],
                 axis=1,
             ),
-            self.tag_columns + [self.text_column],
+            self.tag_columns + [text_column],
         )
 
     def _get_tags_in_row(self, match: Span, line_full: dict, sentence: Doc) -> dict:
