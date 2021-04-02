@@ -1,5 +1,5 @@
 from enum import Enum
-from tagger_formatter import (
+from ontology_tagging_formatting import (
     FormatterByDocumentJson,
     FormatterByDocument,
     FormatterByTag,

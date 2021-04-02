@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import dataiku
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
-from tagger import Tagger
+from ontology_tagger import Tagger
 
 
 settings = DkuConfigLoadingOntologyTagging().load_settings()
