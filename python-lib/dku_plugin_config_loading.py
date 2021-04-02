@@ -178,12 +178,10 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         """Load output format parameters"""
 
         output = self.config.get("output_format")
-
         self.dku_config.add_param(
             name="output_format",
             value=output,
             required=True,
-        )
     
     def _add_output_dataset(self):
         output_dataset_name = get_output_names_for_role("tagged_documents")[0]
@@ -197,7 +195,6 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_matching_settings()
         self._add_text_column()
         self._add_language()
-        
         if self.dku_config.language == "language_column":
             self._add_language_column()
         else:
@@ -205,7 +202,6 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 name="language_column",
                 value="",
             )
-            
         self._add_ontology_columns()
         self._add_output_format()
         self._add_output_dataset()
