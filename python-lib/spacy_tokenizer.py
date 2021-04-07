@@ -183,6 +183,7 @@ class MultilingualTokenizer:
                 os.environ["PYTHAINLP_DATA_DIR"] = mkdtemp()  # dummy temp directory
             if language in SPACY_LANGUAGE_MODELS and self.use_models:
                 nlp = spacy.load(SPACY_LANGUAGE_MODELS[language])
+                nlp.remove_pipe("ner")
             else:
                 nlp = spacy.blank(
                     language

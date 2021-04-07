@@ -4,11 +4,19 @@ from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
 from ontology_tagger import Tagger
 
 
-settings = DkuConfigLoadingOntologyTagging().load_settings()
+dku_config = DkuConfigLoadingOntologyTagging()
+settings = dku_config.load_settings()
 text_dataframe = settings.text_input.get_dataframe(infer_with_pandas=False)
 ontology_dataframe = settings.ontology_input.get_dataframe(
     columns=settings.ontology_columns, infer_with_pandas=False
 )
+
+languages = (
+            text_dataframe[settings.language_column].dropna().unique()
+            if settings.language == "language_column"
+            else [settings.language]
+        )
+dku_config._check_languages(languages)
 
 tagger = Tagger(
     ontology_df=ontology_dataframe,
@@ -26,5 +34,6 @@ output_df = tagger.tag_and_format(
     settings.text_column,
     settings.language_column,
     settings.output_format,
+    languages
 )
 settings.output_dataset.write_with_schema(output_df)
