@@ -48,9 +48,11 @@ def test_missing_keyword_in_ontology():
     assert isinstance(tagger, Tagger)
     tagger.nlp_dict[tagger.language] = spacy.load("en_core_web_sm")
     tagger.nlp_dict[tagger.language].add_pipe("sentencizer")
-    tagger._get_patterns()
-    assert len(tagger.patterns) == 1 == len(ontology_df)
-    tagger._match_no_category(tagger.language)
+    keywords = ontology_df["keyword"].values.tolist()
+    tags = ontology_df["tag"].values.tolist()
+    patterns = tagger._get_patterns(keywords)
+    assert len(patterns) == 1 == len(ontology_df)
+    tagger._match_no_category(tagger.language,tags,keywords)
     assert isinstance(tagger.matcher_dict[tagger.language], PhraseMatcher)
     assert len(tagger.matcher_dict[tagger.language]) == 1
 
