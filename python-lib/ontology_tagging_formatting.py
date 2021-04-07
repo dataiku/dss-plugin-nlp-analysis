@@ -270,10 +270,6 @@ class FormatterByDocument(Formatter):
         )
         for sentence in document:
             for keyword in sentence.ents:
-                print(sentence.ents)
-                print(keyword)
-                print(type(keyword))
-                print(self.keyword_to_tag["en"])
                 line, line_full = self._get_tags_in_row_category(
                     keyword, line, line_full, sentence, language
                 )
@@ -304,7 +300,6 @@ class FormatterByDocument(Formatter):
         -line_full is a dictionary containing full information about the founded tags
         """
         keyword = match.text
-        print(self.keyword_to_tag[language])
         tag = self.keyword_to_tag[language][keyword]
         category = match.label_
         sentence = sentence.text
