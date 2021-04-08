@@ -69,7 +69,7 @@ class FormatterByTag(Formatter):
     def _write_row(self, row: pd.Series) -> None:
         """
         Called by write_df on each row
-        Updates the output dataframes which will be concatenated after :
+        Updates the output dataframes which will be concatenated after:
         -> output_df contains the columns with informations about the tags
         -> df_duplicated_lines contains the original rows of the Document Dataset, with copies
         There are as many copies of a document as there are keywords in this document
@@ -137,7 +137,7 @@ class FormatterByTag(Formatter):
     def _update_df(self, match: List, values: List[dict], row: pd.Series) -> None:
         """
         Appends:
-        -row with infos about the founded tags to output_df
+        -row with infos about the found tags to output_df
         -duplicated initial row from the Document dataframe(input_df) to df.duplicated_lines
         """
         if match:
@@ -227,7 +227,7 @@ class FormatterByDocument(Formatter):
 
     def write_df_category(self, input_df, text_column) -> pd.DataFrame:
         """
-        Write the output dataframe for One row per document with category :
+        Write the output dataframe for One row per document with category:
         format one_row_per_doc_tag_lists
         """
         start = perf_counter()
@@ -278,9 +278,9 @@ class FormatterByDocument(Formatter):
     ) -> Tuple[dict, dict]:
         """
         Called by _write_row_category
-        Writes the needed informations about founded tags:
+        Writes the needed informations about found tags:
         -line is a dictionary {category:tag}
-        -line_full is a dictionary containing full information about the founded tags
+        -line_full is a dictionary containing full information about the found tags
         """
         keyword = match.text
         tag = self.keyword_to_tag[keyword]
@@ -372,7 +372,7 @@ class FormatterByDocumentJson(FormatterByDocument):
     def _write_row(self, row: pd.Series) -> None:
         """
         Called by write_df on each row
-        Updates column tag_json_full with informations about the founded tags
+        Updates column tag_json_full with informations about the found tags
         """
         document = list(
             self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
@@ -392,13 +392,13 @@ class FormatterByDocumentJson(FormatterByDocument):
 
     def write_df_category(self, input_df, text_column) -> pd.DataFrame:
         """
-        Write the output dataframe for One row per document with category :
+        Write the output dataframe for One row per document with category:
         format one_row_per_doc_json
         """
         start = perf_counter()
         input_df.apply(super()._write_row_category, args=[True], axis=1)
         logging.info(
-            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents: Done in {perf_counter() - start:.2f} seconds."
         )
         return super()._arrange_columns_order(
             pd.concat(
