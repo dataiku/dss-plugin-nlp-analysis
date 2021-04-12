@@ -265,16 +265,12 @@ class MultilingualTokenizer:
         if language not in SUPPORTED_LANGUAGES_SPACY:
             raise TokenizationError(f"Unsupported language code: '{language}'")
         if language not in self.spacy_nlp_dict:
-            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(
-                language
-            )
+            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language)
             added_tokenizer = True
 
         return added_tokenizer
 
-    def tokenize_list(
-        self, text_list: List[AnyStr], language: AnyStr
-    ) -> List[Doc]:
+    def tokenize_list(self, text_list: List[AnyStr], language: AnyStr) -> List[Doc]:
         """Public method to tokenize a list of strings for a given language
 
         This method calls `_add_spacy_tokenizer` in case the requested language has not already been added.

@@ -1,8 +1,11 @@
 import dataiku
 from typing import Dict
 
+
 def set_column_descriptions(
-    output_dataset: dataiku.Dataset, column_descriptions: Dict, input_dataset: dataiku.Dataset = None
+    output_dataset: dataiku.Dataset,
+    column_descriptions: Dict,
+    input_dataset: dataiku.Dataset = None,
 ) -> None:
     """Set column descriptions of the output dataset based on a dictionary of column descriptions
     Retain the column descriptions from the input dataset if the column name matches.

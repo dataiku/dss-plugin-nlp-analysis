@@ -6,16 +6,16 @@ from ontology_tagging_formatting import (
 )
 
 COLUMNS_DESCRIPTION = {
-        "tag_keywords":"All found keywords",
-        "tag_sentences": "All sentences containing keywords",
-        "tag_json_full": "Full tags informations",
-        "tag_json_categories": "Category <-> tags",
-        "tag_list": "List of all found tags",
-        "tag": "Assigned tag",
-        "tag_keyword": "Matched keyword",
-        "tag_sentence": "Sentence containing keyword(s)",
-        "tag_category": "Category of the tag"
-    }
+    "tag_keywords": "All found keywords",
+    "tag_sentences": "All sentences containing keywords",
+    "tag_json_full": "Full tags informations",
+    "tag_json_categories": "Category <-> tags",
+    "tag_list": "List of all found tags",
+    "tag": "Assigned tag",
+    "tag_keyword": "Matched keyword",
+    "tag_sentence": "Sentence containing keyword(s)",
+    "tag_category": "Category of the tag",
+}
 
 
 class OutputFormat(Enum):
@@ -34,16 +34,16 @@ class FormatterInstanciator:
 
     TAG_COLUMNS = {
         OutputFormat.ONE_ROW_PER_DOCUMENT.value: {
-            "category": ["tag_sentences","tag_keywords"],
-            "no_category": ["tag_list","tag_sentences","tag_keywords"],
+            "category": ["tag_sentences", "tag_keywords"],
+            "no_category": ["tag_list", "tag_sentences", "tag_keywords"],
         },
         OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value: {
-            "category": ["tag_json_categories","tag_json_full"],
+            "category": ["tag_json_categories", "tag_json_full"],
             "no_category": ["tag_json_full"],
         },
         OutputFormat.ONE_ROW_PER_TAG.value: {
-            "category": ["tag","tag_category","tag_sentence","tag_keyword"],
-            "no_category": ["tag","tag_sentence","tag_keyword"],
+            "category": ["tag", "tag_category", "tag_sentence", "tag_keyword"],
+            "no_category": ["tag", "tag_sentence", "tag_keyword"],
         },
     }
 
