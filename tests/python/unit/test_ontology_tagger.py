@@ -18,7 +18,7 @@ def test_list_sentences():
         keyword_column=None,
         language="en",
         lemmatization=None,
-        case_insensitive=None,
+        case_insensitivity=None,
         normalization=None,
     )
     assert isinstance(tagger, Tagger)
@@ -42,7 +42,7 @@ def test_missing_keyword_in_ontology():
         keyword_column="keyword",
         language="en",
         lemmatization=None,
-        case_insensitive=None,
+        case_insensitivity=None,
         normalization=None,
     )
     assert isinstance(tagger, Tagger)
