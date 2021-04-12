@@ -11,7 +11,6 @@ import numpy as np
 
 def unique_list(sequence: List) -> List:
     """Make a list unique, ordering values by order of appearance in the original list
-
     Args:
         sequence: Original list
     Returns:
@@ -59,7 +58,6 @@ def generate_unique(
     name: AnyStr, existing_names: List[AnyStr], prefix: AnyStr = None
 ) -> AnyStr:
     """Generate a unique name among existing ones by suffixing a number and adding a prefix
-
     Args:
         name: Input name
         existing_names: List of existing names
@@ -85,15 +83,12 @@ def move_columns_after(
     df: pd.DataFrame, columns_to_move: List[AnyStr], after_column: AnyStr
 ) -> pd.DataFrame:
     """Reorder columns by moving a list of columns after another column
-
     Args:
         df: Input pandas.DataFrame
         columns_to_move: List of column names to move
         after_column: Name of the columns to move columns after
-
     Returns:
        pandas.DataFrame with reordered columns
-
     """
     after_column_position = df.columns.get_loc(after_column) + 1
     first_column_to_move = df.columns.get_loc(columns_to_move[0])

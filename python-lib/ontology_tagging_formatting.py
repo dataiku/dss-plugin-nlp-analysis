@@ -11,7 +11,7 @@ import numpy as np
 from time import perf_counter
 import logging
 import json
-from utils import move_columns_after, unique_list
+from plugin_io_utils import move_columns_after, unique_list
 
 
 class Formatter:

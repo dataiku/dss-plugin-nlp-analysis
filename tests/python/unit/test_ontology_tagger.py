@@ -72,7 +72,7 @@ def test_tokenization():
         keyword_column="keyword",
         language="en",
         lemmatization=None,
-        case_insensitive=None,
+        case_insensitivity=None,
         normalization=None,
     )
     tags = ontology_df["tag"].values.tolist()

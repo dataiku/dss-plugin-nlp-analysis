@@ -1,7 +1,6 @@
 """Main module to tag the documents"""
-
 from spacy_tokenizer import MultilingualTokenizer
-from dkulib_io_utils import generate_unique
+from plugin_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
 from fastcore.utils import store_attr
 from typing import AnyStr, List
@@ -9,7 +8,6 @@ import pandas as pd
 from time import perf_counter
 import logging
 from formatter_instanciator import FormatterInstanciator
-from utils import clean_text_df
 
 
 class Tagger:
