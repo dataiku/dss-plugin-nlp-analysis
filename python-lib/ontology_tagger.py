@@ -21,7 +21,7 @@ class Tagger:
         keyword_column: AnyStr,
         language: AnyStr,
         lemmatization: bool,
-        case_insensitive: bool,
+        case_insensitivity: bool,
         normalization: bool,
     ):
         store_attr()

@@ -347,8 +347,8 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "case_insensitive",
-            "label": "Case-insensitive",
+            "name": "case_insensitivity",
+            "label": "Case-insensitivity",
             "description": "Match keywords whatever the case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue": false
@@ -390,7 +390,7 @@
                     "label": "One row / document (JSON)"
                 }
             ],
-            "defaultValue": "one_row_per_document"
+            "defaultValue": "one_row_per_doc"
         }
     ]
 }

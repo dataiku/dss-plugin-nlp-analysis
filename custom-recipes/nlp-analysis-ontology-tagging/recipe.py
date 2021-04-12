@@ -25,7 +25,7 @@ tagger = Tagger(
     keyword_column=settings.keyword_column,
     language=settings.language,
     lemmatization=settings.lemmatization,
-    case_insensitive=settings.case_insensitive,
+    case_insensitivity=settings.case_insensitivity,
     normalization=settings.unicode_normalization,
 )
 
