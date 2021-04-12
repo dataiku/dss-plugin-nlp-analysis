@@ -78,9 +78,6 @@ class FormatterByTag(Formatter):
         """
         self.contains_match = False
         language, document = super()._apply_matcher(row, language_column)
-        # document = list(
-        #    self.nlp_dict[self.language].pipe(row[self.splitted_sentences_column])
-        # )
         matches = []
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
@@ -253,10 +250,6 @@ class FormatterByDocument(Formatter):
         )
         for sentence in document:
             for keyword in sentence.ents:
-                print(sentence.ents)
-                print(keyword)
-                print(type(keyword))
-                print(self.keyword_to_tag["en"])
                 line, line_full = self._get_tags_in_row_category(
                     keyword, line, line_full, sentence, language
                 )
@@ -287,7 +280,6 @@ class FormatterByDocument(Formatter):
         -line_full is a dictionary containing full information about the founded tags
         """
         keyword = match.text
-        print(self.keyword_to_tag[language])
         tag = self.keyword_to_tag[language][keyword]
         category = match.label_
         sentence = sentence.text
