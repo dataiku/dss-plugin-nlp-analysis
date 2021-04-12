@@ -225,7 +225,7 @@ class FormatterByDocument(Formatter):
             matched_sentences.append(sentence.text + " ")
         return tags_in_document, keywords_in_document, matched_sentences
 
-    def write_df_category(self, input_df, text_column) -> pd.DataFrame:
+    def write_df_category(self, input_df, text_column, language_column) -> pd.DataFrame:
         """
         Write the output dataframe for One row per document with category :
         format one_row_per_doc_tag_lists
