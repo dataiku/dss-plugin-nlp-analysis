@@ -193,7 +193,7 @@ class FormatterByDocument(Formatter):
         if tags_in_document != []:
             line = {
                 self.tag_columns[0]: unique_list(tags_in_document),
-                self.tag_columns[1]: " ".join(unique_list(matched_sentences)),
+                self.tag_columns[1]: "".join(unique_list(matched_sentences)),
                 self.tag_columns[2]: ", ".join(unique_list(keywords_in_document)),
             }
         else:
@@ -285,14 +285,14 @@ class FormatterByDocument(Formatter):
         sentence = sentence.text
         if tag not in line_full[category]:
             line_full[category][tag] = {
-                "occurence": 1,
+                "count": 1,
                 "sentences": [sentence],
                 "keywords": [keyword],
             }
 
             line[category].append(tag)
         else:
-            line_full[category][tag]["occurence"] += 1
+            line_full[category][tag]["count"] += 1
             line_full[category][tag]["sentences"].append(sentence)
             line_full[category][tag]["keywords"].append(keyword)
         return line, line_full
@@ -388,12 +388,12 @@ class FormatterByDocumentJson(FormatterByDocument):
         sentence = sentence.text
         if tag not in line_full.keys():
             line_full[tag] = {
-                "occurence": 1,
+                "count": 1,
                 "sentences": [sentence],
                 "keywords": [keyword],
             }
         else:
-            line_full[tag]["occurence"] += 1
+            line_full[tag]["count"] += 1
             line_full[tag]["sentences"].append(sentence)
             line_full[tag]["keywords"].append(keyword)
 
