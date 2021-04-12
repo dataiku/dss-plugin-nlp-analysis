@@ -22,16 +22,16 @@ class FormatterInstanciator:
 
     TAG_COLUMNS = {
         OutputFormat.ONE_ROW_PER_DOCUMENT.value: {
-            "category": ["tag_keywords", "tag_sentences"],
-            "no_category": ["tag_keywords", "tag_sentences", "tag_list"],
+            "category": ["tag_sentences","tag_keywords"],
+            "no_category": ["tag_list","tag_sentences","tag_keywords"],
         },
         OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value: {
-            "category": ["tag_json_full", "tag_json_categories"],
+            "category": ["tag_json_categories","tag_json_full"],
             "no_category": ["tag_json_full"],
         },
         OutputFormat.ONE_ROW_PER_TAG.value: {
-            "category": ["tag_keyword", "tag_sentence", "tag_category", "tag"],
-            "no_category": ["tag_keyword", "tag_sentence", "tag"],
+            "category": ["tag","tag_category","tag_sentence","tag_keyword"],
+            "no_category": ["tag","tag_sentence","tag_keyword"],
         },
     }
 
