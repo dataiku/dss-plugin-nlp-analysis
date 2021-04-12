@@ -40,11 +40,8 @@ def truncate_text_list(
     return output_text_list
 
 
-def clean_text_df(
-    df: pd.DataFrame, dropna_columns: List[AnyStr] = None
-) -> pd.DataFrame:
+def clean_text_df(df: pd.DataFrame, dropna_columns: List[AnyStr] = None) -> pd.DataFrame:
     """Clean a pandas.DataFrame with text columns to remove empty strings and NaNs values in the dataframe
-
     Args:
         df: Input pandas.DataFrame which should contain only text
         dropna_columns: Optional list of column names where empty strings and NaN should be checked

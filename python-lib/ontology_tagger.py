@@ -29,9 +29,8 @@ class Tagger:
         self.nlp_dict = {}
         self.keyword_to_tag = {}
         # remove rows with missing values
-        self.ontology_df = clean_text_df(self.ontology_df)
-        #self.ontology_df.replace("", float("nan"), inplace=True)
-        #self.ontology_df.dropna(inplace=True)
+        self.ontology_df.replace("", float("nan"), inplace=True)
+        self.ontology_df.dropna(inplace=True)
         if self.ontology_df.empty:
             raise ValueError(
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
