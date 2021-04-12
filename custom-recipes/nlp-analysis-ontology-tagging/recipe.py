@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import dataiku
+from formatter_instanciator import COLUMNS_DESCRIPTION
+from dkulib_io_utils import set_column_descriptions
 from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
 from ontology_tagger import Tagger
 
@@ -37,3 +39,4 @@ output_df = tagger.tag_and_format(
     languages
 )
 settings.output_dataset.write_with_schema(output_df)
+set_column_descriptions(output_dataset=settings.output_dataset,column_descriptions=COLUMNS_DESCRIPTION)
