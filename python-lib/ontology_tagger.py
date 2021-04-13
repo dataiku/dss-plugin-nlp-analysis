@@ -35,6 +35,7 @@ class Tagger:
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
 
+
     def _generate_unique_columns(
         self, text_df: pd.DataFrame, columns: List[AnyStr]
     ) -> List[AnyStr]:

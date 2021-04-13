@@ -122,7 +122,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         unsupported_languages = set(languages) - set(SUPPORTED_LANGUAGES_SPACY.keys())
         if unsupported_languages:
             raise ValueError(
-                f"Founds {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
+                f"Found {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
             )
 
     def _get_column_checks(self, column, input_columns):
