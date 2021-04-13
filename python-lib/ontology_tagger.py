@@ -1,13 +1,14 @@
 """Main module to tag the documents"""
 from spacy_tokenizer import MultilingualTokenizer
+from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
+from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from typing import AnyStr, List
+from typing import AnyStr, List, Union
 import pandas as pd
 from time import perf_counter
 import logging
-from formatter_instanciator import FormatterInstanciator
 
 
 class Tagger:
@@ -34,12 +35,16 @@ class Tagger:
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
 
-    def _generate_unique_columns(self, text_df, columns):
+    def _generate_unique_columns(
+        self, text_df: pd.DataFrame, columns: List[AnyStr]
+    ) -> List[AnyStr]:
         """Generate unique names for the new columns to add"""
         text_df_columns = text_df.columns.tolist()
         return [generate_unique(column, text_df_columns) for column in columns]
 
-    def _split_sentences(self, text_df, text_column, language_column):
+    def _split_sentences(
+        self, text_df: pd.DataFrame, text_column: AnyStr, language_column: AnyStr = None
+    ) -> pd.DataFrame:
         """Split each document into a list of sentences"""
         if self.language == "language_column":
             return text_df.apply(
@@ -52,7 +57,7 @@ class Tagger:
 
     def _list_sentences(self, row: pd.Series, text_column: AnyStr) -> List[AnyStr]:
         """Called if there is only one language specified
-        Applies sentencizer and return list of sentences"""
+        Apply sentencizer and return list of sentences"""
         document = row[text_column]
         if type(document) != str:
             return []
@@ -61,11 +66,11 @@ class Tagger:
         ]
 
     def _list_sentences_multilingual(
-        self, row: pd.Series, text_column: AnyStr, language_column: AnyStr
+        self, row: pd.Series, text_column: AnyStr, language_column: AnyStr = None
     ) -> List[AnyStr]:
         """
         Called if there are multiple languages in the document dataset
-        Applies sentencizer and return list of sentences"""
+        Apply sentencizer and return list of sentences"""
         document = row[text_column]
         if type(document) != str:
             return []
@@ -74,9 +79,11 @@ class Tagger:
             for sentence in self.nlp_dict[row[language_column]](document).sents
         ]
 
-    def _get_patterns(self, list_of_keywords) -> List:
+    def _get_patterns(
+        self, list_of_keywords: List[AnyStr]
+    ) -> Union[List[dict], List[AnyStr]]:
         """
-        Creates the list of patterns :
+        Create the list of patterns :
         - If there aren't category -> list of the keywords (string list)
         - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
         """
@@ -89,7 +96,9 @@ class Tagger:
         else:
             return list_of_keywords
 
-    def _tokenize_keywords(self, language, tags, keywords):
+    def _tokenize_keywords(
+        self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
+    ) -> List[Doc]:
         """
         Fill in the dictionary keyword_to_tag
         The keywords are tokenized depending on the given language
@@ -100,8 +109,8 @@ class Tagger:
         }
         return tokenized_keywords
 
-    def get_formatter_config(self):
-        """Returns a dictionary containing the arguments to pass to the Formatter"""
+    def get_formatter_config(self) -> dict:
+        """Return a dictionary containing the arguments to pass to the Formatter"""
         return {
             "language": self.language,
             "splitted_sentences_column": self.splitted_sentences_column,
@@ -111,9 +120,16 @@ class Tagger:
             "category_column": self.category_column,
         }
 
-    def _match_with_category(self, patterns, list_of_tags, list_of_keywords) -> None:
-        """Tokenizes keywords for every language
-        Instanciates EntityRuler with associated tags and categories"""
+    def _match_with_category(
+        self,
+        patterns: List[dict],
+        list_of_tags: List[AnyStr],
+        list_of_keywords: List[AnyStr],
+    ) -> None:
+        """
+        Tokenize keywords for every language
+        Instanciate EntityRuler with associated tags and categories
+        """
         for language in self.nlp_dict:
             self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.nlp_dict[language].remove_pipe("sentencizer")
@@ -121,7 +137,12 @@ class Tagger:
             ruler.add_patterns(patterns)
 
     def _format_with_category(
-        self, arguments, text_df, text_column, output_format, language_column
+        self,
+        arguments: dict,
+        text_df: pd.DataFrame,
+        text_column: AnyStr,
+        output_format: AnyStr,
+        language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """Instanciate formatter and return the created output dataframe, when there are categories"""
         formatter = FormatterInstanciator().get_formatter(
@@ -130,12 +151,20 @@ class Tagger:
         formatter.tag_columns = self._generate_unique_columns(
             text_df, formatter.tag_columns
         )
-        return formatter.write_df_category(text_df, text_column, language_column)
+        return formatter.write_df_category(
+            input_df=text_df, text_column=text_column, language_column=language_column
+        )
 
-    def _match_no_category(self, patterns, list_of_tags, list_of_keywords) -> None:
+    def _match_no_category(
+        self,
+        patterns: List[AnyStr],
+        list_of_tags: List[AnyStr],
+        list_of_keywords: List[AnyStr],
+    ) -> None:
         """
-        Tokenizes keywords for every language
-        Instanciates PhraseMatcher with associated tags"""
+        Tokenize keywords for every language
+        Instanciate PhraseMatcher with associated tags
+        """
         for language in self.nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.nlp_dict[language].remove_pipe("sentencizer")
@@ -144,7 +173,12 @@ class Tagger:
             self.matcher_dict[language] = matcher
 
     def _format_no_category(
-        self, arguments, text_df, text_column, output_format, language_column
+        self,
+        arguments: dict,
+        text_df: pd.DataFrame,
+        text_column: AnyStr,
+        output_format: AnyStr,
+        language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """Instanciate formatter and return the created output dataframe, when there is no category"""
         formatter = FormatterInstanciator().get_formatter(
@@ -153,16 +187,23 @@ class Tagger:
         formatter.tag_columns = self._generate_unique_columns(
             text_df, formatter.tag_columns
         )
-        return formatter.write_df(text_df, text_column, language_column)
+        return formatter.write_df(
+            input_df=text_df, text_column=text_column, language_column=language_column
+        )
 
     def tag_and_format(
-        self, text_df, text_column, language_column, output_format, languages
+        self,
+        text_df: pd.DataFrame,
+        text_column: AnyStr,
+        output_format: AnyStr,
+        languages: List[AnyStr],
+        language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """
         Public function called in recipe.py
         Uses a spacy pipeline
         -Split sentences by applying sentencizer on documents
-        -Uses the right Matcher depending on the presence of categories
+        -Use the right Matcher depending on the presence of categories
         """
         tokenizer = MultilingualTokenizer(use_models=True, split_sentences=True)
         logging.info(f"Splitting sentences on {len(text_df)} documents...")
@@ -189,12 +230,26 @@ class Tagger:
         formatter_config = self.get_formatter_config()
         logging.info(f"Tagging {len(text_df)} documents...")
         if self.category_column:
-            self._match_with_category(patterns, list_of_tags, list_of_keywords)
-            return self._format_with_category(
-                formatter_config, text_df, text_column, output_format, language_column
+            self._match_with_category(
+                patterns=patterns,
+                list_of_tags=list_of_tags,
+                list_of_keywords=list_of_keywords,
             )
+
+            return self._format_with_category(
+                arguments=formatter_config,
+                text_df=text_df,
+                text_column=text_column,
+                output_format=output_format,
+                language_column=language_column,
+            )
+
         else:
             self._match_no_category(patterns, list_of_tags, list_of_keywords)
             return self._format_no_category(
-                formatter_config, text_df, text_column, output_format, language_column
+                arguments=formatter_config,
+                text_df=text_df,
+                text_column=text_column,
+                output_format=output_format,
+                language_column=language_column,
             )

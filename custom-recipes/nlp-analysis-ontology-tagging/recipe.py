@@ -32,11 +32,11 @@ tagger = Tagger(
 )
 
 output_df = tagger.tag_and_format(
-    text_dataframe,
-    settings.text_column,
-    settings.language_column,
-    settings.output_format,
-    languages,
+    text_df=text_dataframe,
+    text_column=settings.text_column,
+    language_column=settings.language_column,
+    output_format=settings.output_format,
+    languages=languages,
 )
 settings.output_dataset.write_with_schema(output_df)
 set_column_descriptions(

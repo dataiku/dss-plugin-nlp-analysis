@@ -1,20 +1,22 @@
 from enum import Enum
+from typing import AnyStr
 from ontology_tagging_formatting import (
     FormatterByDocumentJson,
     FormatterByDocument,
     FormatterByTag,
 )
 
+# names of all additional columns depending on the output_format
 COLUMNS_DESCRIPTION = {
-    "tag_keywords": "All found keywords",
-    "tag_sentences": "All sentences containing keywords",
-    "tag_json_full": "Full tags informations",
-    "tag_json_categories": "Category <-> tags",
+    "tag_keywords": "Matched keywords",
+    "tag_sentences": "Sentences with keywords",
+    "tag_json_full": "Detailed tag column",
+    "tag_json_categories": "category → tags",
     "tag_list": "List of all found tags",
-    "tag": "Assigned tag",
+    "tag": "Found tag",
     "tag_keyword": "Matched keyword",
-    "tag_sentence": "Sentence containing keyword(s)",
-    "tag_category": "Category of the tag",
+    "tag_sentence": "Sentence with keywords",
+    "tag_category": "Category of tag",
 }
 
 
@@ -47,7 +49,8 @@ class FormatterInstanciator:
         },
     }
 
-    def get_formatter(self, config, format, category):
+    def get_formatter(self, config: dict, format: AnyStr, category: AnyStr):
+        """get the right formatting instance and returns it"""
         formatter = self.INSTANCES[format](**config)
         formatter.tag_columns = self.TAG_COLUMNS[format][category]
         return formatter
