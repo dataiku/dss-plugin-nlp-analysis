@@ -95,7 +95,7 @@ def move_columns_after(
     after_column_position = df.columns.get_loc(after_column) + 1
     first_column_to_move = df.columns.get_loc(columns_to_move[0])
     reordered_columns = (
-        df.columns.tolist()[:after_column_position]
+        df.columns.tolist()[0:after_column_position]
         + columns_to_move
         + df.columns.tolist()[after_column_position:first_column_to_move]
     )

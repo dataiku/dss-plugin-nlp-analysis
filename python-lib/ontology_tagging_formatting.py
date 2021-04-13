@@ -351,8 +351,10 @@ class FormatterByDocument(Formatter):
             line[category].append(tag)
         else:
             line_full[category][tag]["count"] += 1
-            line_full[category][tag]["sentences"].append(sentence)
-            line_full[category][tag]["keywords"].append(keyword)
+            if sentence not in line_full[category][tag]["sentences"]:
+                line_full[category][tag]["sentences"].append(sentence)
+            if keyword not in line_full[category][tag]["keywords"]:
+                line_full[category][tag]["keywords"].append(keyword)
         return line, line_full
 
     def _merge_df_columns_category(
@@ -473,7 +475,9 @@ class FormatterByDocumentJson(FormatterByDocument):
             }
         else:
             line_full[tag]["count"] += 1
-            line_full[tag]["sentences"].append(sentence)
-            line_full[tag]["keywords"].append(keyword)
+            if sentence not in line_full[tag]["sentences"]:
+                line_full[tag]["sentences"].append(sentence)
+            if  keyword not in line_full[tag]["keywords"]:
+                line_full[tag]["keywords"].append(keyword)
 
         return line_full
