@@ -51,11 +51,15 @@ class Formatter:
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
+        input_df = input_df.drop(columns=[self.splitted_sentences_column])
         df = pd.concat(
-            [input_df.drop(columns=[self.splitted_sentences_column]), output_df], axis=1
+            [input_df, output_df], axis=1
         )
         return move_columns_after(
-            df=df, columns_to_move=self.tag_columns, after_column=text_column
+            input_df=input_df,
+            df=df,
+            columns_to_move=self.tag_columns,
+            after_column=text_column,
         )
 
 
@@ -87,11 +91,7 @@ class FormatterByTag(Formatter):
         )
         self.output_df.reset_index(drop=True, inplace=True)
         self.duplicate_df.reset_index(drop=True, inplace=True)
-        return self._set_columns_order(
-            input_df=self.duplicate_df,
-            output_df=self.output_df,
-            text_column=text_column,
-        )
+        return self._set_columns_order(self.duplicate_df, self.output_df, text_column)
 
     def _write_row(self, row: pd.Series, language_column: AnyStr = None) -> None:
         """
@@ -122,7 +122,6 @@ class FormatterByTag(Formatter):
         if not self.contains_match:
             self.output_df = self.output_df.append(empty_row, ignore_index=True)
             self.duplicate_df = self.duplicate_df.append(row)
-            
 
     def _get_tags_in_row(self, matches: List, row: pd.Series, language: AnyStr) -> None:
         """
@@ -164,7 +163,6 @@ class FormatterByTag(Formatter):
                 for keyword in sentence.ents
             ]
             self._update_df(tag_rows, tag_rows, row)
-            
 
     def _update_df(self, match: List, values: List[dict], row: pd.Series) -> None:
         """
@@ -375,7 +373,7 @@ class FormatterByDocument(Formatter):
         )
         self.tag_columns = tag_list_columns + self.tag_columns
         return self._set_columns_order(input_df, output_df_copy, text_column)
-    
+
     def _merge_df_columns(
         self, input_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
@@ -477,7 +475,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             line_full[tag]["count"] += 1
             if sentence not in line_full[tag]["sentences"]:
                 line_full[tag]["sentences"].append(sentence)
-            if  keyword not in line_full[tag]["keywords"]:
+            if keyword not in line_full[tag]["keywords"]:
                 line_full[tag]["keywords"].append(keyword)
 
         return line_full
