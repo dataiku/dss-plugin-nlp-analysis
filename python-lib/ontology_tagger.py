@@ -34,7 +34,7 @@ class Tagger:
             raise ValueError(
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
-    
+
     def _generate_unique_columns(self, text_df, columns):
         """Generate unique names for the new columns to add"""
         text_df_columns = text_df.columns.tolist()
@@ -55,7 +55,8 @@ class Tagger:
         """Called if there is only one language specified
         Applies sentencizer and return list of sentences"""
         document = row[text_column]
-        if type(document) != str: return []
+        if type(document) != str:
+            return []
         return [
             sentence.text for sentence in self.nlp_dict[self.language](document).sents
         ]
@@ -67,12 +68,12 @@ class Tagger:
         Called if there are multiple languages in the document dataset
         Applies sentencizer and return list of sentences"""
         document = row[text_column]
-        if type(document) != str: return []
+        if type(document) != str:
+            return []
         return [
-                sentence.text
-                for sentence in self.nlp_dict[row[language_column]](document).sents
-            ]
-
+            sentence.text
+            for sentence in self.nlp_dict[row[language_column]](document).sents
+        ]
 
     def _get_patterns(self, list_of_keywords) -> List:
         """
@@ -99,7 +100,7 @@ class Tagger:
             keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
         }
         return tokenized_keywords
-    
+
     def get_formatter_config(self):
         """Returns a dictionary containing the arguments to pass to the Formatter"""
         return {
@@ -110,7 +111,7 @@ class Tagger:
             "keyword_to_tag": self.keyword_to_tag,
             "category_column": self.category_column,
         }
-    
+
     def _match_with_category(self, patterns, list_of_tags, list_of_keywords) -> None:
         """Tokenizes keywords for every language
         Instanciates EntityRuler with associated tags and categories"""
@@ -156,7 +157,7 @@ class Tagger:
         return formatter.write_df(text_df, text_column, language_column)
 
     def tag_and_format(
-        self, text_df, text_column, language_column, output_format,languages
+        self, text_df, text_column, language_column, output_format, languages
     ) -> pd.DataFrame:
         """
         Public function called in recipe.py
@@ -164,7 +165,7 @@ class Tagger:
         -Split sentences by applying sentencizer on documents
         -Uses the right Matcher depending on the presence of categories
         """
-        tokenizer = MultilingualTokenizer(use_models=True,split_sentences=True)
+        tokenizer = MultilingualTokenizer(use_models=True, split_sentences=True)
         logging.info(f"Splitting sentences on {len(text_df)} documents...")
         start = perf_counter()
         # creating a dictionary of nlp objects, one per language
