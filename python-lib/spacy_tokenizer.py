@@ -143,6 +143,7 @@ class MultilingualTokenizer:
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
         split_sentences: bool = False,
+        enabled_components: List = [],
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -181,15 +182,19 @@ class MultilingualTokenizer:
                 language == "th"
             ):  # PyThaiNLP requires a "data directory" even if nothing needs to be downloaded
                 os.environ["PYTHAINLP_DATA_DIR"] = mkdtemp()  # dummy temp directory
+                
             if language in SPACY_LANGUAGE_MODELS and self.use_models:
                 nlp = spacy.load(SPACY_LANGUAGE_MODELS[language])
-                nlp.remove_pipe("ner")
             else:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
+                
             if self.split_sentences:
-                nlp.add_pipe("sentencizer")
+                nlp.add_pipe("sentencizer") 
+                
+            if self.enabled_components: #if empty list, keep all pipeline components
+                nlp.select_pipes(enable=self.enabled_components)
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"

@@ -7,6 +7,8 @@ from ontology_tagger import Tagger
 import spacy
 from spacy.matcher import PhraseMatcher
 import pandas as pd
+from language_dict import SUPPORTED_LANGUAGES_SPACY
+from spacy_tokenizer import MultilingualTokenizer
 
 
 def test_list_sentences():
@@ -24,6 +26,7 @@ def test_list_sentences():
     assert isinstance(tagger, Tagger)
     text_df = pd.DataFrame({"text": [float("nan")]})
     text_column = "text"
+    text_df[text_column] = text_df[text_column].fillna("")
     tagger.nlp_dict[tagger.language] = spacy.load("en_core_web_sm")
     text_df["splitted_sentences"] = text_df.apply(
         tagger._list_sentences, args=[text_column], axis=1
@@ -57,7 +60,7 @@ def test_missing_keyword_in_ontology():
     assert len(tagger.matcher_dict[tagger.language]) == 1
 
 
-def test_tokenization():
+def test_keyword_tokenization():
     from ontology_tagger import Tagger
     import spacy
     from spacy.matcher import PhraseMatcher
@@ -90,3 +93,14 @@ def test_tokenization():
     assert len(ruler) == len(tagger.keyword_to_tag["en"])
     for elt in ruler.patterns:
         assert elt["pattern"] in tagger.keyword_to_tag["en"]
+
+
+def test_pipeline_components():
+    tokenizer = MultilingualTokenizer(
+        use_models=True, split_sentences=True, enabled_components=["sentencizer"]
+    )
+    for language in SUPPORTED_LANGUAGES_SPACY:
+        nlp = tokenizer._add_spacy_tokenizer(language)
+    nlp_dict = tokenizer.spacy_nlp_dict
+    for language in nlp_dict:
+        assert nlp_dict[language].pipe_names == ["sentencizer"]

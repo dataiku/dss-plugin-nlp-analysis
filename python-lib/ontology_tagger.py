@@ -35,7 +35,6 @@ class Tagger:
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
 
-
     def _generate_unique_columns(
         self, text_df: pd.DataFrame, columns: List[AnyStr]
     ) -> List[AnyStr]:
@@ -206,17 +205,21 @@ class Tagger:
         -Split sentences by applying sentencizer on documents
         -Use the right Matcher depending on the presence of categories
         """
-        tokenizer = MultilingualTokenizer(use_models=True, split_sentences=True)
-        logging.info(f"Splitting sentences on {len(text_df)} documents...")
-        start = perf_counter()
+        tokenizer = MultilingualTokenizer(
+            use_models=True, split_sentences=True, enabled_components=["sentencizer"]
+        )
         # creating a dictionary of nlp objects, one per language
         for language in languages:
             tokenizer._add_spacy_tokenizer(language)
         self.nlp_dict = tokenizer.spacy_nlp_dict
+        # clean NaN documents before splitting
+        text_df[text_column] = text_df[text_column].fillna("")
         # splitting sentences
         self.splitted_sentences_column = generate_unique(
             "list_sentences", text_df.columns.tolist()
         )
+        logging.info(f"Splitting sentences on {len(text_df)} documents...")
+        start = perf_counter()
         text_df[self.splitted_sentences_column] = self._split_sentences(
             text_df, text_column, language_column
         )
@@ -236,7 +239,6 @@ class Tagger:
                 list_of_tags=list_of_tags,
                 list_of_keywords=list_of_keywords,
             )
-
             return self._format_with_category(
                 arguments=formatter_config,
                 text_df=text_df,
@@ -244,7 +246,6 @@ class Tagger:
                 output_format=output_format,
                 language_column=language_column,
             )
-
         else:
             self._match_no_category(patterns, list_of_tags, list_of_keywords)
             return self._format_no_category(
