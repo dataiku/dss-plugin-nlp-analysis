@@ -363,7 +363,6 @@ class FormatterByDocument(Formatter):
         Insert columns tag_keywords and tag_sentences
         Returns the complete output dataframe after setting the columns in the right order
         """
-        print(self.output_df)
         output_df_copy = self.output_df.copy().add_prefix("tag_list_")
         tag_list_columns = output_df_copy.columns.tolist()
         output_df_copy.insert(
