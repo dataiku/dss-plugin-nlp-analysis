@@ -1,5 +1,4 @@
 """Main module to tag the documents"""
-
 from spacy_tokenizer import MultilingualTokenizer
 from dkulib_io_utils import generate_unique
 from spacy.matcher import PhraseMatcher
@@ -164,7 +163,10 @@ class Tagger:
         -Split sentences by applying sentencizer on documents
         -Uses the right Matcher depending on the presence of categories
         """
-        tokenizer = MultilingualTokenizer(use_models=True,split_sentences=True)
+        tokenizer = MultilingualTokenizer(
+            use_models=True,split_sentences=True,nlp_components_deactivate=["ner"]
+        )
+
         logging.info(f"Splitting sentences on {len(text_df)} documents...")
         start = perf_counter()
         # creating a dictionary of nlp objects, one per language

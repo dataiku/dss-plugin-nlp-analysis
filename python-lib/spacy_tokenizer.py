@@ -143,6 +143,7 @@ class MultilingualTokenizer:
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
         split_sentences: bool = False,
+        nlp_components_deactivate: List = None,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -183,7 +184,9 @@ class MultilingualTokenizer:
                 os.environ["PYTHAINLP_DATA_DIR"] = mkdtemp()  # dummy temp directory
             if language in SPACY_LANGUAGE_MODELS and self.use_models:
                 nlp = spacy.load(SPACY_LANGUAGE_MODELS[language])
-                nlp.remove_pipe("ner")
+                for component in self.nlp_components_deactivate:
+                    if component in nlp.pipe_names:
+                        nlp.remove_pipe(component)
             else:
                 nlp = spacy.blank(
                     language
@@ -265,16 +268,12 @@ class MultilingualTokenizer:
         if language not in SUPPORTED_LANGUAGES_SPACY:
             raise TokenizationError(f"Unsupported language code: '{language}'")
         if language not in self.spacy_nlp_dict:
-            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(
-                language
-            )
+            self.spacy_nlp_dict[language] = self._create_spacy_tokenizer(language)
             added_tokenizer = True
 
         return added_tokenizer
 
-    def tokenize_list(
-        self, text_list: List[AnyStr], language: AnyStr
-    ) -> List[Doc]:
+    def tokenize_list(self, text_list: List[AnyStr], language: AnyStr) -> List[Doc]:
         """Public method to tokenize a list of strings for a given language
 
         This method calls `_add_spacy_tokenizer` in case the requested language has not already been added.
