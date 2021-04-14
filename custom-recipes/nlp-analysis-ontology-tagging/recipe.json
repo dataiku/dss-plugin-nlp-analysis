@@ -354,16 +354,16 @@
             "defaultValue": false
         },
         {
-            "name": "lemmatization",
-            "label": "Lemmatization",
-            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
+            "name": "unicode_normalization",
+            "label": "Normalization",
+            "description": "Add Diacritic removal after NFD normalization",
             "type": "BOOLEAN",
             "defaultValue": false
         },
         {
-            "name": "unicode_normalization",
-            "label": "Unicode normalization",
-            "description": "Apply NFD Unicode normalization before matching",
+            "name": "lemmatization",
+            "label": "Lemmatization",
+            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
             "type": "BOOLEAN",
             "defaultValue": false
         },
@@ -379,15 +379,15 @@
             "selectChoices": [
                 {
                     "value": "one_row_per_tag",
-                    "label": "One row / tag"
+                    "label": "1 row / tag"
                 },
                 {
                     "value": "one_row_per_doc",
-                    "label": "One row / document (list of tags)"
+                    "label": "1 row / document (array column)"
                 },
-                {
+                 {
                     "value": "one_row_per_doc_json",
-                    "label": "One row / document (JSON)"
+                    "label": "1 row / document (nested JSON)"
                 }
             ],
             "defaultValue": "one_row_per_doc"
