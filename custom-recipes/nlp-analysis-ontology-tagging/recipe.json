@@ -354,9 +354,9 @@
             "defaultValue": false
         },
         {
-            "name": "lemmatization",
-            "label": "Lemmatization",
-            "description": "Simplify words to their “lemma” form e.g. going → go, mice → mouse",
+            "name": "unicode_normalization",
+            "label": "Normalization",
+            "description": "Add Diacritic removal after NFD normalization",
             "type": "BOOLEAN",
             "defaultValue": false
         },
