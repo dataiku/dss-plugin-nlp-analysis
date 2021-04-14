@@ -53,8 +53,9 @@ class Formatter:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
         input_df = input_df.drop(columns=[self.splitted_sentences_column])
         df = pd.concat(
-            [input_df, output_df], axis=1
+            [input_df, output_df], axis=1,
         )
+        
         return move_columns_after(
             input_df=input_df,
             df=df,
@@ -89,8 +90,6 @@ class FormatterByTag(Formatter):
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
-        self.output_df.reset_index(drop=True, inplace=True)
-        self.duplicate_df.reset_index(drop=True, inplace=True)
         return self._set_columns_order(self.duplicate_df, self.output_df, text_column)
 
     def _write_row(self, row: pd.Series, language_column: AnyStr = None) -> None:
@@ -120,8 +119,8 @@ class FormatterByTag(Formatter):
         else:
             self._get_tags_in_row_category(document, row, language)
         if not self.contains_match:
-            self.output_df = self.output_df.append(empty_row, ignore_index=True)
-            self.duplicate_df = self.duplicate_df.append(row)
+            self.output_df = self.output_df.append(empty_row,ignore_index=True)
+            self.duplicate_df = self.duplicate_df.append(pd.DataFrame([row]), ignore_index=True)
 
     def _get_tags_in_row(self, matches: List, row: pd.Series, language: AnyStr) -> None:
         """
@@ -172,9 +171,7 @@ class FormatterByTag(Formatter):
         """
         if match:
             self.output_df = self.output_df.append(values, ignore_index=True)
-            self.duplicate_df = self.duplicate_df.append(
-                [row for i in range(len(values))]
-            )
+            self.duplicate_df = self.duplicate_df.append(pd.DataFrame([row for i in range(len(values))]), ignore_index=True)
             self.contains_match = True
 
     def _list_to_dict(self, tag_infos: List[AnyStr]) -> dict:
