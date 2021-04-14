@@ -59,8 +59,6 @@ class Tagger:
         """Called if there is only one language specified
         Apply sentencizer and return list of sentences"""
         document = row[text_column]
-        if type(document) != str:
-            return []
         return [
             sentence.text for sentence in self.nlp_dict[self.language](document).sents
         ]
@@ -72,8 +70,6 @@ class Tagger:
         Called if there are multiple languages in the document dataset
         Apply sentencizer and return list of sentences"""
         document = row[text_column]
-        if type(document) != str:
-            return []
         return [
             sentence.text
             for sentence in self.nlp_dict[row[language_column]](document).sents
