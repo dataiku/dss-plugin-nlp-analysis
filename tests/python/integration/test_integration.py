@@ -5,7 +5,7 @@ PROJECT_KEY = "TESTONTOLOGYTAGGER"
 
 """Each scenario tests the three output formats"""
 
-def test_scenario(user_dss_clients,scenario_id):
+def add_test_scenario(user_dss_clients,scenario_id):
     """run any scenario"""
     dss_scenario.run(
         user_dss_clients,
@@ -16,25 +16,25 @@ def test_scenario(user_dss_clients,scenario_id):
 def test_monolingual_category(user_dss_clients):
     """Plugin parameters: -language: en
     - category_column specified"""
-    test_scenario(user_dss_clients,scenario_id="MONOLINGUALCATEGORY")
+    add_test_scenario(user_dss_clients,"MONOLINGUALCATEGORY")
 
 
 def test_monolingual_no_category(user_dss_clients):
     """Plugin parameters:
     -language: en
     - category_column not specified"""
-    test_scenario(user_dss_clients,scenario_id="MONOLINGUALNOCATEGORY")
+    add_test_scenario(user_dss_clients,"MONOLINGUALNOCATEGORY")
 
 
 def test_multilingual_category(user_dss_clients):
     """Plugin parameters:
     -language: language column with the 58 supported languages in it
     -category_column specified"""
-    test_scenario(user_dss_clients,scenario_id="MULTILINGUALCATEGORY")
+    add_test_scenario(user_dss_clients,"MULTILINGUALCATEGORY")
 
 
 def test_multilingual_no_category(user_dss_clients):
     """Plugin parameters:
     -language: language column with the 58 supported languages in it
     -category_column not specified"""
-    test_scenario(user_dss_clients,scenario_id="MULTILINGUALNOCATEGORY")
+    add_test_scenario(user_dss_clients,scenario_id="MULTILINGUALNOCATEGORY")
