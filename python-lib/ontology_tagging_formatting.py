@@ -52,9 +52,7 @@ class Formatter:
     ) -> pd.DataFrame:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
         input_df = input_df.drop(columns=[self.splitted_sentences_column])
-        df = pd.concat(
-            [input_df, output_df], axis=1
-        )
+        df = pd.concat([input_df, output_df], axis=1)
         return move_columns_after(
             input_df=input_df,
             df=df,
@@ -451,7 +449,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             super()._write_row_category, args=[True, language_column], axis=1
         )
         logging.info(
-            f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
+            f"Tagging {len(input_df)} documents: Done in {perf_counter() - start:.2f} seconds."
         )
         return self._set_columns_order(input_df, self.output_df, text_column)
 

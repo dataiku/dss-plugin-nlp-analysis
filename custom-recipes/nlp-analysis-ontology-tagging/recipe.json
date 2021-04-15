@@ -356,7 +356,7 @@
         {
             "name": "lemmatization",
             "label": "Lemmatization",
-            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
+            "description": "Simplify words to their “lemma” form e.g. going → go, mice → mouse",
             "type": "BOOLEAN",
             "defaultValue": false
         },
