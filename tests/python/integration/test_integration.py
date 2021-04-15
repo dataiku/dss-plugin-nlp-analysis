@@ -37,4 +37,4 @@ def test_multilingual_no_category(user_dss_clients):
     """Plugin parameters:
     -language: language column with the 58 supported languages in it
     -category_column not specified"""
-     test_scenario(user_dss_clients,scenario_id="MULTILINGUALNOCATEGORY")
+    test_scenario(user_dss_clients,scenario_id="MULTILINGUALNOCATEGORY")
