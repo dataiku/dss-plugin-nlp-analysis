@@ -82,24 +82,18 @@ def generate_unique(
 
 
 def move_columns_after(
-    input_df: pd.DataFrame,
+     input_df: pd.DataFrame,
     df: pd.DataFrame,
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
 ) -> pd.DataFrame:
-    """Reorder columns by moving a list of columns after another column
-    Args:
-        df: Input pandas.DataFrame
-        columns_to_move: List of column names to move
-        after_column: Name of the columns to move columns after
-    Returns:
-       pandas.DataFrame with reordered columns
-    """
-    after_column_position = input_df.columns.get_loc(after_column) + 1
-    first_column_to_move = df.columns.get_loc(columns_to_move[0])
+    input_df_columns = input_df.columns.tolist()
+    after_column_position = input_df.columns.get_loc(after_column)  + 1 
     reordered_columns = (
-        input_df.columns.tolist()[0:after_column_position]
+        input_df_columns[:after_column_position]
         + columns_to_move
-        + input_df.columns.tolist()[after_column_position:first_column_to_move]
+        + input_df_columns[after_column_position:]
     )
     return df.reindex(columns=reordered_columns)
+    
+    

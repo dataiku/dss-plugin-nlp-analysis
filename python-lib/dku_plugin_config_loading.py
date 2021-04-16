@@ -5,7 +5,7 @@ from dataiku.customrecipe import (
     get_input_names_for_role,
     get_output_names_for_role,
 )
-from language_dict import SUPPORTED_LANGUAGES_SPACY
+from language_support import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
 
 
@@ -116,6 +116,16 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 },
             ],
         )
+    
+
+    def _check_languages(self, languages):
+        """Checks if the specified languages are supported"""
+        unsupported_languages = set(languages) - set(SUPPORTED_LANGUAGES_SPACY.keys())
+        if unsupported_languages:
+            raise ValueError(
+                f"Found {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
+            )
+        
 
     def _check_languages(self, languages):
         """Checks if the specified languages are supported"""

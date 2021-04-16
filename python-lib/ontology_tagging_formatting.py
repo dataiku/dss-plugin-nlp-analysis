@@ -60,6 +60,20 @@ class Formatter:
             after_column=text_column,
         )
 
+    def _apply_matcher(
+        self, row: pd.Series, language_column: AnyStr
+    ) -> Tuple[AnyStr, List]:
+        """Apply matcher to document in the given row and returns it with the associated language"""
+        language = (
+            row[language_column]
+            if self.language == "language_column"
+            else self.language
+        )
+        document = list(
+            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+        ) 
+        return language, document
+
 
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
@@ -87,8 +101,6 @@ class FormatterByTag(Formatter):
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
-        self.output_df.reset_index(drop=True, inplace=True)
-        self.duplicate_df.reset_index(drop=True, inplace=True)
         return self._set_columns_order(self.duplicate_df, self.output_df, text_column)
 
     def _write_row(self, row: pd.Series, language_column: AnyStr = None) -> None:
@@ -119,7 +131,9 @@ class FormatterByTag(Formatter):
             self._get_tags_in_row_category(document, row, language)
         if not self.contains_match:
             self.output_df = self.output_df.append(empty_row, ignore_index=True)
-            self.duplicate_df = self.duplicate_df.append(row)
+            self.duplicate_df = self.duplicate_df.append(
+                pd.DataFrame([row]), ignore_index=True
+            )
 
     def _get_tags_in_row(self, matches: List, row: pd.Series, language: AnyStr) -> None:
         """
@@ -171,7 +185,7 @@ class FormatterByTag(Formatter):
         if match:
             self.output_df = self.output_df.append(values, ignore_index=True)
             self.duplicate_df = self.duplicate_df.append(
-                [row for i in range(len(values))]
+                pd.DataFrame([row for i in range(len(values))]), ignore_index=True
             )
             self.contains_match = True
 
@@ -284,7 +298,6 @@ class FormatterByDocument(Formatter):
             one_row_per_doc_json: Bool to know if the format is JSON
             language_column: if not None, matcher will apply with the given language of the row
         """
-
         language, document = super()._apply_matcher(row, language_column)
         matched_sentence, keyword_list = [], []
         tag_columns_for_json, line, line_full = (
