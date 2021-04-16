@@ -56,7 +56,7 @@ def test_missing_keyword_in_ontology():
     assert isinstance(tagger.matcher_dict[tagger.language], PhraseMatcher)
     assert len(tagger.matcher_dict[tagger.language]) == 1
 
-
+    
 def test_tokenization():
     from ontology_tagger import Tagger
     import spacy

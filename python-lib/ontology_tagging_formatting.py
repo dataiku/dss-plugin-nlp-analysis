@@ -64,6 +64,20 @@ class Formatter:
             after_column=text_column,
         )
 
+    def _apply_matcher(
+        self, row: pd.Series, language_column: AnyStr
+    ) -> Tuple[AnyStr, List]:
+        """Apply matcher to document in the given row and returns it with the associated language"""
+        language = (
+            row[language_column]
+            if self.language == "language_column"
+            else self.language
+        )
+        document = list(
+            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+        ) 
+        return language, document
+
 
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
@@ -288,7 +302,6 @@ class FormatterByDocument(Formatter):
             one_row_per_doc_json: Bool to know if the format is JSON
             language_column: if not None, matcher will apply with the given language of the row
         """
-
         language, document = super()._apply_matcher(row, language_column)
         matched_sentence, keyword_list = [], []
         tag_columns_for_json, line, line_full = (
