@@ -1,7 +1,7 @@
 """Main module to tag the documents"""
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique
+from plugin_io_utils import generate_unique, get_keyword, get_attr
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -101,7 +101,8 @@ class Tagger:
         """
         tokenized_keywords = list(self.nlp_dict[language].tokenizer.pipe(keywords))
         self.keyword_to_tag[language] = {
-            keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
+            get_keyword(keyword.text, self.case_insensitivity): tag
+            for keyword, tag in zip(tokenized_keywords, tags)
         }
         return tokenized_keywords
 
@@ -114,6 +115,7 @@ class Tagger:
             "matcher_dict": self.matcher_dict,
             "keyword_to_tag": self.keyword_to_tag,
             "category_column": self.category_column,
+            "case_insensitivity": self.case_insensitivity,
         }
 
     def _match_with_category(
@@ -129,7 +131,10 @@ class Tagger:
         for language in self.nlp_dict:
             self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.nlp_dict[language].remove_pipe("sentencizer")
-            ruler = self.nlp_dict[language].add_pipe("entity_ruler")
+            ruler = self.nlp_dict[language].add_pipe(
+                "entity_ruler",
+                config={"phrase_matcher_attr": get_attr(self.case_insensitivity)},
+            )
             ruler.add_patterns(patterns)
 
     def _format_with_category(
@@ -164,7 +169,9 @@ class Tagger:
         for language in self.nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.nlp_dict[language].remove_pipe("sentencizer")
-            matcher = PhraseMatcher(self.nlp_dict[language].vocab)
+            matcher = PhraseMatcher(
+                self.nlp_dict[language].vocab, attr=get_attr(self.case_insensitivity)
+            )
             matcher.add("PatternList", patterns)
             self.matcher_dict[language] = matcher
 
@@ -184,7 +191,9 @@ class Tagger:
             text_df, formatter.tag_columns
         )
         return formatter.write_df(
-            input_df=text_df, text_column=text_column, language_column=language_column
+            input_df=text_df,
+            text_column=text_column,
+            language_column=language_column,
         )
 
     def tag_and_format(

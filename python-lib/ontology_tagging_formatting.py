@@ -11,7 +11,7 @@ import numpy as np
 from time import perf_counter
 import logging
 import json
-from plugin_io_utils import move_columns_after, unique_list
+from plugin_io_utils import move_columns_after, unique_list, get_keyword
 
 
 class Formatter:
@@ -23,6 +23,7 @@ class Formatter:
         matcher_dict: dict,
         keyword_to_tag: dict,
         category_column: AnyStr,
+        case_insensitivity: bool,
     ):
         store_attr()
         self.output_df = pd.DataFrame()
@@ -71,7 +72,7 @@ class Formatter:
         )
         document = list(
             self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
-        ) 
+        )
         return language, document
 
 
@@ -145,7 +146,9 @@ class FormatterByTag(Formatter):
             values = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][keyword.text],
+                        self.keyword_to_tag[language][
+                            get_keyword(keyword.text, self.case_insensitivity)
+                        ],
                         sentence.text,
                         keyword.text,
                     ]
@@ -166,7 +169,9 @@ class FormatterByTag(Formatter):
             tag_rows = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][keyword.text],
+                        self.keyword_to_tag[language][
+                            get_keyword(keyword.text, self.case_insensitivity)
+                        ],
                         keyword.label_,
                         sentence.text,
                         keyword.text,
@@ -267,7 +272,9 @@ class FormatterByDocument(Formatter):
         matches = self.matcher_dict[language](sentence, as_spans=True)
         for match in matches:
             keyword = match.text
-            tag = self.keyword_to_tag[language][keyword]
+            tag = self.keyword_to_tag[language][
+                get_keyword(keyword, self.case_insensitivity)
+            ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
             matched_sentences.append(sentence.text + " ")
@@ -347,7 +354,9 @@ class FormatterByDocument(Formatter):
             line, line_full
         """
         keyword = match.text
-        tag = self.keyword_to_tag[language][keyword]
+        tag = self.keyword_to_tag[language][
+            get_keyword(keyword, self.case_insensitivity)
+        ]
         category = match.label_
         sentence = sentence.text
         if tag not in line_full[category]:
@@ -474,7 +483,9 @@ class FormatterByDocumentJson(FormatterByDocument):
         Return a dictionary containing precisions about each tag
         """
         keyword = match.text
-        tag = self.keyword_to_tag[language][keyword]
+        tag = self.keyword_to_tag[language][
+            get_keyword(keyword, self.case_insensitivity)
+        ]
         sentence = sentence.text
         if tag not in line_full.keys():
             line_full[tag] = {

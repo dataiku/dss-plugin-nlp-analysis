@@ -7,6 +7,7 @@ from typing import List, AnyStr, Union, Callable
 from time import perf_counter
 import pandas as pd
 import numpy as np
+from spacy.tokens import Span
 
 
 def unique_list(sequence: List) -> List:
@@ -82,18 +83,26 @@ def generate_unique(
 
 
 def move_columns_after(
-     input_df: pd.DataFrame,
+    input_df: pd.DataFrame,
     df: pd.DataFrame,
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
 ) -> pd.DataFrame:
     input_df_columns = input_df.columns.tolist()
-    after_column_position = input_df.columns.get_loc(after_column)  + 1 
+    after_column_position = input_df.columns.get_loc(after_column) + 1
     reordered_columns = (
         input_df_columns[:after_column_position]
         + columns_to_move
         + input_df_columns[after_column_position:]
     )
     return df.reindex(columns=reordered_columns)
-    
-    
+
+
+def get_attr(case_insensitive):
+    """return spaCy case-sensitivity attribute"""
+    return "LOWER" if case_insensitive else "ORTH"
+
+
+def get_keyword(keyword, case_insensitive):
+    """return word in its wanted-case form"""
+    return keyword.lower() if case_insensitive else keyword
