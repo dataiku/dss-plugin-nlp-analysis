@@ -7,7 +7,7 @@ from ontology_tagger import Tagger
 import spacy
 from spacy.matcher import PhraseMatcher
 import pandas as pd
-from language_dict import SUPPORTED_LANGUAGES_SPACY
+from language_support import SUPPORTED_LANGUAGES_SPACY
 from spacy_tokenizer import MultilingualTokenizer
 
 
