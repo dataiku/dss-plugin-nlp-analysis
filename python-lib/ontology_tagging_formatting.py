@@ -43,11 +43,19 @@ class Formatter:
             if self.language == "language_column"
             else self.language
         )
-        document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
-        )
-        return language, document
-
+        if self.case_insensitivity:
+            document_in_input = row[self.splitted_sentences_column]
+            document_lower = list(self.nlp_dict[language].pipe([doc.lower() for doc in row[self.splitted_sentences_column]]))
+            document_to_match = list(
+                self.nlp_dict[language].pipe([ sentence.lower() for sentence in document_in_input]) 
+            )
+        else:
+            document_to_match = list(
+                self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+            )
+            document_in_input = document_to_match
+        return language, document_in_input, document_to_match
+          
     def _set_columns_order(
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
@@ -60,20 +68,6 @@ class Formatter:
             columns_to_move=self.tag_columns,
             after_column=text_column,
         )
-
-    def _apply_matcher(
-        self, row: pd.Series, language_column: AnyStr
-    ) -> Tuple[AnyStr, List]:
-        """Apply matcher to document in the given row and returns it with the associated language"""
-        language = (
-            row[language_column]
-            if self.language == "language_column"
-            else self.language
-        )
-        document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
-        )
-        return language, document
 
 
 class FormatterByTag(Formatter):
@@ -116,16 +110,18 @@ class FormatterByTag(Formatter):
             language_column: if not None, matcher will apply with the given language of the row
         """
         self.contains_match = False
-        language, document = super()._apply_matcher(row, language_column)
+        language, document_in_input, document_to_match = super()._apply_matcher(
+            row, language_column
+        )
         matches = []
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
             matches = [
                 (
-                    self.matcher_dict[language](sentence, as_spans=True),
-                    sentence,
+                    self.matcher_dict[language](document_to_match[i], as_spans=True),
+                    document_in_input[i],
                 )
-                for sentence in document
+                for i in range(0, len(document_to_match))
             ]
             self._get_tags_in_row(matches, row, language)
         else:
@@ -149,7 +145,7 @@ class FormatterByTag(Formatter):
                         self.keyword_to_tag[language][
                             get_keyword(keyword.text, self.case_insensitivity)
                         ],
-                        sentence.text,
+                        sentence,
                         keyword.text,
                     ]
                 )

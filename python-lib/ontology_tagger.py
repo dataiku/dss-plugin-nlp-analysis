@@ -99,6 +99,9 @@ class Tagger:
         Fill in the dictionary keyword_to_tag
         The keywords are tokenized depending on the given language
         """
+        keywords = [
+            get_keyword(keyword,self.case_insensitivity) for keyword in keywords
+        ]
         tokenized_keywords = list(self.nlp_dict[language].tokenizer.pipe(keywords))
         self.keyword_to_tag[language] = {
             get_keyword(keyword.text, self.case_insensitivity): tag
@@ -169,9 +172,7 @@ class Tagger:
         for language in self.nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.nlp_dict[language].remove_pipe("sentencizer")
-            matcher = PhraseMatcher(
-                self.nlp_dict[language].vocab, attr=get_attr(self.case_insensitivity)
-            )
+            matcher = PhraseMatcher(self.nlp_dict[language].vocab, attr="TEXT")
             matcher.add("PatternList", patterns)
             self.matcher_dict[language] = matcher
 
@@ -195,7 +196,7 @@ class Tagger:
             text_column=text_column,
             language_column=language_column,
         )
-
+    
     def tag_and_format(
         self,
         text_df: pd.DataFrame,
