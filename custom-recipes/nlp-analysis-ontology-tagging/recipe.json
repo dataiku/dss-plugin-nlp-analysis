@@ -8,7 +8,7 @@
     "inputRoles": [
         {
             "name": "document_dataset",
-            "label": "Document dataset",
+            "label": "Text dataset",
             "description": "Dataset with a column containing the text documents to tag",
             "arity": "UNARY",
             "required": true,
@@ -343,7 +343,7 @@
         },
         {
             "name": "separator_matching_parameters",
-            "label": "Matching Parameters",
+            "label": "Matching parameters",
             "type": "SEPARATOR"
         },
         {
@@ -362,8 +362,8 @@
         },
         {
             "name": "lemmatization",
-            "label": "Lemmatize",
-            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
+            "label": "Lemmatization",
+            "description": "Simplify words to their “lemma” form e.g. going → go, mice → mouse",
             "type": "BOOLEAN",
             "defaultValue": false
         },
