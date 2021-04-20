@@ -348,7 +348,7 @@
         },
         {
             "name": "case_insensitivity",
-            "label": "Case-insensitivity",
+            "label": "Normalize case",
             "description": "Match keywords whichever the case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue": false
