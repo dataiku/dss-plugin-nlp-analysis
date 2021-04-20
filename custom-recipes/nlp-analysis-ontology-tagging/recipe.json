@@ -356,7 +356,7 @@
         {
             "name": "unicode_normalization",
             "label": "Normalization",
-            "description": "Add Diacritic removal after NFD normalization",
+            "description": "Normalize diacritic marks e.g., accents, cedillas, tildes",
             "type": "BOOLEAN",
             "defaultValue": false
         },
