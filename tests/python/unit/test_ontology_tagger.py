@@ -25,11 +25,11 @@ def test_list_sentences():
         normalization=None,
     )
     text_df = pd.DataFrame({"text": [float("nan")]})
-    tagger._create_pipelines([language])
+    tagger._create_pipelines([tagger.language])
     text_df = tagger._add_column_of_splitted_sentences(
         text_df=text_df, text_column="text", language_column=None
     )
-    assert text_df["splitted_sentences"].iloc[0] == []
+    assert text_df[tagger.splitted_sentences_column].iloc[0] == []
 
 
 def test_missing_keyword_in_ontology():
