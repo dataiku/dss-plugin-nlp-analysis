@@ -10,6 +10,7 @@ from language_support import SUPPORTED_LANGUAGES_SPACY
 
 
 def test_list_sentences():
+    """Test behavior with NaN value in the text column"""
     ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
     tagger = Tagger(
         ontology_df=ontology_df,
@@ -22,8 +23,8 @@ def test_list_sentences():
         normalization=None,
     )
     text_df = pd.DataFrame({"text": [float("nan")]})
-    tagger._create_pipelines([tagger.language])
-    text_df = tagger._add_column_of_splitted_sentences(
+    tagger._initialize_tokenizer([tagger.language])
+    text_df = tagger._split_sentences_df(
         text_df=text_df, text_column="text", language_column=None
     )
     assert text_df[tagger.splitted_sentences_column].iloc[0] == []
@@ -43,7 +44,7 @@ def test_missing_keyword_in_ontology():
         case_insensitivity=None,
         normalization=None,
     )
-    tagger._create_pipelines([tagger.language])
+    tagger._initialize_tokenizer([tagger.language])
     keywords = ontology_df["keyword"].values.tolist()
     tags = ontology_df["tag"].values.tolist()
     patterns = tagger._get_patterns(keywords)
@@ -72,7 +73,7 @@ def test_keyword_tokenization():
     tags = ontology_df["tag"].values.tolist()
     keywords = ontology_df["keyword"].values.tolist()
     patterns = tagger._get_patterns(keywords)
-    tagger._create_pipelines([tagger.language])
+    tagger._initialize_tokenizer([tagger.language])
     tagger._match_with_category(patterns, tags, keywords)
     ruler = tagger.nlp_dict[tagger.language].get_pipe("entity_ruler")
     for elt in ruler.patterns:
@@ -91,6 +92,6 @@ def test_pipeline_components():
         case_insensitivity=None,
         normalization=None,
     )
-    tagger._create_pipelines(SUPPORTED_LANGUAGES_SPACY.keys())
+    tagger._initialize_tokenizer(SUPPORTED_LANGUAGES_SPACY.keys())
     for language in tagger.nlp_dict:
         assert tagger.nlp_dict[language].pipe_names == ["sentencizer"]

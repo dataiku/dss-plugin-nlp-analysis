@@ -187,7 +187,8 @@ class Tagger:
             input_df=text_df, text_column=text_column, language_column=language_column
         )
 
-    def _create_pipelines(self, languages: List[AnyStr]) -> None:
+    def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
+        """Call MultilingualTokenizer to initialize one tokenizer per language"""
         tokenizer = MultilingualTokenizer(
             use_models=True,
             add_pipe_components=["sentencizer"],
@@ -198,9 +199,10 @@ class Tagger:
             tokenizer._add_spacy_tokenizer(language)
         self.nlp_dict = tokenizer.spacy_nlp_dict
 
-    def _add_column_of_splitted_sentences(
+    def _split_sentences_df(
         self, text_df: pd.DataFrame, text_column: AnyStr, language_column: AnyStr
-    ):
+    ) -> pd.DataFrame:
+        """Append a new column to a dataframe, with documents as lists of sentences"""
         # clean NaN documents before splitting
         text_df = replace_nan_values(df=text_df, columns_to_clean=[text_column])
         # generate a unique name for the column
@@ -232,10 +234,8 @@ class Tagger:
         -Split sentences by applying sentencizer on documents
         -Use the right Matcher depending on the presence of categories
         """
-        self._create_pipelines(languages)
-        text_df = self._add_column_of_splitted_sentences(
-            text_df, text_column, language_column
-        )
+        self._initialize_tokenizer(languages)
+        text_df = self._split_sentences_df(text_df, text_column, language_column)
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         # patterns to add to Phrase Matcher/Entity Ruler pipe

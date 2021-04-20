@@ -60,20 +60,6 @@ class Formatter:
             after_column=text_column,
         )
 
-    def _apply_matcher(
-        self, row: pd.Series, language_column: AnyStr
-    ) -> Tuple[AnyStr, List]:
-        """Apply matcher to document in the given row and returns it with the associated language"""
-        language = (
-            row[language_column]
-            if self.language == "language_column"
-            else self.language
-        )
-        document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
-        ) 
-        return language, document
-
 
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):

@@ -162,6 +162,10 @@ class MultilingualTokenizer:
         store_attr()
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
+        if self.enable_pipe_components and self.disable_pipe_components:
+            raise ValueError(
+                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or component to disable at the same time."
+            )
 
     def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
