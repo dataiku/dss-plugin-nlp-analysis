@@ -355,7 +355,7 @@
         },
         {
             "name": "unicode_normalization",
-            "label": "Normalization",
+            "label": "Normalize diacritics",
             "description": "Normalize diacritic marks e.g., accents, cedillas, tildes",
             "type": "BOOLEAN",
             "defaultValue": false
