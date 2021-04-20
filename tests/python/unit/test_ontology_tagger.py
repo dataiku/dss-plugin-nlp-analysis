@@ -31,6 +31,7 @@ def test_list_sentences():
 
 
 def test_missing_keyword_in_ontology():
+    """Test behavior with Nan/empty strings values in ontology"""
     ontology_df = pd.DataFrame(
         {"tag": ["tag1", "tag2", "tag3"], "keyword": [float("nan"), "keyword2", ""]}
     )
@@ -53,6 +54,7 @@ def test_missing_keyword_in_ontology():
 
 
 def test_keyword_tokenization():
+    """Test equality between matched keywords and keywords in keyword_to_tag dictionary"""
     ontology_df = pd.DataFrame(
         {
             "tag": ["tag1", "tag2", "tag3", "tag4"],
@@ -81,6 +83,7 @@ def test_keyword_tokenization():
 
 
 def test_pipeline_components():
+    """Test content of each tokenizer"""
     ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
     tagger = Tagger(
         ontology_df=ontology_df,
