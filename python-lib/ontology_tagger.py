@@ -1,7 +1,7 @@
 """Main module to tag the documents"""
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique
+from plugin_io_utils import generate_unique, replace_nan_values
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -202,7 +202,7 @@ class Tagger:
         self, text_df: pd.DataFrame, text_column: AnyStr, language_column: AnyStr
     ):
         # clean NaN documents before splitting
-        text_df[text_column] = text_df[text_column].fillna("")
+        text_df = replace_nan_values(df=text_df, columns_to_clean=[text_column])
         # generate a unique name for the column
         self.splitted_sentences_column = generate_unique(
             "list_sentences", text_df.columns.tolist()
