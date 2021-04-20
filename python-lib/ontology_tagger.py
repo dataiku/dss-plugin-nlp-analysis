@@ -187,6 +187,37 @@ class Tagger:
             input_df=text_df, text_column=text_column, language_column=language_column
         )
 
+    def _create_pipelines(self, languages: List[AnyStr]) -> None:
+        tokenizer = MultilingualTokenizer(
+            use_models=True,
+            split_sentences=True,
+            enabled_components_only=["sentencizer"],
+        )
+        # create a dictionary of nlp objects, one per language
+        for language in languages:
+            tokenizer._add_spacy_tokenizer(language)
+        self.nlp_dict = tokenizer.spacy_nlp_dict
+
+    def _add_column_of_splitted_sentences(
+        self, text_df: pd.DataFrame, text_column: AnyStr, language_column: AnyStr
+    ):
+        # clean NaN documents before splitting
+        text_df[text_column] = text_df[text_column].fillna("")
+        # generate a unique name for the column
+        self.splitted_sentences_column = generate_unique(
+            "list_sentences", text_df.columns.tolist()
+        )
+        logging.info(f"Splitting sentences on {len(text_df)} documents...")
+        start = perf_counter()
+        # split sentences with spacy sentencizer
+        text_df[self.splitted_sentences_column] = self._split_sentences(
+            text_df, text_column, language_column
+        )
+        logging.info(
+            f"Splitting sentences on {len(text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
+        )
+        return text_df
+
     def tag_and_format(
         self,
         text_df: pd.DataFrame,
@@ -201,40 +232,19 @@ class Tagger:
         -Split sentences by applying sentencizer on documents
         -Use the right Matcher depending on the presence of categories
         """
-        tokenizer = MultilingualTokenizer(
-            use_models=True, split_sentences=True, enabled_components=["sentencizer"]
-        )
-        # creating a dictionary of nlp objects, one per language
-        for language in languages:
-            tokenizer._add_spacy_tokenizer(language)
-        self.nlp_dict = tokenizer.spacy_nlp_dict
-        # clean NaN documents before splitting
-        text_df[text_column] = text_df[text_column].fillna("")
-        # splitting sentences
-        self.splitted_sentences_column = generate_unique(
-            "list_sentences", text_df.columns.tolist()
-        )
-        logging.info(f"Splitting sentences on {len(text_df)} documents...")
-        start = perf_counter()
-        text_df[self.splitted_sentences_column] = self._split_sentences(
+        self._create_pipelines(languages)
+        text_df = self._add_column_of_splitted_sentences(
             text_df, text_column, language_column
         )
-        logging.info(
-            f"Splitting sentences on {len(text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
-        )
-        # matching and formatting
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         # patterns to add to Phrase Matcher/Entity Ruler pipe
         patterns = self._get_patterns(list_of_keywords)
         formatter_config = self.get_formatter_config()
         logging.info(f"Tagging {len(text_df)} documents...")
+        # matching and formatting
         if self.category_column:
-            self._match_with_category(
-                patterns=patterns,
-                list_of_tags=list_of_tags,
-                list_of_keywords=list_of_keywords,
-            )
+            self._match_with_category(patterns, list_of_tags, list_of_keywords)
             return self._format_with_category(
                 arguments=formatter_config,
                 text_df=text_df,
