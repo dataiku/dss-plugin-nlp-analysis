@@ -190,8 +190,8 @@ class Tagger:
     def _create_pipelines(self, languages: List[AnyStr]) -> None:
         tokenizer = MultilingualTokenizer(
             use_models=True,
-            split_sentences=True,
-            enabled_components_only=["sentencizer"],
+            add_pipe_components=["sentencizer"],
+            enable_pipe_components="sentencizer",
         )
         # create a dictionary of nlp objects, one per language
         for language in languages:

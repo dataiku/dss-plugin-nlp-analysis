@@ -4,12 +4,9 @@
 # see https://docs.pytest.org for more information
 
 from ontology_tagger import Tagger
-import spacy
 from spacy.matcher import PhraseMatcher
 import pandas as pd
 from language_support import SUPPORTED_LANGUAGES_SPACY
-from spacy_tokenizer import MultilingualTokenizer
-from plugin_io_utils import replace_nan_values
 
 
 def test_list_sentences():
@@ -55,11 +52,6 @@ def test_missing_keyword_in_ontology():
 
 
 def test_keyword_tokenization():
-    from ontology_tagger import Tagger
-    import spacy
-    from spacy.matcher import PhraseMatcher
-    import pandas as pd
-
     ontology_df = pd.DataFrame(
         {
             "tag": ["tag1", "tag2", "tag3", "tag4"],

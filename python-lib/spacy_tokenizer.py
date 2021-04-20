@@ -4,7 +4,7 @@
 import regex as re
 import os
 import logging
-from typing import List, AnyStr
+from typing import List, AnyStr, Union
 from time import perf_counter
 from tempfile import mkdtemp
 
@@ -142,8 +142,9 @@ class MultilingualTokenizer:
         use_models: bool = False,
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
-        split_sentences: bool = False,
-        enabled_components_only: List = [],
+        add_pipe_components: List[str] = [],
+        disable_pipe_components: Union[List[str], str] = [],
+        enable_pipe_components: Union[List[str], str] = [],
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -188,12 +189,13 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
-            if self.split_sentences:
-                nlp.add_pipe("sentencizer")
-            if (
-                self.enabled_components_only
-            ):  # if empty list, keep all pipeline components
-                nlp.select_pipes(enable=self.enabled_components_only)
+            for component in self.add_pipe_components:
+                nlp.add_pipe(component)
+            nlp.select_pipes(
+                enable=self.enable_pipe_components
+            ) if self.enable_pipe_components else nlp.select_pipes(
+                disable=self.disable_pipe_components
+            )
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
