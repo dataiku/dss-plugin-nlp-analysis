@@ -349,7 +349,7 @@
         {
             "name": "case_insensitivity",
             "label": "Case-insensitivity",
-            "description": "Match keywords whatever the case (upper or lower)",
+            "description": "Match keywords whichever the case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue": false
         },
