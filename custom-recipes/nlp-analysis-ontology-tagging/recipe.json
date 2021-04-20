@@ -57,7 +57,7 @@
             "selectChoices": [
                 {
                     "value": "language_column",
-                    "label": "Language column"
+                    "label": "Multilingual"
                 },
                 {
                     "value": "af",
