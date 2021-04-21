@@ -12,14 +12,14 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list
-
+from spacy_tokenizer import MultilingualTokenizer
 
 class Formatter:
     def __init__(
         self,
         language: AnyStr,
         splitted_sentences_column: AnyStr,
-        nlp_dict: dict,
+        tokenizer: MultilingualTokenizer,
         matcher_dict: dict,
         keyword_to_tag: dict,
         category_column: AnyStr,
@@ -43,7 +43,9 @@ class Formatter:
             else self.language
         )
         document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+            self.tokenizer.spacy_nlp_dict[language].pipe(
+                row[self.splitted_sentences_column]
+            )
         )
         return language, document
 
@@ -52,11 +54,7 @@ class Formatter:
     ) -> pd.DataFrame:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
         input_df = input_df.drop(columns=[self.splitted_sentences_column])
-        df = pd.concat(
-            [input_df, output_df],
-            axis=1,
-        )
-
+        df = pd.concat([input_df, output_df], axis=1)
         return move_columns_after(
             input_df=input_df,
             df=df,
@@ -64,21 +62,7 @@ class Formatter:
             after_column=text_column,
         )
 
-    def _apply_matcher(
-        self, row: pd.Series, language_column: AnyStr
-    ) -> Tuple[AnyStr, List]:
-        """Apply matcher to document in the given row and returns it with the associated language"""
-        language = (
-            row[language_column]
-            if self.language == "language_column"
-            else self.language
-        )
-        document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
-        ) 
-        return language, document
-
-
+    
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByTag, self).__init__(*args, **kwargs)

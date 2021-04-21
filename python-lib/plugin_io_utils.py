@@ -82,18 +82,23 @@ def generate_unique(
 
 
 def move_columns_after(
-     input_df: pd.DataFrame,
+    input_df: pd.DataFrame,
     df: pd.DataFrame,
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
 ) -> pd.DataFrame:
     input_df_columns = input_df.columns.tolist()
-    after_column_position = input_df.columns.get_loc(after_column)  + 1 
+    after_column_position = input_df.columns.get_loc(after_column) + 1
     reordered_columns = (
         input_df_columns[:after_column_position]
         + columns_to_move
         + input_df_columns[after_column_position:]
     )
     return df.reindex(columns=reordered_columns)
-    
-    
+
+
+def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
+    """"Clean a pandas.DataFrame to replace NaNs values by empty strings in the columns_to_clean columns of the dataframe"""
+    for column in columns_to_clean:
+        df[column] = df[column].fillna("")
+    return df

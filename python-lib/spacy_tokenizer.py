@@ -4,7 +4,7 @@
 import regex as re
 import os
 import logging
-from typing import List, AnyStr
+from typing import List, AnyStr, Union
 from time import perf_counter
 from tempfile import mkdtemp
 
@@ -142,7 +142,9 @@ class MultilingualTokenizer:
         use_models: bool = False,
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
-        split_sentences: bool = False,
+        add_pipe_components: List[str] = [],
+        enable_pipe_components: Union[List[str], str] = None,
+        disable_pipe_components: Union[List[str], str] = None,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -160,6 +162,10 @@ class MultilingualTokenizer:
         store_attr()
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
+        if self.enable_pipe_components and self.disable_pipe_components:
+            raise ValueError(
+                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
+            )
 
     def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
@@ -183,13 +189,17 @@ class MultilingualTokenizer:
                 os.environ["PYTHAINLP_DATA_DIR"] = mkdtemp()  # dummy temp directory
             if language in SPACY_LANGUAGE_MODELS and self.use_models:
                 nlp = spacy.load(SPACY_LANGUAGE_MODELS[language])
-                nlp.remove_pipe("ner")
             else:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
-            if self.split_sentences:
-                nlp.add_pipe("sentencizer")
+            for component in self.add_pipe_components:
+                nlp.add_pipe(component)
+            if self.enable_pipe_components:
+                nlp.select_pipes(enable=self.enable_pipe_components)
+            if self.disable_pipe_components:
+                nlp.select_pipes(disable=self.disable_pipe_components)
+
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
