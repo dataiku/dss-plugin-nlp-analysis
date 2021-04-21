@@ -168,6 +168,10 @@
                     "label": "Italian"
                 },
                 {
+                    "value": "ja",
+                    "label": "Japanese"
+                },
+                {
                     "value": "kn",
                     "label": "Kannada"
                 },
