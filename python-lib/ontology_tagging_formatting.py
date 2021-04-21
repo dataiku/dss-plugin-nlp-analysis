@@ -12,6 +12,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list, get_keyword
+from spacy_tokenizer import MultilingualTokenizer
 
 
 class Formatter:
@@ -19,7 +20,7 @@ class Formatter:
         self,
         language: AnyStr,
         splitted_sentences_column: AnyStr,
-        nlp_dict: dict,
+        tokenizer: MultilingualTokenizer,
         matcher_dict: dict,
         keyword_to_tag: dict,
         category_column: AnyStr,
@@ -45,17 +46,25 @@ class Formatter:
         )
         if self.case_insensitivity:
             document_in_input = row[self.splitted_sentences_column]
-            document_lower = list(self.nlp_dict[language].pipe([doc.lower() for doc in row[self.splitted_sentences_column]]))
+            document_lower = list(
+                self.tokenizer.spacy_nlp_dict[language].pipe(
+                    [doc.lower() for doc in row[self.splitted_sentences_column]]
+                )
+            )
             document_to_match = list(
-                self.nlp_dict[language].pipe([ sentence.lower() for sentence in document_in_input]) 
+                self.tokenizer.spacy_nlp_dict[language].pipe(
+                    [sentence.lower() for sentence in document_in_input]
+                )
             )
         else:
             document_to_match = list(
-                self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+                self.tokenizer.spacy_nlp_dict[language].pipe(
+                    row[self.splitted_sentences_column]
+                )
             )
             document_in_input = document_to_match
         return language, document_in_input, document_to_match
-          
+
     def _set_columns_order(
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:

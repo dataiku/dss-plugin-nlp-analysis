@@ -8,7 +8,7 @@
     "inputRoles": [
         {
             "name": "document_dataset",
-            "label": "Document dataset",
+            "label": "Text dataset",
             "description": "Dataset with a column containing the text documents to tag",
             "arity": "UNARY",
             "required": true,
@@ -57,7 +57,7 @@
             "selectChoices": [
                 {
                     "value": "language_column",
-                    "label": "Language column"
+                    "label": "Multilingual"
                 },
                 {
                     "value": "af",
@@ -343,27 +343,27 @@
         },
         {
             "name": "separator_matching_parameters",
-            "label": "Matching Parameters",
+            "label": "Matching parameters",
             "type": "SEPARATOR"
         },
         {
             "name": "case_insensitivity",
-            "label": "Case-insensitivity",
-            "description": "Match keywords whatever the case (upper or lower)",
+            "label": "Normalize case",
+            "description": "Match keywords whichever the case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue": false
         },
         {
             "name": "unicode_normalization",
-            "label": "Normalization",
-            "description": "Add Diacritic removal after NFD normalization",
+            "label": "Normalize diacritics",
+            "description": "Normalize diacritic marks e.g., accents, cedillas, tildes",
             "type": "BOOLEAN",
             "defaultValue": false
         },
         {
             "name": "lemmatization",
-            "label": "Lemmatization",
-            "description": "Simplify words to their “lemma” form e.g. going -> go, mice -> mouse",
+            "label": "Lemmatize",
+            "description": "Simplify words to their lemma form e.g. going → go, mice → mouse",
             "type": "BOOLEAN",
             "defaultValue": false
         },

@@ -106,3 +106,10 @@ def get_attr(case_insensitive):
 def get_keyword(keyword, case_insensitive):
     """return word in its wanted-case form"""
     return keyword.lower() if case_insensitive else keyword
+
+
+def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
+    """"Clean a pandas.DataFrame to replace NaNs values by empty strings in the columns_to_clean columns of the dataframe"""
+    for column in columns_to_clean:
+        df[column] = df[column].fillna("")
+    return df
