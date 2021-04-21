@@ -69,14 +69,14 @@ Japanese and Korean were excluded for now because of system installation issues
 """
 
 SPACY_LANGUAGE_MODELS = {
-    "en": "en_core_web_sm",   # OntoNotes
+    "en": "en_core_web_sm",  # OntoNotes
     "es": "es_core_news_sm",  # Wikipedia
-    "zh": "zh_core_web_sm",   # OntoNotes
+    "zh": "zh_core_web_sm",  # OntoNotes
     "nb": "nb_core_news_sm",  # NorNE
     "fr": "fr_core_news_sm",  # Wikipedia
     "de": "de_core_news_sm",  # OntoNotes
     "ru": "ru_core_news_sm",  # Nerus
-    "pl": "pl_core_news_sm"   # NKJP
+    "pl": "pl_core_news_sm",  # NKJP
 }
 
 """dict: Mapping between ISO 639-1 language code and spaCy model identifiers
