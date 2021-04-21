@@ -12,14 +12,14 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list
-
+from spacy_tokenizer import MultilingualTokenizer
 
 class Formatter:
     def __init__(
         self,
         language: AnyStr,
         splitted_sentences_column: AnyStr,
-        nlp_dict: dict,
+        tokenizer: MultilingualTokenizer,
         matcher_dict: dict,
         keyword_to_tag: dict,
         category_column: AnyStr,
@@ -43,7 +43,9 @@ class Formatter:
             else self.language
         )
         document = list(
-            self.nlp_dict[language].pipe(row[self.splitted_sentences_column])
+            self.tokenizer.spacy_nlp_dict[language].pipe(
+                row[self.splitted_sentences_column]
+            )
         )
         return language, document
 
@@ -60,7 +62,7 @@ class Formatter:
             after_column=text_column,
         )
 
-
+    
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByTag, self).__init__(*args, **kwargs)

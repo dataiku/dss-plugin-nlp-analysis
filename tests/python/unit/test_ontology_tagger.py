@@ -77,7 +77,7 @@ def test_keyword_tokenization():
     patterns = tagger._get_patterns(keywords)
     tagger._initialize_tokenizer([tagger.language])
     tagger._match_with_category(patterns, tags, keywords)
-    ruler = tagger.nlp_dict[tagger.language].get_pipe("entity_ruler")
+    ruler = tagger.tokenizer.spacy_nlp_dict[tagger.language].get_pipe("entity_ruler")
     for elt in ruler.patterns:
         assert elt["pattern"] in tagger.keyword_to_tag["en"]
 
@@ -96,5 +96,5 @@ def test_pipeline_components():
         normalization=None,
     )
     tagger._initialize_tokenizer(SUPPORTED_LANGUAGES_SPACY.keys())
-    for language in tagger.nlp_dict:
-        assert tagger.nlp_dict[language].pipe_names == ["sentencizer"]
+    for language in tagger.tokenizer.spacy_nlp_dict:
+        assert tagger.tokenizer.spacy_nlp_dict[language].pipe_names == ["sentencizer"]

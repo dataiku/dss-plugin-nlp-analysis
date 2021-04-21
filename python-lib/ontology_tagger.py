@@ -24,10 +24,17 @@ class Tagger:
         normalization: bool,
     ):
         store_attr()
-        self.matcher_dict = {}
-        self.nlp_dict = {}
-        self.keyword_to_tag = {}
-        # remove rows with missing values
+        self._remove_incomplete_rows()
+        self.tokenizer = MultilingualTokenizer(
+            use_models=True,
+            add_pipe_components=["sentencizer"],
+            enable_pipe_components="sentencizer",
+        )
+        self.matcher_dict = {}  # this will be fill in the _match_no_category method
+        self.keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
+
+    def _remove_incomplete_rows(self):
+        """Remove rows with at least one empty value from ontology df"""
         self.ontology_df.replace("", float("nan"), inplace=True)
         self.ontology_df.dropna(inplace=True)
         if self.ontology_df.empty:
@@ -60,7 +67,8 @@ class Tagger:
         Apply sentencizer and return list of sentences"""
         document = row[text_column]
         return [
-            sentence.text for sentence in self.nlp_dict[self.language](document).sents
+            sentence.text
+            for sentence in self.tokenizer.spacy_nlp_dict[self.language](document).sents
         ]
 
     def _list_sentences_multilingual(
@@ -72,7 +80,9 @@ class Tagger:
         document = row[text_column]
         return [
             sentence.text
-            for sentence in self.nlp_dict[row[language_column]](document).sents
+            for sentence in self.tokenizer.spacy_nlp_dict[row[language_column]](
+                document
+            ).sents
         ]
 
     def _get_patterns(
@@ -99,7 +109,9 @@ class Tagger:
         Fill in the dictionary keyword_to_tag
         The keywords are tokenized depending on the given language
         """
-        tokenized_keywords = list(self.nlp_dict[language].tokenizer.pipe(keywords))
+        tokenized_keywords = list(
+            self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
+        )
         self.keyword_to_tag[language] = {
             keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
         }
@@ -110,7 +122,7 @@ class Tagger:
         return {
             "language": self.language,
             "splitted_sentences_column": self.splitted_sentences_column,
-            "nlp_dict": self.nlp_dict,
+            "tokenizer": self.tokenizer,
             "matcher_dict": self.matcher_dict,
             "keyword_to_tag": self.keyword_to_tag,
             "category_column": self.category_column,
@@ -126,10 +138,10 @@ class Tagger:
         Tokenize keywords for every language
         Instanciate EntityRuler with associated tags and categories
         """
-        for language in self.nlp_dict:
+        for language in self.tokenizer.spacy_nlp_dict:
             self._tokenize_keywords(language, list_of_tags, list_of_keywords)
-            self.nlp_dict[language].remove_pipe("sentencizer")
-            ruler = self.nlp_dict[language].add_pipe("entity_ruler")
+            self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
+            ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe("entity_ruler")
             ruler.add_patterns(patterns)
 
     def _format_with_category(
@@ -161,10 +173,10 @@ class Tagger:
         Tokenize keywords for every language
         Instanciate PhraseMatcher with associated tags
         """
-        for language in self.nlp_dict:
+        for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
-            self.nlp_dict[language].remove_pipe("sentencizer")
-            matcher = PhraseMatcher(self.nlp_dict[language].vocab)
+            self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
+            matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
             matcher.add("PatternList", patterns)
             self.matcher_dict[language] = matcher
 
@@ -188,16 +200,9 @@ class Tagger:
         )
 
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
-        """Call MultilingualTokenizer to initialize one tokenizer per language"""
-        tokenizer = MultilingualTokenizer(
-            use_models=True,
-            add_pipe_components=["sentencizer"],
-            enable_pipe_components="sentencizer",
-        )
-        # create a dictionary of nlp objects, one per language
+        """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""
         for language in languages:
-            tokenizer._add_spacy_tokenizer(language)
-        self.nlp_dict = tokenizer.spacy_nlp_dict
+            self.tokenizer._add_spacy_tokenizer(language)
 
     def _split_sentences_df(
         self, text_df: pd.DataFrame, text_column: AnyStr, language_column: AnyStr

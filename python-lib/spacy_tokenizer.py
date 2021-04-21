@@ -143,8 +143,8 @@ class MultilingualTokenizer:
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
         add_pipe_components: List[str] = [],
-        disable_pipe_components: Union[List[str], str] = [],
-        enable_pipe_components: Union[List[str], str] = [],
+        enable_pipe_components: Union[List[str], str] = None,
+        disable_pipe_components: Union[List[str], str] = None,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -164,7 +164,7 @@ class MultilingualTokenizer:
         self.tokenized_column = None  # may be changed by tokenize_df
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
-                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or component to disable at the same time."
+                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
             )
 
     def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
@@ -195,11 +195,11 @@ class MultilingualTokenizer:
                 )  # spaCy language without models (https://spacy.io/usage/models)
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
-            nlp.select_pipes(
-                enable=self.enable_pipe_components
-            ) if self.enable_pipe_components else nlp.select_pipes(
-                disable=self.disable_pipe_components
-            )
+            if self.enable_pipe_components:
+                nlp.select_pipes(enable=self.enable_pipe_components)
+            if self.disable_pipe_components:
+                nlp.select_pipes(disable=self.disable_pipe_components)
+
         except (ValueError, OSError) as e:
             raise TokenizationError(
                 f"SpaCy tokenization not available for language '{language}' because of error: '{e}'"
