@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dataiku.customrecipe import get_recipe_config,get_input_names_for_role, get_output_names_for_role
-from language_dict import SUPPORTED_LANGUAGES_SPACY
+from dataiku.customrecipe import (
+    get_recipe_config,
+    get_input_names_for_role,
+    get_output_names_for_role,
+)
+from language_support import SUPPORTED_LANGUAGES_SPACY
 from dku_config import DkuConfig
 
 
@@ -15,7 +19,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
     """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
-        "case_insensitive",
+        "case_insensitivity",
         "lemmatization",
         "unicode_normalization",
     ]
@@ -112,6 +116,24 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 },
             ],
         )
+    
+
+    def _check_languages(self, languages):
+        """Checks if the specified languages are supported"""
+        unsupported_languages = set(languages) - set(SUPPORTED_LANGUAGES_SPACY.keys())
+        if unsupported_languages:
+            raise ValueError(
+                f"Found {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
+            )
+        
+
+    def _check_languages(self, languages):
+        """Checks if the specified languages are supported"""
+        unsupported_languages = set(languages) - set(SUPPORTED_LANGUAGES_SPACY.keys())
+        if unsupported_languages:
+            raise ValueError(
+                f"Found {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
+            )
 
     def _get_column_checks(self, column, input_columns):
         """Check for mandatory columns parameters"""
@@ -147,14 +169,12 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._ontology_columns_mandatory(
             "keyword_column", "Keyword column", input_columns
         )
-        ontology_columns = [self.dku_config.tag_column,self.dku_config.keyword_column]
+        ontology_columns = [self.dku_config.tag_column, self.dku_config.keyword_column]
         self._add_category_column()
         category_column = self.dku_config.category_column
-        if category_column : 
+        if category_column:
             ontology_columns.append(category_column)
-        self.dku_config.add_param(
-        name="ontology_columns",
-        value=ontology_columns)
+        self.dku_config.add_param(name="ontology_columns", value=ontology_columns)
 
     def _add_category_column(self):
         """Load category column if exists"""
@@ -183,11 +203,13 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             value=output,
             required=True,
         )
-    
+
     def _add_output_dataset(self):
         output_dataset_name = get_output_names_for_role("tagged_documents")[0]
         self.dku_config.add_param(
-            name="output_dataset", value=dataiku.Dataset(output_dataset_name), required=True
+            name="output_dataset",
+            value=dataiku.Dataset(output_dataset_name),
+            required=True,
         )
 
     def load_settings(self):
