@@ -7,7 +7,7 @@ from typing import List, AnyStr, Union, Callable
 from time import perf_counter
 import pandas as pd
 import numpy as np
-from spacy.tokens import Span
+from spacy.tokens import Span, Doc
 
 
 def unique_list(sequence: List) -> List:
@@ -88,6 +88,14 @@ def move_columns_after(
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
 ) -> pd.DataFrame:
+    """Reorder columns by moving a list of columns after another column
+    Args:
+        df: Input pandas.DataFrame
+        columns_to_move: List of column names to move
+        after_column: Name of the columns to move columns after
+    Returns:
+       pandas.DataFrame with reordered columns
+    """
     input_df_columns = input_df.columns.tolist()
     after_column_position = input_df.columns.get_loc(after_column) + 1
     reordered_columns = (
@@ -98,14 +106,19 @@ def move_columns_after(
     return df.reindex(columns=reordered_columns)
 
 
-def get_attr(case_insensitive):
-    """return spaCy case-sensitivity attribute"""
+def get_attr(case_insensitive: bool) -> AnyStr:
+    """Return spaCy case-sensitivity attribute"""
     return "LOWER" if case_insensitive else "ORTH"
 
 
-def get_keyword(keyword, case_insensitive):
-    """return word in its wanted-case form"""
-    return keyword.lower() if case_insensitive else keyword
+def get_keyword(text: AnyStr, case_insensitive: bool) -> AnyStr:
+    """Return text in its wanted-case form"""
+    return text.lower() if case_insensitive else text
+
+
+def get_sentence(span: Span, case_insensitive: bool) -> Union[Span, Doc]:
+    """Return Span object as a Doc if case_insensitive is set to True"""
+    return span if case_insensitive else span.as_doc()
 
 
 def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
