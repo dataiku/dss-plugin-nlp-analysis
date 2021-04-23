@@ -201,6 +201,17 @@ class Tagger:
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
 
+    def _sentence_splitting(self, text_df, text_column, language_column=None):
+        sentence_splitter = SentenceSplitter(
+            text_df=text_df,
+            text_column=text_column,
+            tokenizer=self.tokenizer,
+            case_insensitivity=self.case_insensitivity,
+            language=self.language,
+            language_column=language_column,
+        )
+        return sentence_splitter._split_sentences_df()
+
     def tag_and_format(
         self,
         text_df: pd.DataFrame,
@@ -216,15 +227,9 @@ class Tagger:
         -Use the right Matcher depending on the presence of categories
         """
         self._initialize_tokenizer(languages)
-        sentence_splitter = SentenceSplitter(
-            text_df=text_df,
-            text_column=text_column,
-            tokenizer=self.tokenizer,
-            case_insensitivity=self.case_insensitivity,
-            language=self.language,
-            language_column=language_column,
+        text_df, tokenized_columns = self._sentence_splitting(
+            text_df, text_column, language_column
         )
-        text_df, tokenized_columns = sentence_splitter._split_sentences_df()
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         formatter_config = self.get_formatter_config(tokenized_columns)

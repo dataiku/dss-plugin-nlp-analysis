@@ -24,10 +24,8 @@ def test_list_sentences():
     )
     text_df = pd.DataFrame({"text": [float("nan")]})
     tagger._initialize_tokenizer([tagger.language])
-    text_df = tagger._split_sentences_df(
-        text_df=text_df, text_column="text", language_column=None
-    )
-    assert text_df[tagger.splitted_sentences_column].iloc[0] == []
+    text_df, new_columns = tagger._sentence_splitting(text_df, "text")
+    assert text_df[new_columns[0]].iloc[0] == []
 
 
 def test_missing_keyword_in_ontology():
@@ -48,8 +46,7 @@ def test_missing_keyword_in_ontology():
     tagger._initialize_tokenizer([tagger.language])
     keywords = ontology_df["keyword"].values.tolist()
     tags = ontology_df["tag"].values.tolist()
-    patterns = tagger._get_patterns(keywords)
-    tagger._match_no_category(tagger.language, tags, keywords)
+    tagger._match_no_category(tags, keywords)
     assert len(tagger.matcher_dict[tagger.language]) == 1
 
 
@@ -59,13 +56,12 @@ def test_keyword_tokenization():
         {
             "tag": ["tag1", "tag2", "tag3", "tag4"],
             "keyword": ["keyword", "keyword two", "N.Y", "1.1.1.1"],
-            "category": ["category1", "category2", "category3", "category4"],
         }
     )
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column="tag",
-        category_column="category",
+        category_column=None,
         keyword_column="keyword",
         language="en",
         lemmatization=None,
@@ -74,12 +70,13 @@ def test_keyword_tokenization():
     )
     tags = ontology_df["tag"].values.tolist()
     keywords = ontology_df["keyword"].values.tolist()
-    patterns = tagger._get_patterns(keywords)
     tagger._initialize_tokenizer([tagger.language])
-    tagger._match_with_category(patterns, tags, keywords)
-    ruler = tagger.tokenizer.spacy_nlp_dict[tagger.language].get_pipe("entity_ruler")
-    for elt in ruler.patterns:
-        assert elt["pattern"] in tagger.keyword_to_tag["en"]
+    tagger._match_no_category(tags, keywords)
+    matcher = tagger.matcher_dict[tagger.language]
+    # ruler = tagger.tokenizer.spacy_nlp_dict[tagger.language].get_pipe("entity_ruler")
+    patterns = tagger._tokenize_keywords(tagger.language, tags, keywords)
+    for elt in patterns:
+        assert elt.text in tagger.keyword_to_tag["en"]
 
 
 def test_pipeline_components():
