@@ -6,7 +6,9 @@ from spacy.tokens import Doc
 from fastcore.utils import store_attr
 from plugin_io_utils import replace_nan_values, generate_unique
 
-"""Module to handle sentence splitting with spaCy for multiple languages
+
+class SentenceSplitter:
+    """Module to handle sentence splitting with spaCy for multiple languages
     Attributes:
         tokenizer (dict): MultilingualTokenizer instance which stored a dictionary spacy_nlp_dict of spaCy Language instances by language code (key)
         text_column (str): Name of the dataframe column storing documents to process
@@ -15,9 +17,6 @@ from plugin_io_utils import replace_nan_values, generate_unique
         language_column (str) : Name of the dataframe column storing languages of the document to process. Default to None
         case_sensitivity (bool): Boolean used to know if the text should be resplitted with lowercase text. 
     """
-
-
-class SentenceSplitter:
     def __init__(
         self,
         text_df,
