@@ -43,7 +43,7 @@ class Formatter:
         else:
             return row[self.text_column_tokenized]
 
-    def _columns_to_drop(self) -> None:
+    def _get_columns_to_drop(self) -> None:
         """Return the names of the column(s) to drop from the final output dataset, i.e column(s) of splitted sentences"""
         return (
             [self.text_column_tokenized, self.text_lower_column_tokenized]
