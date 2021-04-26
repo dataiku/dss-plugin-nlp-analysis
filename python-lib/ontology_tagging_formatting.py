@@ -56,7 +56,7 @@ class Formatter:
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
-        input_df = input_df.drop(columns=self._columns_to_drop())
+        input_df = input_df.drop(columns=self._get_columns_to_drop())
         df = pd.concat([input_df, output_df], axis=1)
         return move_columns_after(
             input_df=input_df,
