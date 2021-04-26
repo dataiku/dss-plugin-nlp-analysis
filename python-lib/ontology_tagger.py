@@ -33,6 +33,8 @@ class Tagger:
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
         keyword_to_tag (dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
+            Example : 
+                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"} 
 
     """
 
