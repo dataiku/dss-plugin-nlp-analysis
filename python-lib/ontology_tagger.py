@@ -30,7 +30,7 @@ class Tagger:
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         matcher_dict (dict): Dictionary of spaCy PhraseMatchers objects.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
-        keyword_to_tag(dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
+        keyword_to_tag (dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
 
     """
