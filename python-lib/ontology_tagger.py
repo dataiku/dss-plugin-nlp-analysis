@@ -12,22 +12,27 @@ from sentence_splitter import SentenceSplitter
 
 
 class Tagger:
-    """Tag text data with a given ontology
-    Relies on spaCy Language components:
+    """Tag text data with a given ontology. Relies on spaCy Language components:
     - Sentencizer to split document into sentences
     - PhraseMatcher and EntityRuler to tag documents
+
     Attributes:
         ontology_df (pandas dataframe): Ontology which contains the tags to assign
         tag_column (string): Name of the column in the Ontology. Contains the tags to assign
         category_column (string): Name of the column in the Ontology. Contains the category of each tag to assign.
         keyword_column (string): Name of column in the Ontology. Contains the keywords to match with in documents.
-        language (string): Name of the documents language. Used if there is only one language to treat
-        lemmatization (bool): If True, match on lemmatized forms
-        case_insensitivity(bool): If True, match on lowercased forms
-        normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes
+        language (string): language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
+            Used if there is only one language to treat.
+            Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
+        lemmatization (bool): If True , match on lemmatized forms. Default is False.
+        case_insensitivity (bool): If True, match on lowercased forms. Default is False.
+        normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
-        matcher_dict (dict): Dictionary of spaCy PhraseMatchers objects. Unused if we are using EntityRuler (in case there are categories in the Ontology)
-        keyword_to_tag(dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        matcher_dict (dict): Dictionary of spaCy PhraseMatchers objects.
+            Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        keyword_to_tag(dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
+            Unused if we are using EntityRuler (in case there are categories in the Ontology)
+
     """
 
     def __init__(
@@ -72,11 +77,16 @@ class Tagger:
 
     def _get_patterns(
         self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr]
-    ) -> Union[List[dict], List[AnyStr]]:
-        """
-        Create the list of patterns :
-        - If there aren't category -> list of the keywords (string list)
-        - If there are categories  -> list of dictionaries, {"label": category, "pattern": keyword}
+    ) -> List[dict]:
+        """Called in _tag_and_format, when self.category_column is not None. Create the list of patterns to match with.
+
+        Args:
+            list_of_keywords : List of the keywords in the Ontology Dataset
+            list_of_tags : List of the tags in the Ontology Dataset
+
+        Returns:
+            List : List of dictionaries. One dictionary = one pattern, defined as follow : {"label": category, "pattern": keyword, "id": tag}
+
         """
         list_of_categories = self.ontology_df[self.category_column].values.tolist()
         return [
@@ -93,9 +103,16 @@ class Tagger:
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
     ) -> List[Doc]:
-        """
-        Fill in the dictionary keyword_to_tag
-        The keywords are tokenized depending on the given language
+        """Called when self.category_column is not None. Tokenize the keywords and fill in the dictionary keyword_to_tag.
+        The keywords are tokenized depending on the given language.
+
+        Args:
+            language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
+            keywords (list): The keywords to tokenize.
+
+        Returns:
+            List: The tokenized keywords.
+
         """
         keywords = [
             get_keyword(keyword, self.case_insensitivity) for keyword in keywords
@@ -131,10 +148,7 @@ class Tagger:
         list_of_tags: List[AnyStr],
         list_of_keywords: List[AnyStr],
     ) -> None:
-        """
-        Tokenize keywords for every language
-        Instanciate EntityRuler with associated tags and categories
-        """
+        """Tokenize keywords for every language. Instanciate EntityRuler with associated tags and categories"""
         for language in self.tokenizer.spacy_nlp_dict:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe("entity_ruler")
@@ -164,10 +178,7 @@ class Tagger:
         list_of_tags: List[AnyStr],
         list_of_keywords: List[AnyStr],
     ) -> None:
-        """
-        Tokenize keywords for every language
-        Instanciate PhraseMatcher with associated tags
-        """
+        """Tokenize keywords for every language. Instanciate PhraseMatcher with associated tags"""
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
@@ -201,7 +212,13 @@ class Tagger:
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
 
-    def _sentence_splitting(self, text_df, text_column, language_column=None):
+    def _sentence_splitting(
+        self, text_df, text_column, language_column=None
+    ) -> pd.DataFrame:
+        """Instanciate a SentenceSplitter to tokenize and split each document into sentences
+
+        Returns:
+            pandas.DataFrame : the input Dataframe text_df with additional column(s) which contains splitted sentences"""
         sentence_splitter = SentenceSplitter(
             text_df=text_df,
             text_column=text_column,
@@ -221,10 +238,11 @@ class Tagger:
         language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """
-        Public function called in recipe.py
-        Uses a spacy pipeline
-        -Split sentences by applying sentencizer on documents
-        -Use the right Matcher depending on the presence of categories
+        Public function called in recipe.py. Uses a spacy Language object to:
+            -Split sentences by applying sentencizer on documents (by calling the SentenceSplitter module)
+            -Use the right Matcher depending on the presence of categories (PhraseMatcher / EntityRuler) to match documents with tags
+            -Write the found matches into a new DataFrame (by calling the Formatter module)
+
         """
         self._initialize_tokenizer(languages)
         text_df, tokenized_columns = self._sentence_splitting(
