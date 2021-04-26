@@ -22,7 +22,7 @@ class Formatter:
         language: AnyStr,
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
-        case_insensitivity: bool,
+        normalize_case: bool,
         text_column_tokenized: AnyStr,
         text_lower_column_tokenized: AnyStr = None,
         keyword_to_tag: dict = None,
@@ -39,7 +39,7 @@ class Formatter:
 
     def _get_document_to_match(self, row: pd.Series) -> List:
         """Return the original document (as list of sentences) or, the lowercase one"""
-        if self.case_insensitivity:
+        if self.normalize_case:
             return row[self.text_lower_column_tokenized]
         else:
             return row[self.text_column_tokenized]
@@ -48,7 +48,7 @@ class Formatter:
         """Return the names of the column(s) to drop from the final output dataset, i.e column(s) of splitted sentences"""
         return (
             [self.text_column_tokenized, self.text_lower_column_tokenized]
-            if self.case_insensitivity
+            if self.normalize_case
             else [self.text_column_tokenized]
         )
 
@@ -142,7 +142,7 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self.keyword_to_tag[language][
-                            get_keyword(keyword.text, self.case_insensitivity)
+                            get_keyword(keyword.text, self.normalize_case)
                         ],
                         sentence.text,
                         keyword.text,
@@ -170,9 +170,7 @@ class FormatterByTag(Formatter):
                         keyword.text,
                     ]
                 )
-                for keyword in ruler(
-                    get_sentence(sentence, self.case_insensitivity)
-                ).ents
+                for keyword in ruler(get_sentence(sentence, self.normalize_case)).ents
             ]
             self._update_df(tag_rows, tag_rows, row)
 
@@ -271,7 +269,7 @@ class FormatterByDocument(Formatter):
         for match in matches:
             keyword = match.text
             tag = self.keyword_to_tag[language][
-                get_keyword(keyword, self.case_insensitivity)
+                get_keyword(keyword, self.normalize_case)
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
@@ -313,7 +311,7 @@ class FormatterByDocument(Formatter):
             defaultdict(defaultdict),
         )
         for idx, sentence in enumerate(document_to_match):
-            for keyword in ruler(get_sentence(sentence, self.case_insensitivity)).ents:
+            for keyword in ruler(get_sentence(sentence, self.normalize_case)).ents:
                 line, line_full = self._get_tags_in_row_category(
                     match=keyword,
                     line=line,
@@ -488,9 +486,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Return a dictionary containing precisions about each tag
         """
         keyword = match.text
-        tag = self.keyword_to_tag[language][
-            get_keyword(keyword, self.case_insensitivity)
-        ]
+        tag = self.keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
         sentence = original_sentence.text
         if tag not in line_full.keys():
             line_full[tag] = {

@@ -44,7 +44,7 @@ class Tagger:
         keyword_column: AnyStr,
         language: AnyStr,
         lemmatization: bool = False,
-        case_insensitivity: bool = False,
+        normalize_case: bool = False,
         normalization: bool = False,
     ):
         store_attr()
@@ -93,7 +93,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.case_insensitivity),
+                "pattern": get_keyword(pattern, self.normalize_case),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -116,13 +116,13 @@ class Tagger:
 
         """
         keywords = [
-            get_keyword(keyword, self.case_insensitivity) for keyword in keywords
+            get_keyword(keyword, self.normalize_case) for keyword in keywords
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
         )
         self.keyword_to_tag[language] = {
-            get_keyword(keyword.text, self.case_insensitivity): tag
+            get_keyword(keyword.text, self.normalize_case): tag
             for keyword, tag in zip(tokenized_keywords, tags)
         }
         return tokenized_keywords
@@ -134,9 +134,9 @@ class Tagger:
             "text_column_tokenized": tokenized_columns[0],
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
-            "case_insensitivity": self.case_insensitivity,
+            "normalize_case": self.normalize_case,
         }
-        if self.case_insensitivity:
+        if self.normalize_case:
             arguments["text_lower_column_tokenized"] = tokenized_columns[1]
         if not self.category_column:
             arguments["matcher_dict"] = self.matcher_dict
@@ -224,7 +224,7 @@ class Tagger:
             text_df=text_df,
             text_column=text_column,
             tokenizer=self.tokenizer,
-            case_insensitivity=self.case_insensitivity,
+            normalize_case=self.normalize_case,
             language=self.language,
             language_column=language_column,
         )

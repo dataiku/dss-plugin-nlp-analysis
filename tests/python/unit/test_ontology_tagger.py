@@ -85,7 +85,7 @@ def test_matching_in_lowercase():
         category_column=None,
         keyword_column="keyword",
         language="en",
-        case_insensitivity=True,
+        normalize_case=True,
     )
     df = tagger.tag_and_format(
         text_df=text_df,

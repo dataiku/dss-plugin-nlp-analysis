@@ -27,7 +27,7 @@ class SentenceSplitter:
         text_df,
         text_column,
         tokenizer,
-        case_insensitivity,
+        normalize_case,
         language,
         language_column=None,
     ):
@@ -54,7 +54,7 @@ class SentenceSplitter:
         )
         tokenized_columns = [text_column_tokenized]
         self.text_df[text_column_tokenized] = self._get_splitted_sentences()
-        if self.case_insensitivity:
+        if self.normalize_case:
             # generate a unique name for the column of tokenized lower text
             text_lower_column_tokenized = generate_unique(
                 name="text_lower", existing_names=self.text_df.columns.tolist()
