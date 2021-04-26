@@ -1,6 +1,6 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique, get_keyword, get_attr
+from plugin_io_utils import generate_unique, get_keyword
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr

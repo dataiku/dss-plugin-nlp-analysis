@@ -106,11 +106,6 @@ def move_columns_after(
     return df.reindex(columns=reordered_columns)
 
 
-def get_attr(case_insensitive: bool) -> AnyStr:
-    """Return spaCy case-sensitivity attribute"""
-    return "LOWER" if case_insensitive else "ORTH"
-
-
 def get_keyword(text: AnyStr, case_insensitive: bool) -> AnyStr:
     """Return text in its wanted-case form"""
     return text.lower() if case_insensitive else text
