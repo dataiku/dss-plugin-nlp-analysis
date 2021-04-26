@@ -1,6 +1,6 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique, get_keyword
+from plugin_io_utils import generate_unique, get_keyword, get_keyword_lemma, get_attr
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -46,7 +46,7 @@ class Tagger:
         self.tokenizer = MultilingualTokenizer(
             use_models=True,
             add_pipe_components=["sentencizer"],
-            enable_pipe_components="sentencizer",
+            enable_pipe_components=["sentencizer","tagger","attribute_ruler","lemmatizer"],
         )
         self.matcher_dict = {}  # this will be fill in the _match_no_category method
         self.keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
@@ -97,16 +97,25 @@ class Tagger:
         Fill in the dictionary keyword_to_tag
         The keywords are tokenized depending on the given language
         """
+        if self.lemmatization:
+            self.tokenizer.spacy_nlp_dict[language].enable_pipe("tagger")
+            self.tokenizer.spacy_nlp_dict[language].enable_pipe("attribute_ruler")
+            self.tokenizer.spacy_nlp_dict[language].enable_pipe("lemmatizer")
         keywords = [
             get_keyword(keyword, self.case_insensitivity) for keyword in keywords
         ]
-        tokenized_keywords = list(
-            self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
-        )
-        self.keyword_to_tag[language] = {
-            get_keyword(keyword.text, self.case_insensitivity): tag
-            for keyword, tag in zip(tokenized_keywords, tags)
-        }
+        #tokenized_keywords = list(
+        #    self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
+        #)
+        tokenized_keywords = list(self.tokenizer.spacy_nlp_dict[language].pipe(keywords))
+        if self.lemmatization: #HERE
+            print(tokenized_keywords)
+            self.keyword_to_tag[language] = { get_keyword_lemma(keyword,self.case_insensitivity):tag for keyword,tag in zip(tokenized_keywords,tags)}
+        else:
+            self.keyword_to_tag[language] = {
+                get_keyword(keyword.text, self.case_insensitivity): tag
+                for keyword, tag in zip(tokenized_keywords, tags)
+            }
         return tokenized_keywords
 
     def get_formatter_config(self, tokenized_columns: List[AnyStr]) -> dict:
@@ -117,6 +126,7 @@ class Tagger:
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
             "case_insensitivity": self.case_insensitivity,
+            "lemmatization": self.lemmatization,
         }
         if self.case_insensitivity:
             arguments["text_lower_column_tokenized"] = tokenized_columns[1]
@@ -171,7 +181,7 @@ class Tagger:
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
-            matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
+            matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab,attr=get_attr(self.lemmatization))
             matcher.add("PatternList", patterns)
             self.matcher_dict[language] = matcher
 

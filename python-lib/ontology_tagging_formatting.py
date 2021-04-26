@@ -11,7 +11,7 @@ import numpy as np
 from time import perf_counter
 import logging
 import json
-from plugin_io_utils import move_columns_after, unique_list, get_keyword, get_sentence
+from plugin_io_utils import move_columns_after, unique_list, get_keyword, get_sentence, get_tag
 from spacy_tokenizer import MultilingualTokenizer
 
 
@@ -22,6 +22,7 @@ class Formatter:
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
         case_insensitivity: bool,
+        lemmatization: bool,
         text_column_tokenized: AnyStr,
         text_lower_column_tokenized: AnyStr = None,
         keyword_to_tag: dict = None,
@@ -137,12 +138,12 @@ class FormatterByTag(Formatter):
         """
         values = []
         for match, sentence in matches:
+            print(match,sentence)
             values = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][
-                            get_keyword(keyword.text, self.case_insensitivity)
-                        ],
+                        self.keyword_to_tag[language][get_tag(self.case_insensitivity,self.lemmatization,keyword)]
+                        ,
                         sentence.text,
                         keyword.text,
                     ]
