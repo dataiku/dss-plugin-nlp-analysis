@@ -11,7 +11,8 @@ import numpy as np
 from time import perf_counter
 import logging
 import json
-from plugin_io_utils import move_columns_after, unique_list, get_keyword, get_sentence
+from plugin_io_utils import move_columns_after, unique_list
+from nlp_utils import get_keyword, get_sentence
 from spacy_tokenizer import MultilingualTokenizer
 
 

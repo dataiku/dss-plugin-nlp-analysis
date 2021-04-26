@@ -1,6 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique, get_keyword
+from plugin_io_utils import generate_unique
+from nlp_utils import get_keyword
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -42,9 +43,9 @@ class Tagger:
         category_column: AnyStr,
         keyword_column: AnyStr,
         language: AnyStr,
-        lemmatization: bool,
-        case_insensitivity: bool,
-        normalization: bool,
+        lemmatization: bool = False,
+        case_insensitivity: bool = False,
+        normalization: bool = False,
     ):
         store_attr()
         self._remove_incomplete_rows()

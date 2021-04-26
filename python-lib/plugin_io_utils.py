@@ -106,16 +106,6 @@ def move_columns_after(
     return df.reindex(columns=reordered_columns)
 
 
-def get_keyword(text: AnyStr, case_insensitive: bool) -> AnyStr:
-    """Return text in its wanted-case form"""
-    return text.lower() if case_insensitive else text
-
-
-def get_sentence(span: Span, case_insensitive: bool) -> Union[Span, Doc]:
-    """Return Span object as a Doc if case_insensitive is set to True"""
-    return span if case_insensitive else span.as_doc()
-
-
 def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
     """"Clean a pandas.DataFrame to replace NaNs values by empty strings in the columns_to_clean columns of the dataframe"""
     for column in columns_to_clean:
