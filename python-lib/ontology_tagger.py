@@ -82,7 +82,9 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.case_insensitivity),
+                "pattern": get_keyword(
+                    pattern, self.case_insensitivity, self.normalization
+                ),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -98,13 +100,14 @@ class Tagger:
         The keywords are tokenized depending on the given language
         """
         keywords = [
-            get_keyword(keyword, self.case_insensitivity) for keyword in keywords
+            get_keyword(keyword, self.case_insensitivity, self.normalization)
+            for keyword in keywords
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
         )
         self.keyword_to_tag[language] = {
-            get_keyword(keyword.text, self.case_insensitivity): tag
+            get_keyword(keyword.text, self.case_insensitivity, self.normalization): tag
             for keyword, tag in zip(tokenized_keywords, tags)
         }
         return tokenized_keywords
@@ -117,8 +120,9 @@ class Tagger:
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
             "case_insensitivity": self.case_insensitivity,
+            "normalization": self.normalization,
         }
-        if self.case_insensitivity:
+        if self.case_insensitivity or self.normalization:
             arguments["text_lower_column_tokenized"] = tokenized_columns[1]
         if not self.category_column:
             arguments["matcher_dict"] = self.matcher_dict
@@ -207,6 +211,7 @@ class Tagger:
             text_column=text_column,
             tokenizer=self.tokenizer,
             case_insensitivity=self.case_insensitivity,
+            normalization=self.normalization,
             language=self.language,
             language_column=language_column,
         )

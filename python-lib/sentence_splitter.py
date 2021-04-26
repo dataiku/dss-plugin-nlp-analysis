@@ -4,7 +4,7 @@ from time import perf_counter
 from typing import AnyStr, List
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from plugin_io_utils import replace_nan_values, generate_unique
+from plugin_io_utils import replace_nan_values, generate_unique, get_keyword
 
 
 class SentenceSplitter:
@@ -12,17 +12,19 @@ class SentenceSplitter:
     Attributes:
         tokenizer (dict): MultilingualTokenizer instance which stored a dictionary spacy_nlp_dict of spaCy Language instances by language code (key)
         text_column (str): Name of the dataframe column storing documents to process
-        text_df (pandas DataFrame): DataFrame which contains text_column 
-        language (str) : language of the documents to process. 
+        text_df (pandas DataFrame): DataFrame which contains text_column
+        language (str) : language of the documents to process.
         language_column (str) : Name of the dataframe column storing languages of the document to process. Default to None
-        case_sensitivity (bool): Boolean used to know if the text should be resplitted with lowercase text. 
+        case_sensitivity (bool): Boolean used to know if the text should be resplitted with lowercase text.
     """
+
     def __init__(
         self,
         text_df,
         text_column,
         tokenizer,
         case_insensitivity,
+        normalization,
         language,
         language_column=None,
     ):
@@ -45,7 +47,7 @@ class SentenceSplitter:
         )
         tokenized_columns = [text_column_tokenized]
         self.text_df[text_column_tokenized] = self._get_splitted_sentences()
-        if self.case_insensitivity:
+        if self.case_insensitivity or self.normalization:
             # generate a unique name for the column of tokenized lower text
             text_lower_column_tokenized = generate_unique(
                 name="text_lower", existing_names=self.text_df.columns.tolist()
@@ -70,7 +72,7 @@ class SentenceSplitter:
         language = row[self.language_column] if self.language_column else self.language
         return list(
             self.tokenizer.spacy_nlp_dict[language].pipe(
-                [sentence.text.lower() for sentence in row[text_column_tokenized]]
+                [get_keyword(sentence.text,self.case_insensitivity,self.normalization) for sentence in row[text_column_tokenized]]
             )
         )
 

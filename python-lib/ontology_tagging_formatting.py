@@ -22,6 +22,7 @@ class Formatter:
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
         case_insensitivity: bool,
+        normalization: bool,
         text_column_tokenized: AnyStr,
         text_lower_column_tokenized: AnyStr = None,
         keyword_to_tag: dict = None,
@@ -38,7 +39,7 @@ class Formatter:
 
     def _get_document_to_match(self, row: pd.Series) -> List:
         """Return the original document (as list of sentences) or, the lowercase one"""
-        if self.case_insensitivity:
+        if self.case_insensitivity or self.normalization:
             return row[self.text_lower_column_tokenized]
         else:
             return row[self.text_column_tokenized]
@@ -47,7 +48,7 @@ class Formatter:
         """Return the names of the column(s) to drop from the final output dataset, i.e column(s) of splitted sentences"""
         return (
             [self.text_column_tokenized, self.text_lower_column_tokenized]
-            if self.case_insensitivity
+            if self.case_insensitivity or self.normalization
             else [self.text_column_tokenized]
         )
 
@@ -141,7 +142,11 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self.keyword_to_tag[language][
-                            get_keyword(keyword.text, self.case_insensitivity)
+                            get_keyword(
+                                keyword.text,
+                                self.case_insensitivity,
+                                self.normalization,
+                            )
                         ],
                         sentence.text,
                         keyword.text,
@@ -170,7 +175,7 @@ class FormatterByTag(Formatter):
                     ]
                 )
                 for keyword in ruler(
-                    get_sentence(sentence, self.case_insensitivity)
+                    get_sentence(sentence, self.case_insensitivity, self.normalization)
                 ).ents
             ]
             self._update_df(tag_rows, tag_rows, row)

@@ -8,7 +8,7 @@ from time import perf_counter
 import pandas as pd
 import numpy as np
 from spacy.tokens import Span, Doc
-
+import unicodedata
 
 def unique_list(sequence: List) -> List:
     """Make a list unique, ordering values by order of appearance in the original list
@@ -106,14 +106,26 @@ def move_columns_after(
     return df.reindex(columns=reordered_columns)
 
 
-def get_keyword(text: AnyStr, case_insensitive: bool) -> AnyStr:
+def get_keyword(text: AnyStr, case_insensitive: bool, normalization: bool) -> AnyStr:
     """Return text in its wanted-case form"""
-    return text.lower() if case_insensitive else text
+    # return text.lower() if case_insensitive else text
+    if case_insensitive:
+        text = text.lower()
+    if normalization:
+        text = remove_accents(text)
+    return text
 
 
-def get_sentence(span: Span, case_insensitive: bool) -> Union[Span, Doc]:
+def get_sentence(
+    span: Span, case_insensitive: bool, normalize: bool
+) -> Union[Span, Doc]:
     """Return Span object as a Doc if case_insensitive is set to True"""
-    return span if case_insensitive else span.as_doc()
+    return span if case_insensitive or normalize else span.as_doc()
+
+
+def remove_accents(input_str):
+    nfd_form = unicodedata.normalize('NFD',input_str)
+    return u"".join([c for c in nfd_form if not unicodedata.combining(c)])
 
 
 def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
