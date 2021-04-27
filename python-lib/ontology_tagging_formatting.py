@@ -16,7 +16,6 @@ from nlp_utils import get_keyword, get_sentence
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
-
 class Formatter:
     def __init__(
         self,
@@ -25,8 +24,8 @@ class Formatter:
         category_column: AnyStr,
         normalize_case: bool,
         text_column_tokenized: AnyStr,
-        keyword_to_tag: dict = None,
-        matcher_dict: dict = None,
+        _keyword_to_tag: dict = None,
+        _matcher_dict: dict = None,
     ):
         store_attr()
         self.output_df = pd.DataFrame()
@@ -114,7 +113,7 @@ class FormatterByTag(Formatter):
         if not self.category_column:
             matches = [
                 (
-                    self.matcher_dict[language](sentence, as_spans=True),
+                    self._matcher_dict[language](sentence, as_spans=True),
                     row[self.text_column_tokenized][idx],
                 )
                 for idx, sentence in enumerate(document_to_match)
@@ -138,7 +137,7 @@ class FormatterByTag(Formatter):
             values = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][
+                        self._keyword_to_tag[language][
                             get_keyword(keyword.text, self.normalize_case)
                         ],
                         sentence,
@@ -263,10 +262,10 @@ class FormatterByDocument(Formatter):
         Called by _write_row on each sentence
         Return the tags, sentences and keywords linked to the given sentence
         """
-        matches = self.matcher_dict[language](sentence, as_spans=True)
+        matches = self._matcher_dict[language](sentence, as_spans=True)
         for match in matches:
             keyword = match.text
-            tag = self.keyword_to_tag[language][
+            tag = self._keyword_to_tag[language][
                 get_keyword(keyword, self.normalize_case)
             ]
             tags_in_document.append(tag)
@@ -282,9 +281,7 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for One row per document with category"""
         start = perf_counter()
-        input_df.progress_apply(
-            self._write_row_category, args=[False, language_column], axis=1
-        )
+        input_df.progress_apply(self._write_row_category, args=[False, language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
@@ -436,7 +433,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         document_to_match = super()._get_document_to_match(row, language)
         line_full, tag_column_for_json = defaultdict(defaultdict), {}
         for idx, sentence in enumerate(document_to_match):
-            matches = self.matcher_dict[language](sentence, as_spans=True)
+            matches = self._matcher_dict[language](sentence, as_spans=True)
             for keyword in matches:
                 line_full = self._get_tags_in_row(
                     match=keyword,
@@ -484,7 +481,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Return a dictionary containing precisions about each tag
         """
         keyword = match.text
-        tag = self.keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
+        tag = self._keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
         if tag not in line_full.keys():
             line_full[tag] = {
                 "count": 1,

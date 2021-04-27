@@ -29,9 +29,9 @@ class Tagger:
         case_insensitivity (bool): If True, match on lowercased forms. Default is False.
         normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
-        matcher_dict (dict): Dictionary of spaCy PhraseMatchers objects.
+        _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
-        keyword_to_tag (dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
+        _keyword_to_tag (dict): Private attribute. Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
             Example :
                 {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
@@ -56,8 +56,8 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self.matcher_dict = {}  # this will be fill in the _match_no_category method
-        self.keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
+        self._matcher_dict = {}  # this will be fill in the _match_no_category method
+        self._keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -106,7 +106,7 @@ class Tagger:
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
     ) -> List[Doc]:
-        """Called when self.category_column is not None. Tokenize the keywords and fill in the dictionary keyword_to_tag.
+        """Called when self.category_column is not None. Tokenize the keywords and fill in the dictionary _keyword_to_tag.
         The keywords are tokenized depending on the given language.
 
         Args:
@@ -121,7 +121,7 @@ class Tagger:
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
         )
-        self.keyword_to_tag[language] = {
+        self._keyword_to_tag[language] = {
             get_keyword(keyword.text, self.normalize_case): tag
             for keyword, tag in zip(tokenized_keywords, tags)
         }
@@ -137,8 +137,8 @@ class Tagger:
             "normalize_case": self.normalize_case,
         }
         if not self.category_column:
-            arguments["matcher_dict"] = self.matcher_dict
-            arguments["keyword_to_tag"] = self.keyword_to_tag
+            arguments["_matcher_dict"] = self._matcher_dict
+            arguments["_keyword_to_tag"] = self._keyword_to_tag
         return arguments
 
     def _match_with_category(
@@ -183,7 +183,7 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
             matcher.add("PatternList", patterns)
-            self.matcher_dict[language] = matcher
+            self._matcher_dict[language] = matcher
 
     def _format_no_category(
         self,
