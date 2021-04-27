@@ -14,5 +14,5 @@ def test_split_sentences_nan_values():
     )
     text_df = pd.DataFrame({"text": [float("nan")]})
     tagger._initialize_tokenizer([tagger.language])
-    text_df, new_columns = tagger._sentence_splitting(text_df, "text")
-    assert text_df[new_columns[0]].iloc[0] == []
+    text_df, text_column_tokenized = tagger._sentence_splitting(text_df, "text")
+    assert text_df[text_column_tokenized].iloc[0] == []
