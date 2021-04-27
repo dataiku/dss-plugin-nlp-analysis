@@ -5,6 +5,7 @@ from typing import AnyStr, List, Tuple
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
 from plugin_io_utils import replace_nan_values, generate_unique
+from tqdm import tqdm
 
 
 class SentenceSplitter:
@@ -97,10 +98,11 @@ class SentenceSplitter:
             pandas.DataFrame: dataframe with the new tokenized text column
 
         """
+        tqdm.pandas(miniters=1, mininterval=15.0)
         if self.language_column:
-            return self.text_df.apply(
+            return self.text_df.progress_apply(
                 self._split_sentences_multilingual,
                 axis=1,
             )
         else:
-            return self.text_df.apply(self._split_sentences, axis=1)
+            return self.text_df.progress_apply(self._split_sentences, axis=1)

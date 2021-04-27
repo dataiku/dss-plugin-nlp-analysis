@@ -250,12 +250,12 @@ class Tagger:
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
         formatter_config = self.get_formatter_config(text_column_tokenized)
-        logging.info(f"Tagging {len(text_df)} documents...")
         # matching and formatting
         if self.category_column:
             # patterns to add to Entity Ruler pipe
             patterns = self._get_patterns(list_of_keywords, list_of_tags)
             self._match_with_category(patterns, list_of_tags, list_of_keywords)
+            logging.info(f"Tagging {len(text_df)} documents...")
             return self._format_with_category(
                 arguments=formatter_config,
                 text_df=text_df,
@@ -265,6 +265,7 @@ class Tagger:
             )
         else:
             self._match_no_category(list_of_tags, list_of_keywords)
+            logging.info(f"Tagging {len(text_df)} documents...")
             return self._format_no_category(
                 arguments=formatter_config,
                 text_df=text_df,
