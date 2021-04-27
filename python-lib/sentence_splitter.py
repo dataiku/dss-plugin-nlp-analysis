@@ -98,7 +98,7 @@ class SentenceSplitter:
             pandas.DataFrame: dataframe with the new tokenized text column
 
         """
-        tqdm.pandas(miniters=1, mininterval=15.0)
+        tqdm.pandas(unit_scale=True, unit_divisor=4)
         if self.language_column:
             return self.text_df.progress_apply(
                 self._split_sentences_multilingual,
