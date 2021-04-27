@@ -25,7 +25,7 @@ def test_create_matcher_missing_keywords():
     keywords = ontology_df["keyword"].values.tolist()
     tags = ontology_df["tag"].values.tolist()
     tagger._match_no_category(tags, keywords)
-    assert len(tagger.matcher_dict[tagger.language]) == 1
+    assert len(tagger._matcher_dict[tagger.language]) == 1
 
 
 def test_keywords_tokenization():
@@ -47,10 +47,10 @@ def test_keywords_tokenization():
     keywords = ontology_df["keyword"].values.tolist()
     tagger._initialize_tokenizer([tagger.language])
     tagger._match_no_category(tags, keywords)
-    matcher = tagger.matcher_dict[tagger.language]
+    matcher = tagger._matcher_dict[tagger.language]
     patterns = tagger._tokenize_keywords(tagger.language, tags, keywords)
     for elt in patterns:
-        assert elt.text in tagger.keyword_to_tag["en"]
+        assert elt.text in tagger._keyword_to_tag["en"]
 
 
 def test_initialize_tokenizer():
