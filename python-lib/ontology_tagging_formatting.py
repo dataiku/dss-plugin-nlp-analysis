@@ -24,7 +24,6 @@ class Formatter:
         category_column: AnyStr,
         normalize_case: bool,
         text_column_tokenized: AnyStr,
-        text_lower_column_tokenized: AnyStr = None,
         keyword_to_tag: dict = None,
         matcher_dict: dict = None,
     ):
@@ -37,26 +36,26 @@ class Formatter:
         """Return the language of the document in the row"""
         return row[language_column] if language_column else self.language
 
-    def _get_document_to_match(self, row: pd.Series) -> List:
+    def _get_document_to_match(self, row: pd.Series, language) -> List:
         """Return the original document (as list of sentences) or, the lowercase one"""
         if self.normalize_case:
-            return row[self.text_lower_column_tokenized]
+            return list(
+                self.tokenizer.spacy_nlp_dict[language].pipe(
+                    [sentence.lower() for sentence in row[self.text_column_tokenized]]
+                )
+            )
         else:
-            return row[self.text_column_tokenized]
-
-    def _get_columns_to_drop(self) -> None:
-        """Return the names of the column(s) to drop from the final output dataset, i.e column(s) of splitted sentences"""
-        return (
-            [self.text_column_tokenized, self.text_lower_column_tokenized]
-            if self.normalize_case
-            else [self.text_column_tokenized]
-        )
+            return list(
+                self.tokenizer.spacy_nlp_dict[language].pipe(
+                    row[self.text_column_tokenized]
+                )
+            )
 
     def _set_columns_order(
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
         """Concatenate the input_df with the new one,reset its columns in the right order, and return it"""
-        input_df = input_df.drop(columns=self._get_columns_to_drop())
+        input_df = input_df.drop(columns=self.text_column_tokenized)
         df = pd.concat([input_df, output_df], axis=1)
         return move_columns_after(
             input_df=input_df,
@@ -85,7 +84,6 @@ class FormatterByTag(Formatter):
         input_df: pd.DataFrame,
         text_column: AnyStr,
         language_column: AnyStr = None,
-        ruler=None,
     ) -> pd.DataFrame:
         """Write the output dataframe for one_row_per_tag format (with or without categories)"""
         start = perf_counter()
@@ -109,22 +107,19 @@ class FormatterByTag(Formatter):
         self.contains_match = False
         language = super()._get_document_language(row, language_column)
         matches = []
-        document_to_match = super()._get_document_to_match(row)
+        document_to_match = super()._get_document_to_match(row, language)
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
             matches = [
                 (
                     self.matcher_dict[language](sentence, as_spans=True),
-                    row[self.text_column_tokenized][
-                        idx
-                    ],  # original sentence (not lowercased)
+                    row[self.text_column_tokenized][idx],
                 )
                 for idx, sentence in enumerate(document_to_match)
             ]
             self._get_tags_in_row(matches, row, language)
         else:
-            ruler = self.tokenizer.spacy_nlp_dict[language].get_pipe("entity_ruler")
-            self._get_tags_in_row_category(document_to_match, row, language, ruler)
+            self._get_tags_in_row_category(document_to_match, row, language)
         if not self.contains_match:
             self.output_df = self.output_df.append(empty_row, ignore_index=True)
             self.duplicate_df = self.duplicate_df.append(
@@ -144,7 +139,7 @@ class FormatterByTag(Formatter):
                         self.keyword_to_tag[language][
                             get_keyword(keyword.text, self.normalize_case)
                         ],
-                        sentence.text,
+                        sentence,
                         keyword.text,
                     ]
                 )
@@ -153,24 +148,25 @@ class FormatterByTag(Formatter):
             self._update_df(match, values, row)
 
     def _get_tags_in_row_category(
-        self, document_to_match: List, row: pd.Series, language: AnyStr, ruler
+        self, document_to_match: List, row: pd.Series, language: AnyStr
     ) -> None:
         """
         Called by _write_row_category
         Create the list of new rows with infos about the tags and gives it to _update_df function
         """
         tag_rows = []
+        original_document = list(row[self.text_column_tokenized])
         for idx, sentence in enumerate(document_to_match):
             tag_rows = [
                 self._list_to_dict(
                     [
                         keyword.ent_id_,
                         keyword.label_,
-                        list(row[self.text_column_tokenized])[idx].text,
+                        original_document[idx],
                         keyword.text,
                     ]
                 )
-                for keyword in ruler(get_sentence(sentence, self.normalize_case)).ents
+                for keyword in sentence.ents
             ]
             self._update_df(tag_rows, tag_rows, row)
 
@@ -226,7 +222,7 @@ class FormatterByDocument(Formatter):
             language_column: if not None, matcher will apply with the given language of the row
         """
         language = super()._get_document_language(row, language_column)
-        document_to_match = super()._get_document_to_match(row)
+        document_to_match = super()._get_document_to_match(row, language)
         tags_in_document, keywords_in_document, matched_sentences = [], [], []
         for idx, sentence in enumerate(document_to_match):
             (
@@ -273,7 +269,7 @@ class FormatterByDocument(Formatter):
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
-            matched_sentences.append(original_sentence.text + " ")
+            matched_sentences.append(original_sentence + " ")
         return tags_in_document, keywords_in_document, matched_sentences
 
     def write_df_category(
@@ -302,8 +298,7 @@ class FormatterByDocument(Formatter):
             language_column: if not None, matcher will apply with the given language of the row
         """
         language = super()._get_document_language(row, language_column)
-        document_to_match = super()._get_document_to_match(row)
-        ruler = self.tokenizer.spacy_nlp_dict[language].get_pipe("entity_ruler")
+        document_to_match = super()._get_document_to_match(row, language)
         matched_sentence, keyword_list = [], []
         tag_columns_for_json, line, line_full = (
             defaultdict(),
@@ -311,16 +306,17 @@ class FormatterByDocument(Formatter):
             defaultdict(defaultdict),
         )
         for idx, sentence in enumerate(document_to_match):
-            for keyword in ruler(get_sentence(sentence, self.normalize_case)).ents:
+            original_sentence = row[self.text_column_tokenized]
+            for keyword in sentence.ents:
                 line, line_full = self._get_tags_in_row_category(
                     match=keyword,
                     line=line,
                     line_full=line_full,
-                    sentence=row[self.text_column_tokenized][idx].text,
+                    sentence=original_sentence[idx],
                     language=language,
                 )
                 keyword_list.append(keyword.text + " ")
-                matched_sentence.append(row[self.text_column_tokenized][idx].text + " ")
+                matched_sentence.append(original_sentence[idx] + " ")
             tag_columns_for_json["tag_json_categories"] = self._fill_tags(
                 condition=(line and one_row_per_doc_json), value=dict(line)
             )
@@ -433,7 +429,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             language_column: if not None, matcher will apply with the given language of the row
         """
         language = super()._get_document_language(row, language_column)
-        document_to_match = super()._get_document_to_match(row)
+        document_to_match = super()._get_document_to_match(row, language)
         line_full, tag_column_for_json = defaultdict(defaultdict), {}
         for idx, sentence in enumerate(document_to_match):
             matches = self.matcher_dict[language](sentence, as_spans=True)
@@ -441,7 +437,6 @@ class FormatterByDocumentJson(FormatterByDocument):
                 line_full = self._get_tags_in_row(
                     match=keyword,
                     line_full=line_full,
-                    sentence=sentence,
                     original_sentence=row[self.text_column_tokenized][idx],
                     language=language,
                 )
@@ -477,7 +472,6 @@ class FormatterByDocumentJson(FormatterByDocument):
         self,
         match: Span,
         line_full: dict,
-        sentence: Doc,
         original_sentence: Doc,
         language: AnyStr,
     ) -> dict:
@@ -487,17 +481,16 @@ class FormatterByDocumentJson(FormatterByDocument):
         """
         keyword = match.text
         tag = self.keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
-        sentence = original_sentence.text
         if tag not in line_full.keys():
             line_full[tag] = {
                 "count": 1,
-                "sentences": [sentence],
+                "sentences": [original_sentence],
                 "keywords": [keyword],
             }
         else:
             line_full[tag]["count"] += 1
-            if sentence not in line_full[tag]["sentences"]:
-                line_full[tag]["sentences"].append(sentence)
+            if original_sentence not in line_full[tag]["sentences"]:
+                line_full[tag]["sentences"].append(original_sentence)
             if keyword not in line_full[tag]["keywords"]:
                 line_full[tag]["keywords"].append(keyword)
 

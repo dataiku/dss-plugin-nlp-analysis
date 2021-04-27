@@ -8,7 +8,7 @@ from plugin_io_utils import replace_nan_values, generate_unique
 
 
 class SentenceSplitter:
-    """Module to handle sentence splitting with spaCy for multiple languages
+    """Module to handle sentence splitting with spaCy 'sentencizer' for multiple languages
 
     Attributes:
         tokenizer (dict): MultilingualTokenizer instance which stored a dictionary spacy_nlp_dict of spaCy
@@ -33,12 +33,12 @@ class SentenceSplitter:
     ):
         store_attr()
 
-    def _split_sentences_df(self) -> Tuple[pd.DataFrame, List[AnyStr]]:
+    def _split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
         """Append new column(s) to a dataframe, with documents as lists of sentences
 
         Returns:
             pandas.DataFrame : text_df with the new added column(s) of tokenized text
-            List : Names of the new column(s)
+            str : Name of the new column tokenized column
 
         """
         # clean NaN documents before splitting
@@ -52,80 +52,49 @@ class SentenceSplitter:
         text_column_tokenized = generate_unique(
             name="list_sentences", existing_names=self.text_df.columns.tolist()
         )
-        tokenized_columns = [text_column_tokenized]
         self.text_df[text_column_tokenized] = self._get_splitted_sentences()
-        if self.normalize_case:
-            # generate a unique name for the column of tokenized lower text
-            text_lower_column_tokenized = generate_unique(
-                name="text_lower", existing_names=self.text_df.columns.tolist()
-            )
-            tokenized_columns.append(text_lower_column_tokenized)
-            # tokenize sentences in lowercase with spacy tokenizer
-            self.text_df[text_lower_column_tokenized] = self.text_df.apply(
-                self._lowercase_sentences,
-                args=[text_column_tokenized],
-                axis=1,
-            )
         logging.info(
             f"Splitting sentences on {len(self.text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
         )
-        return self.text_df, tokenized_columns
+        return self.text_df, text_column_tokenized
 
-    def _lowercase_sentences(
-        self, row: pd.Series, text_column_tokenized: AnyStr
-    ) -> List:
-        """Retokenize text sentences by sentences in lowercase
-
-        Args:
-            row (pandas.Series): row which contains the text to process.
-            text_column_tokenized (str): Name of the text column to lowercase.
-
-        Returns :
-            List : Retokenized sentences.
-
-        """
-        language = row[self.language_column] if self.language_column else self.language
-        return list(
-            self.tokenizer.spacy_nlp_dict[language].pipe(
-                [sentence.text.lower() for sentence in row[text_column_tokenized]]
-            )
-        )
-
-    def _split_sentences_multilingual(self, row: pd.Series) -> List:
-        """Called if there are multiple languages in the document dataset.Apply sentencizer and return list of sentences
+    def _split_sentences_multilingual(self, row: pd.Series) -> List[AnyStr]:
+        """Called if there are multiple languages in the document dataset. Apply sentencizer and return list of sentences
 
         Args:
             row (pandas.DataFrame): row which contains the text to split
 
         Returns:
-            List: Document splitted into sentences.
+            List: Document splitted into sentences as strings.
 
         """
         document, language = row[self.text_column], row[self.language_column]
-        splitted_sentences = self.tokenizer.spacy_nlp_dict[language](document).sents
-        return list(splitted_sentences)
+        return [
+            sentence.text
+            for sentence in self.tokenizer.spacy_nlp_dict[language](document).sents
+        ]
 
-    def _split_sentences(self, row: pd.Series) -> List:
+    def _split_sentences(self, row: pd.Series) -> List[AnyStr]:
         """Called if there is only one language specified.Apply sentencizer and return list of sentences
 
         Args:
             row (pandas.Series): row which contains text to process
 
         Returns:
-            List : Document splitted into tokenized sentences.
+            List : Document splitted into tokenized sentences as strings.
 
         """
         document = row[self.text_column]
-        splitted_sentences = self.tokenizer.spacy_nlp_dict[self.language](
-            document
-        ).sents
-        return list(splitted_sentences)
+        return [
+            sentence.text
+            for sentence in self.tokenizer.spacy_nlp_dict[self.language](document).sents
+        ]
 
     def _get_splitted_sentences(self) -> pd.DataFrame:
         """Call either _split_sentences or _split_sentences_multilingual
 
         Returns:
-            pandas.DataFrame: dataframe with the new tokenized column(s)
+            pandas.DataFrame: dataframe with the new tokenized text column
 
         """
         if self.language_column:

@@ -33,8 +33,8 @@ class Tagger:
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
         keyword_to_tag (dict): Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
-            Example : 
-                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"} 
+            Example :
+                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
 
     """
 
@@ -117,9 +117,7 @@ class Tagger:
             List: The tokenized keywords.
 
         """
-        keywords = [
-            get_keyword(keyword, self.normalize_case) for keyword in keywords
-        ]
+        keywords = [get_keyword(keyword, self.normalize_case) for keyword in keywords]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
         )
@@ -129,17 +127,15 @@ class Tagger:
         }
         return tokenized_keywords
 
-    def get_formatter_config(self, tokenized_columns: List[AnyStr]) -> dict:
+    def get_formatter_config(self, text_column_tokenized: AnyStr) -> dict:
         """Return a dictionary containing the arguments to pass to the Formatter"""
         arguments = {
             "language": self.language,
-            "text_column_tokenized": tokenized_columns[0],
+            "text_column_tokenized": text_column_tokenized,
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
             "normalize_case": self.normalize_case,
         }
-        if self.normalize_case:
-            arguments["text_lower_column_tokenized"] = tokenized_columns[1]
         if not self.category_column:
             arguments["matcher_dict"] = self.matcher_dict
             arguments["keyword_to_tag"] = self.keyword_to_tag
@@ -248,12 +244,12 @@ class Tagger:
 
         """
         self._initialize_tokenizer(languages)
-        text_df, tokenized_columns = self._sentence_splitting(
+        text_df, text_column_tokenized = self._sentence_splitting(
             text_df, text_column, language_column
         )
         list_of_tags = self.ontology_df[self.tag_column].values.tolist()
         list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
-        formatter_config = self.get_formatter_config(tokenized_columns)
+        formatter_config = self.get_formatter_config(text_column_tokenized)
         logging.info(f"Tagging {len(text_df)} documents...")
         # matching and formatting
         if self.category_column:
