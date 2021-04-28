@@ -56,8 +56,8 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self._matcher_dict = {}  # this will be fill in the _match_no_category method
-        self._keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
+        self._matcher_dict = {}  # this will be filled by the _match_no_category method
+        self._keyword_to_tag = {}  # this will be filled by the _tokenize_keywords method
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
