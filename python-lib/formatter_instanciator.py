@@ -9,13 +9,13 @@ from ontology_tagging_formatting import (
 # names of all additional columns depending on the output_format
 COLUMNS_DESCRIPTION = {
     "tag_keywords": "Matched keywords",
-    "tag_sentences": "Sentences with keywords",
-    "tag_json_full": "Detailed tag column",
-    "tag_json_categories": "category → tags",
-    "tag_list": "List of all found tags",
-    "tag": "Found tag",
+    "tag_sentences": "Sentences",
+    "tag_json_full": "Detailed tag column: count of occurrences, matched sentences and list of keywords per tag and category",
+    "tag_json_categories": "List of tags per category",
+    "tag_list": "List of all assigned tags",
+    "tag": "Assigned tag",
     "tag_keyword": "Matched keyword",
-    "tag_sentence": "Sentence with keywords",
+    "tag_sentence": "Sentence",
     "tag_category": "Category of tag",
 }
 
@@ -36,16 +36,16 @@ class FormatterInstanciator:
 
     TAG_COLUMNS = {
         OutputFormat.ONE_ROW_PER_DOCUMENT.value: {
-            "category": ["tag_sentences", "tag_keywords"],
-            "no_category": ["tag_list", "tag_sentences", "tag_keywords"],
+            "category": ["tag_keywords", "tag_sentences"],
+            "no_category": ["tag_list", "tag_keywords", "tag_sentences"],
         },
         OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value: {
             "category": ["tag_json_categories", "tag_json_full"],
             "no_category": ["tag_json_full"],
         },
         OutputFormat.ONE_ROW_PER_TAG.value: {
-            "category": ["tag", "tag_category", "tag_sentence", "tag_keyword"],
-            "no_category": ["tag", "tag_sentence", "tag_keyword"],
+            "category": ["tag_category", "tag", "tag_keyword", "tag_sentence"],
+            "no_category": ["tag", "tag_keyword", "tag_sentence"],
         },
     }
 

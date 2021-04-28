@@ -14,6 +14,7 @@ import json
 from plugin_io_utils import move_columns_after, unique_list
 from spacy_tokenizer import MultilingualTokenizer
 
+
 class Formatter:
     def __init__(
         self,
@@ -62,7 +63,7 @@ class Formatter:
             after_column=text_column,
         )
 
-    
+
 class FormatterByTag(Formatter):
     def __init__(self, *args, **kwargs):
         super(FormatterByTag, self).__init__(*args, **kwargs)
@@ -134,8 +135,8 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self.keyword_to_tag[language][keyword.text],
-                        sentence.text,
                         keyword.text,
+                        sentence.text,
                     ]
                 )
                 for keyword in match
@@ -154,10 +155,10 @@ class FormatterByTag(Formatter):
             tag_rows = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][keyword.text],
                         keyword.label_,
-                        sentence.text,
+                        self.keyword_to_tag[language][keyword.text],
                         keyword.text,
+                        sentence.text,
                     ]
                 )
                 for keyword in sentence.ents
@@ -231,9 +232,13 @@ class FormatterByDocument(Formatter):
             )
         if tags_in_document != []:
             line = {
-                self.tag_columns[0]: unique_list(tags_in_document),
-                self.tag_columns[1]: "".join(unique_list(matched_sentences)),
-                self.tag_columns[2]: ", ".join(unique_list(keywords_in_document)),
+                self.tag_columns[0]: self._fill_tags(
+                    True, unique_list(tags_in_document)
+                ),
+                self.tag_columns[1]: self._fill_tags(
+                    True, unique_list(keywords_in_document)
+                ),
+                self.tag_columns[2]: "".join(unique_list(matched_sentences)),
             }
         else:
             line = {column: np.nan for column in self.tag_columns}
@@ -258,7 +263,7 @@ class FormatterByDocument(Formatter):
             tag = self.keyword_to_tag[language][keyword]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
-            matched_sentences.append(sentence.text + " ")
+            matched_sentences.append(sentence.text + "\n")
         return tags_in_document, keywords_in_document, matched_sentences
 
     def write_df_category(
@@ -303,7 +308,7 @@ class FormatterByDocument(Formatter):
                     language=language,
                 )
                 keyword_list.append(keyword.text + " ")
-                matched_sentence.append(sentence.text + " ")
+                matched_sentence.append(sentence.text + "\n")
             tag_columns_for_json["tag_json_categories"] = self._fill_tags(
                 condition=(line and one_row_per_doc_json), value=dict(line)
             )
@@ -313,12 +318,20 @@ class FormatterByDocument(Formatter):
                     column_name: dict(value) for column_name, value in line_full.items()
                 },
             )
-        self.tag_keywords.append(", ".join(unique_list(keyword_list)))
+        for col in line:
+            line[col] = self._fill_tags(True, line[col])
+        if keyword_list:
+            self.tag_keywords.append(self._fill_tags(True, unique_list(keyword_list)))
+        else:
+            self.tag_keywords.append(np.nan)
         self.tag_sentences.append(" ".join(unique_list(matched_sentence)))
         self.output_df = (
             self.output_df.append(tag_columns_for_json, ignore_index=True)
             if one_row_per_doc_json
-            else self.output_df.append(line, ignore_index=True)
+            else self.output_df.append(
+                line,
+                ignore_index=True,
+            )
         )
 
     def _get_tags_in_row_category(
@@ -365,10 +378,16 @@ class FormatterByDocument(Formatter):
         output_df_copy = self.output_df.copy().add_prefix("tag_list_")
         tag_list_columns = output_df_copy.columns.tolist()
         output_df_copy.insert(
-            len(self.output_df.columns), self.tag_columns[1], self.tag_keywords, True
+            len(self.output_df.columns),
+            self.tag_columns[0],
+            self.tag_keywords,
+            True,
         )
         output_df_copy.insert(
-            len(self.output_df.columns), self.tag_columns[0], self.tag_sentences, True
+            len(self.output_df.columns),
+            self.tag_columns[1],
+            self.tag_sentences,
+            True,
         )
         self.tag_columns = tag_list_columns + self.tag_columns
         return self._set_columns_order(input_df, output_df_copy, text_column)
