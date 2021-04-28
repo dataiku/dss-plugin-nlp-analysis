@@ -7,6 +7,7 @@ from typing import List, AnyStr, Union, Callable
 from time import perf_counter
 import pandas as pd
 import numpy as np
+from spacy.tokens import Span, Doc
 
 
 def unique_list(sequence: List) -> List:
@@ -87,6 +88,14 @@ def move_columns_after(
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
 ) -> pd.DataFrame:
+    """Reorder columns by moving a list of columns after another column
+    Args:
+        df: Input pandas.DataFrame
+        columns_to_move: List of column names to move
+        after_column: Name of the columns to move columns after
+    Returns:
+       pandas.DataFrame with reordered columns
+    """
     input_df_columns = input_df.columns.tolist()
     after_column_position = input_df.columns.get_loc(after_column) + 1
     reordered_columns = (

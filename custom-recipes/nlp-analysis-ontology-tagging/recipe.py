@@ -12,7 +12,6 @@ text_dataframe = settings.text_input.get_dataframe(infer_with_pandas=False)
 ontology_dataframe = settings.ontology_input.get_dataframe(
     columns=settings.ontology_columns, infer_with_pandas=False
 )
-
 languages = (
     text_dataframe[settings.language_column].dropna().unique()
     if settings.language == "language_column"
@@ -27,10 +26,9 @@ tagger = Tagger(
     keyword_column=settings.keyword_column,
     language=settings.language,
     lemmatization=settings.lemmatization,
-    case_insensitivity=settings.case_insensitivity,
+    normalize_case=settings.normalize_case,
     normalization=settings.unicode_normalization,
 )
-
 output_df = tagger.tag_and_format(
     text_df=text_dataframe,
     text_column=settings.text_column,
