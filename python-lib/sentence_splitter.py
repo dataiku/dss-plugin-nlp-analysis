@@ -47,12 +47,12 @@ class SentenceSplitter:
             df=self.text_df, columns_to_clean=[self.text_column]
         )
         # generate a unique name for the column of tokenized text
-        logging.info(f"Splitting sentences on {len(self.text_df)} documents...")
         start = perf_counter()
         # split sentences with spacy sentencizer
         text_column_tokenized = generate_unique(
             name="list_sentences", existing_names=self.text_df.columns.tolist()
         )
+        logging.info(f"Splitting sentences on {len(self.text_df)} documents...")
         self.text_df[text_column_tokenized] = self._get_splitted_sentences()
         logging.info(
             f"Splitting sentences on {len(self.text_df)} documents: Done in {perf_counter() - start:.2f} seconds"
@@ -98,7 +98,7 @@ class SentenceSplitter:
             pandas.DataFrame: dataframe with the new tokenized text column
 
         """
-        tqdm.pandas(unit_scale=True, unit_divisor=4)
+        tqdm.pandas(miniters=1, mininterval=5.0)
         if self.language_column:
             return self.text_df.progress_apply(
                 self._split_sentences_multilingual,

@@ -111,7 +111,7 @@ class Tagger:
 
         Args:
             language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
-            keywords (list): The keywords to tokenize.
+            keywords (List): The keywords to tokenize.
 
         Returns:
             List: The tokenized keywords.
