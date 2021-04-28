@@ -29,7 +29,7 @@ class Formatter:
     ):
         store_attr()
         self.output_df = pd.DataFrame()
-        tqdm.pandas(unit_scale=True, unit_divisor=4)
+        tqdm.pandas(miniters=1, mininterval=5.0)
 
     def _get_document_language(
         self, row: pd.Series, language_column: AnyStr = None
