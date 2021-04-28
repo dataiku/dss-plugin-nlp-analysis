@@ -12,7 +12,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list
-from nlp_utils import get_keyword, get_sentence
+from nlp_utils import get_keyword, get_sentence, normalize
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -42,6 +42,18 @@ class Formatter:
     def _get_document_to_match(self, row: pd.Series, language) -> List:
         """Return the original document (as list of sentences) or, the lowercase one"""
         if self.normalize_case or self.normalization:
+            logging.info(
+                list(
+                    self.tokenizer.spacy_nlp_dict[language].pipe(
+                        [
+                            get_keyword(
+                                sentence, self.normalize_case, self.normalization
+                            )
+                            for sentence in row[self.text_column_tokenized]
+                        ]
+                    )
+                )
+            )
             return list(
                 self.tokenizer.spacy_nlp_dict[language].pipe(
                     [
@@ -53,7 +65,11 @@ class Formatter:
         else:
             return list(
                 self.tokenizer.spacy_nlp_dict[language].pipe(
-                    row[self.text_column_tokenized]
+                    [
+                        get_keyword(sentence, self.normalize_case, self.normalization)
+                        for sentence in row[self.text_column_tokenized]
+                    ]
+                    # row[self.text_column_tokenized]
                 )
             )
 
@@ -114,11 +130,13 @@ class FormatterByTag(Formatter):
         language = super()._get_document_language(row, language_column)
         matches = []
         document_to_match = super()._get_document_to_match(row, language)
+        print([texte for texte in document_to_match])
+        print("d to match ", [texte.text for texte in document_to_match])
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
             matches = [
                 (
-                    self._matcher_dict[language](sentence, as_spans=True),
+                    self._matcher_dict[language]((sentence), as_spans=True),
                     row[self.text_column_tokenized][idx],
                 )
                 for idx, sentence in enumerate(document_to_match)

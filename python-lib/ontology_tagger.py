@@ -1,7 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import get_keyword
+from nlp_utils import get_keyword, normalize
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -96,7 +96,7 @@ class Tagger:
             {
                 "label": label,
                 "pattern": get_keyword(
-                    pattern, self.normalize_case, self.normalization
+                    normalize(pattern), self.normalize_case, self.normalization
                 ),
                 "id": tag,
             }
@@ -123,11 +123,15 @@ class Tagger:
             get_keyword(keyword, self.normalize_case, self.normalization)
             for keyword in keywords
         ]
+        print(keywords)
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
         )
+        print([keyword.text for keyword in tokenized_keywords])
         self._keyword_to_tag[language] = {
-            get_keyword(keyword.text, self.normalize_case, self.normalization): tag
+            get_keyword(
+                normalize(keyword.text), self.normalize_case, self.normalization
+            ): tag
             for keyword, tag in zip(tokenized_keywords, tags)
         }
         return tokenized_keywords
@@ -190,6 +194,7 @@ class Tagger:
             matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher
+            logging.info(patterns)
 
     def _format_no_category(
         self,

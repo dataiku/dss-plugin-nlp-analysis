@@ -5,7 +5,9 @@ from typing import AnyStr, List, Tuple
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
 from plugin_io_utils import replace_nan_values, generate_unique
+from nlp_utils import normalize
 from tqdm import tqdm
+import json
 
 
 class SentenceSplitter:
@@ -72,7 +74,7 @@ class SentenceSplitter:
         """
         document, language = row[self.text_column], row[self.language_column]
         return [
-            sentence.text
+            normalize(sentence.text)
             for sentence in self.tokenizer.spacy_nlp_dict[language](document).sents
         ]
 
@@ -87,9 +89,26 @@ class SentenceSplitter:
 
         """
         document = row[self.text_column]
+        print(normalize(document))
+        print(normalize("Cl\u00E9ment"))
+        print(normalize(document))
+        print("here ", normalize(json.dumps(document)))
+        print("document before normalization: ", str(document))
+        document = normalize(document)
+        print("normalized document before tokenization: ", document)
+        logging.info(
+            [
+                sentence.text
+                for sentence in self.tokenizer.spacy_nlp_dict[self.language](
+                    document
+                ).sents
+            ]
+        )
         return [
             sentence.text
-            for sentence in self.tokenizer.spacy_nlp_dict[self.language](document).sents
+            for sentence in self.tokenizer.spacy_nlp_dict[self.language](
+                normalize(document)
+            ).sents
         ]
 
     def _get_splitted_sentences(self) -> pd.DataFrame:
