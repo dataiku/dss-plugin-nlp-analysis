@@ -318,8 +318,7 @@ class FormatterByDocument(Formatter):
                     column_name: dict(value) for column_name, value in line_full.items()
                 },
             )
-        for col in line:
-            line[col] = self._fill_tags(True, line[col])
+        line = [self._fill_tags(True, line[column]) for column in line]
         if keyword_list:
             self.tag_keywords.append(self._fill_tags(True, unique_list(keyword_list)))
         else:
