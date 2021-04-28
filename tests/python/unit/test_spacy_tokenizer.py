@@ -6,6 +6,7 @@
 import os
 
 import pytest
+
 import pandas as pd
 
 from spacy_tokenizer import MultilingualTokenizer
