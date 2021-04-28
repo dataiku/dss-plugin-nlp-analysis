@@ -4,7 +4,7 @@
 import regex as re
 import os
 import logging
-from typing import List, AnyStr, Union
+from typing import List, AnyStr, Union, Optional
 from time import perf_counter
 from tempfile import mkdtemp
 
@@ -108,12 +108,17 @@ class MultilingualTokenizer:
             Slower but adds additional tagging capabilities to the pipeline.
         hashtags_as_token (bool): Treat hashtags as one token instead of two
         batch_size (int): Number of documents to process in spaCy pipelines
+        max_num_characters (int): Maximum number of characters in a single text
+        add_pipe_components (list): List of spaCy pipeline components to add, for instance "sentencizer"
+        enable_pipe_components (list, optional): List of spaCy pipeline components to enable
+        disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
         spacy_nlp_dict (dict): Dictionary holding spaCy Language instances (value) by language code (key)
         tokenized_column (str): Name of the dataframe column storing tokenized documents
 
     """
 
     DEFAULT_BATCH_SIZE = 1000
+    MAX_NUM_CHARACTERS = 10 ** 7
     DEFAULT_NUM_PROCESS = 2
     DEFAULT_FILTER_TOKEN_ATTRIBUTES = {
         "is_space": "Whitespace",
@@ -138,25 +143,39 @@ class MultilingualTokenizer:
 
     def __init__(
         self,
-        stopwords_folder_path: AnyStr = None,
+        stopwords_folder_path: Optional[AnyStr] = None,
         use_models: bool = False,
         hashtags_as_token: bool = True,
         batch_size: int = DEFAULT_BATCH_SIZE,
+        max_num_characters: int = MAX_NUM_CHARACTERS,
         add_pipe_components: List[str] = [],
-        enable_pipe_components: Union[List[str], str] = None,
-        disable_pipe_components: Union[List[str], str] = None,
+        enable_pipe_components: Optional[Union[List[str], str]] = None,
+        disable_pipe_components: Optional[Union[List[str], str]] = None,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
         Args:
-            stopwords_folder_path (str, optional): Path to a folder with stopword text files (one line per stopword)
-                Files should be named "{language_code}.txt" with the code in ISO 639-1 format
-            use_models (bool, optional): If True (default), loads spaCy models, which is slower but allows to retrieve
-                Part-of-Speech and Entities tags for downstream tasks
-            hashtags_as_token (bool, optional): Treat hashtags as one token instead of two
-                Default is True, which overrides the spaCy default behavior
-            batch_size (int, optional): Number of documents to process in spaCy pipelines
-                Default is set by the DEFAULT_BATCH_SIZE class constant
+            stopwords_folder_path (str, optional): Path to a folder with stopword text files (one line per stopword).
+                Files should be named "{language_code}.txt" with the code in ISO 639-1 format.
+            use_models (bool): If True, loads spaCy models, which is slower but allows to retrieve
+                Part-of-Speech and Entities tags for downstream tasks. Default is False.
+            hashtags_as_token (bool): Treat hashtags as one token instead of two.
+                Default is True, which overrides the spaCy default behavior.
+            batch_size (int): Number of documents to process in spaCy pipelines.
+                Default is set by the DEFAULT_BATCH_SIZE class constant.
+            max_num_characters (int): Maximum number of characters in a single text.
+                Default is 10 million, higher than spaCy more conservative default at 1 million.
+            add_pipe_components (list): List of spaCy pipeline components to add, for instance "sentencizer".
+                If use_models is False, only the tokenizer component is present so other components must be added explicitly.
+                If use_models is True, several pipeline components are automatically added. 
+                Please refer to the spaCy documentation to know which components are available for each model.
+            enable_pipe_components (list, optional): List of spaCy pipeline components to enable.
+                To enable components, they must be added first, either by activating use_models 
+                or by adding them explicitly in add_pipe_components.
+            disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
+                To disable components, they must be added first, either by activating use_models 
+                or by adding them explicitly in add_pipe_components.
+                Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
 
         """
         store_attr()
@@ -193,6 +212,7 @@ class MultilingualTokenizer:
                 nlp = spacy.blank(
                     language
                 )  # spaCy language without models (https://spacy.io/usage/models)
+            nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
             if self.enable_pipe_components:
