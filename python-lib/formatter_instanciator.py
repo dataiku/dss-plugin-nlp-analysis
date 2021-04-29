@@ -9,7 +9,7 @@ from ontology_tagging_formatting import (
 # names of all additional columns depending on the output_format
 COLUMNS_DESCRIPTION = {
     "tag_keywords": "List of matched keywords",
-    "tag_sentences": "Sentences",
+    "tag_sentences": "Sentences containing matched keywords",
     "tag_json_full": "Detailed tag column: count of occurrences, matched sentences and list of keywords per tag and category",
     "tag_json_categories": "List of tags per category",
     "tag_list": "List of all assigned tags",
