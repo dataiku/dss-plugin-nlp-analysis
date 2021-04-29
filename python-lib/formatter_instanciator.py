@@ -15,7 +15,7 @@ COLUMNS_DESCRIPTION = {
     "tag_list": "List of all assigned tags",
     "tag": "Assigned tag",
     "tag_keyword": "Matched keyword",
-    "tag_sentence": "Sentence",
+    "tag_sentence": "Sentence containing the matched keyword",
     "tag_category": "Category of tag",
 }
 
