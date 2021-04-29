@@ -57,7 +57,9 @@ class Tagger:
             enable_pipe_components="sentencizer",
         )
         self._matcher_dict = {}  # this will be filled by the _match_no_category method
-        self._keyword_to_tag = {}  # this will be filled by the _tokenize_keywords method
+        self._keyword_to_tag = (
+            {}
+        )  # this will be filled by the _tokenize_keywords method
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -168,8 +170,13 @@ class Tagger:
         formatter.tag_columns = self._generate_unique_columns(
             text_df=text_df, columns=formatter.tag_columns
         )
-        return formatter.write_df_category(
-            input_df=text_df, text_column=text_column, language_column=language_column
+        return (
+            formatter.write_df_category(
+                input_df=text_df,
+                text_column=text_column,
+                language_column=language_column,
+            ),
+            formatter.column_descriptions,
         )
 
     def _match_no_category(
@@ -200,10 +207,13 @@ class Tagger:
         formatter.tag_columns = self._generate_unique_columns(
             text_df=text_df, columns=formatter.tag_columns
         )
-        return formatter.write_df(
-            input_df=text_df,
-            text_column=text_column,
-            language_column=language_column,
+        return (
+            formatter.write_df(
+                input_df=text_df,
+                text_column=text_column,
+                language_column=language_column,
+            ),
+            formatter.column_descriptions,
         )
 
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:

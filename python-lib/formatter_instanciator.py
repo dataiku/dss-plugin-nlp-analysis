@@ -6,19 +6,6 @@ from ontology_tagging_formatting import (
     FormatterByTag,
 )
 
-# names of all additional columns depending on the output_format
-COLUMNS_DESCRIPTION = {
-    "tag_keywords": "List of matched keywords",
-    "tag_sentences": "Sentences containing matched keywords",
-    "tag_json_full": "Detailed tag column: list of matched keywords per tag and category, count of occurrences, sentences containing matched keywords",
-    "tag_json_categories": "List of tags per category",
-    "tag_list": "List of all assigned tags",
-    "tag": "Assigned tag",
-    "tag_keyword": "Matched keyword",
-    "tag_sentence": "Sentence containing the matched keyword",
-    "tag_category": "Category of tag",
-}
-
 
 class OutputFormat(Enum):
     ONE_ROW_PER_TAG = "one_row_per_tag"

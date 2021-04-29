@@ -1,7 +1,3 @@
-"""
-Module to write the output dataframe depending on the output format
-This module inherits from Tagger where the tokenization, sentence splitting and Matcher instanciation has been done
-"""
 from fastcore.utils import store_attr
 import pandas as pd
 from collections import defaultdict
@@ -16,8 +12,25 @@ from nlp_utils import get_keyword, get_sentence
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
+# names of all additional columns depending on the output_format
+COLUMN_DESCRIPTION = {
+    "tag_keywords": "Matched keywords",
+    "tag_sentences": "Sentences",
+    "tag_json_full": "Detailed tag column: count of occurrences, matched sentences and list of keywords per tag and category",
+    "tag_json_categories": "List of tags per category",
+    "tag_list": "List of all assigned tags",
+    "tag": "Assigned tag",
+    "tag_keyword": "Matched keyword",
+    "tag_sentence": "Sentence",
+    "tag_category": "Category of tag",
+}
+
 
 class Formatter:
+    """
+    Module to write the output dataframe depending on the output format
+    This module inherits from Tagger where the tokenization, sentence splitting and Matcher instanciation has been done
+    """
     def __init__(
         self,
         language: AnyStr,
@@ -31,6 +44,7 @@ class Formatter:
         store_attr()
         self.output_df = pd.DataFrame()
         tqdm.pandas(miniters=1, mininterval=5.0)
+        self.column_descriptions = COLUMN_DESCRIPTION
 
     def _get_document_language(
         self, row: pd.Series, language_column: AnyStr = None
@@ -392,6 +406,10 @@ class FormatterByDocument(Formatter):
         """
         output_df_copy = self.output_df.copy().add_prefix("tag_list_")
         tag_list_columns = output_df_copy.columns.tolist()
+        for column in tag_list_columns:
+            self.column_descriptions[column] = (
+                "List of tags for category " + column.split("_")[-1]
+            )
         output_df_copy.insert(
             len(self.output_df.columns),
             self.tag_columns[0],
