@@ -10,6 +10,11 @@ import pandas as pd
 from time import perf_counter
 import logging
 from sentence_splitter import SentenceSplitter
+from language_support import (
+    SPACY_LANGUAGE_LOOKUP,
+    SPACY_LANGUAGE_MODELS,
+    SPACY_LANGUAGE_RULES,
+)
 
 
 class Tagger:
@@ -105,6 +110,31 @@ class Tagger:
             )
         ]
 
+    def _activate_components_to_lemmatize(self, language):
+        if language in SPACY_LANGUAGE_MODELS:
+            components_to_activate = [
+                "tok2vec",
+                "tagger",
+                "attribute_ruler",
+                "lemmatizer",
+            ]
+            for component in components_to_activate:
+                self.tokenizer.spacy_nlp_dict[language].enable_pipe(component)
+        elif language in SPACY_LANGUAGE_LOOKUP:
+            self.tokenizer.spacy_nlp_dict[language].add_pipe(
+                "lemmatizer", config={"mode": "lookup"}
+            )
+            self.tokenizer.spacy_nlp_dict[language].initialize()
+        elif language in SPACY_LANGUAGE_RULES:
+            self.tokenizer.spacy_nlp_dict[language].add_pipe(
+                "lemmatizer", config={"mode": "rule"}
+            )
+            self.tokenizer.spacy_nlp_dict[language].initialize()
+        else:
+            raise ValueError(
+                f"The language {language} is not supported for lemmatization"
+            )
+
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
     ) -> List[Doc]:
@@ -120,14 +150,8 @@ class Tagger:
 
         """
         if self.lemmatization:
-            self.tokenizer.spacy_nlp_dict[language].enable_pipe("tok2vec")
-            self.tokenizer.spacy_nlp_dict[language].enable_pipe("tagger")
-            self.tokenizer.spacy_nlp_dict[language].enable_pipe("attribute_ruler")
-            self.tokenizer.spacy_nlp_dict[language].enable_pipe("lemmatizer")
+            self._activate_components_to_lemmatize(language)
         keywords = [get_keyword(keyword, self.normalize_case) for keyword in keywords]
-        # tokenized_keywords = list(
-        #    self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
-        # )
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
         )

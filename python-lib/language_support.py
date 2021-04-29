@@ -84,3 +84,23 @@ SPACY_LANGUAGE_MODELS = {
 
 Models with Creative Commons licenses are not included because this plugin is licensed under Apache-2
 """
+
+SPACY_LANGUAGE_LOOKUP = [
+    "ca",
+    "cs",
+    "da",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "lb",
+    "lt",
+    "pt",
+    "ro",
+    "sr",
+    "tl",
+    "tr",
+    "ur",
+]
+
+SPACY_LANGUAGE_RULES = ["bn", "el", "fa", "mk", "nl", "sv"]
