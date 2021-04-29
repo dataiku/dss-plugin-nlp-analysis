@@ -54,12 +54,7 @@ class Tagger:
         self.tokenizer = MultilingualTokenizer(
             use_models=True,
             add_pipe_components=["sentencizer"],
-            enable_pipe_components=[
-                "sentencizer",
-                "tagger",
-                "attribute_ruler",
-                "lemmatizer",
-            ],
+            enable_pipe_components="sentencizer",
         )
         self._matcher_dict = {}  # this will be filled by the _match_no_category method
         self._keyword_to_tag = (
