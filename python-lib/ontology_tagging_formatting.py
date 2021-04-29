@@ -12,7 +12,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list
-from nlp_utils import get_keyword, get_sentence, get_tag
+from nlp_utils import get_keyword, get_sentence, get_tag, get_keyword_lemma
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -136,11 +136,10 @@ class FormatterByTag(Formatter):
         """
         values = []
         for match, sentence in matches:
-            print(match, sentence)
             values = [
                 self._list_to_dict(
                     [
-                        self.keyword_to_tag[language][
+                        self._keyword_to_tag[language][
                             get_tag(self.normalize_case, self.lemmatization, keyword)
                         ],
                         sentence,
@@ -269,7 +268,7 @@ class FormatterByDocument(Formatter):
         for match in matches:
             keyword = match.text
             tag = self._keyword_to_tag[language][
-                get_keyword(keyword, self.normalize_case)
+                get_tag(self.normalize_case, self.lemmatization, match)
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
@@ -486,7 +485,9 @@ class FormatterByDocumentJson(FormatterByDocument):
         Return a dictionary containing precisions about each tag
         """
         keyword = match.text
-        tag = self._keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
+        tag = self._keyword_to_tag[language][
+            get_tag(self.normalize_case, self.lemmatization, match)
+        ]
         if tag not in line_full.keys():
             line_full[tag] = {
                 "count": 1,

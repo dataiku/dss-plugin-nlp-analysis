@@ -8,7 +8,7 @@ def get_keyword(text: AnyStr, normalize_case: bool) -> AnyStr:
 
 
 def get_sentence(span: Span, normalize_case: bool) -> Union[Span, Doc]:
-    """Return Span object as a Doc if case_insensitive is set to True"""
+    """Return Span object as a Doc if normalize_case is set to True"""
     return span if normalize_case else span.as_doc()
 
 
@@ -17,14 +17,14 @@ def get_attr(lemmatize: bool) -> AnyStr:
     return "LEMMA" if lemmatize else "TEXT"
 
 
-def get_keyword_lemma(pattern, case):
+def get_keyword_lemma(pattern, normalize_case):
     text = " ".join([x.lemma_ for x in pattern])
     print(text)
     # text = "".join([sent.lemma_ for sent in pattern.sents])
-    return get_keyword(text, case)
+    return get_keyword(text, normalize_case)
 
 
-def get_tag(case, lemma, keyword):
+def get_tag(normalize_case, lemma, keyword):
     if lemma:
         return keyword.lemma_
-    return get_keyword(keyword.text, case)
+    return get_keyword(keyword.text, normalize_case)

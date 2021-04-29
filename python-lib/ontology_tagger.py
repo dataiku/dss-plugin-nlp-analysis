@@ -26,7 +26,7 @@ class Tagger:
             Used if there is only one language to treat.
             Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
-        case_insensitivity (bool): If True, match on lowercased forms. Default is False.
+        normalize_case (bool): If True, match on lowercased forms. Default is False.
         normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
@@ -125,6 +125,7 @@ class Tagger:
 
         """
         if self.lemmatization:
+            self.tokenizer.spacy_nlp_dict[language].enable_pipe("tok2vec")
             self.tokenizer.spacy_nlp_dict[language].enable_pipe("tagger")
             self.tokenizer.spacy_nlp_dict[language].enable_pipe("attribute_ruler")
             self.tokenizer.spacy_nlp_dict[language].enable_pipe("lemmatizer")
@@ -136,13 +137,13 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
         )
         if self.lemmatization:  # HERE
-            print(tokenized_keywords)
-            self.keyword_to_tag[language] = {
-                get_keyword_lemma(keyword, self.case_insensitivity): tag
+            self._keyword_to_tag[language] = {
+                get_keyword_lemma(keyword, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
+
         else:
-            self.keyword_to_tag[language] = {
+            self._keyword_to_tag[language] = {
                 get_keyword(keyword.text, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
