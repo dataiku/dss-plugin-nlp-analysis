@@ -106,34 +106,6 @@ def move_columns_after(
     return df.reindex(columns=reordered_columns)
 
 
-def get_keyword(text: AnyStr, case_insensitive: bool) -> AnyStr:
-    """Return text in its wanted-case form"""
-    return text.lower() if case_insensitive else text
-
-
-def get_sentence(span: Span, case_insensitive: bool) -> Union[Span, Doc]:
-    """Return Span object as a Doc if case_insensitive is set to True"""
-    return span if case_insensitive else span.as_doc()
-
-def get_attr(lemmatize: bool) -> AnyStr:
-    """Return the right attribute to pass to spaCy Matcher"""
-    return "LEMMA" if lemmatize else "TEXT"
-
-#def  get_name_case(case,name): 
-#    return name.lower() if case else name
-
-def get_keyword_lemma(pattern,case): 
-    text = " ".join([x.lemma_ for x in pattern])
-    print(text)
-    #text = "".join([sent.lemma_ for sent in pattern.sents])
-    return get_keyword(text,case)
-
-def get_tag(case,lemma,keyword):
-    if lemma:
-        return keyword.lemma_
-    return get_keyword(keyword.text,case)
-
-
 def replace_nan_values(df: pd.DataFrame, columns_to_clean: List) -> pd.DataFrame:
     """"Clean a pandas.DataFrame to replace NaNs values by empty strings in the columns_to_clean columns of the dataframe"""
     for column in columns_to_clean:

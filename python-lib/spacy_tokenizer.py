@@ -218,6 +218,7 @@ class MultilingualTokenizer:
                 ).search
         if self.stopwords_folder_path and language in SUPPORTED_LANGUAGES_SPACY:
             self._customize_stopwords(nlp, language)
+        logging.info(f"Loading tokenizer for language '{language}': done in {perf_counter() - start:.2f} seconds")
         return nlp
 
     def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:

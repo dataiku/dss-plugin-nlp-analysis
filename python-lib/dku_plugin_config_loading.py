@@ -19,7 +19,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
     """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
-        "case_insensitivity",
+        "normalize_case",
         "lemmatization",
         "unicode_normalization",
     ]
@@ -116,7 +116,6 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
                 },
             ],
         )
-    
 
     def _check_languages(self, languages):
         """Checks if the specified languages are supported"""
@@ -125,7 +124,6 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             raise ValueError(
                 f"Found {len(unsupported_languages)} unsupported languages in Document dataset: {unsupported_languages}"
             )
-        
 
     def _check_languages(self, languages):
         """Checks if the specified languages are supported"""

@@ -168,6 +168,10 @@
                     "label": "Italian"
                 },
                 {
+                    "value": "ja",
+                    "label": "Japanese"
+                },
+                {
                     "value": "kn",
                     "label": "Kannada"
                 },
@@ -347,7 +351,7 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "case_insensitivity",
+            "name": "normalize_case",
             "label": "Normalize case",
             "description": "Match keywords whichever the case (upper or lower)",
             "type": "BOOLEAN",
