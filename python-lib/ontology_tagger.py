@@ -86,7 +86,7 @@ class Tagger:
         ]
 
     def _get_patterns(
-        self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr]
+        self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr], language
     ) -> List[dict]:
         """Called in _tag_and_format, when self.category_column is not None. Create the list of patterns to match with.
 
@@ -98,11 +98,15 @@ class Tagger:
             List : List of dictionaries. One dictionary = one pattern, defined as follow : {"label": category, "pattern": keyword, "id": tag}
 
         """
+        if self.lemmatization:
+            self._activate_components_to_lemmatize(language)
         list_of_categories = self.ontology_df[self.category_column].values.tolist()
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.normalize_case),
+                "pattern": self.tokenizer.spacy_nlp_dict[language](
+                    get_keyword(pattern, self.normalize_case)
+                ),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -155,7 +159,7 @@ class Tagger:
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
         )
-        if self.lemmatization:  # HERE
+        if self.lemmatization:
             self._keyword_to_tag[language] = {
                 get_keyword_lemma(keyword, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
@@ -185,12 +189,12 @@ class Tagger:
 
     def _match_with_category(
         self,
-        patterns: List[dict],
         list_of_tags: List[AnyStr],
         list_of_keywords: List[AnyStr],
     ) -> None:
         """Tokenize keywords for every language. Instanciate EntityRuler with associated tags and categories"""
         for language in self.tokenizer.spacy_nlp_dict:
+            patterns = self._get_patterns(list_of_keywords, list_of_tags, language)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe("entity_ruler")
             ruler.add_patterns(patterns)
@@ -222,6 +226,7 @@ class Tagger:
         """Tokenize keywords for every language. Instanciate PhraseMatcher with associated tags"""
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
+            print("patterns: ", patterns)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             matcher = PhraseMatcher(
                 self.tokenizer.spacy_nlp_dict[language].vocab,
@@ -298,8 +303,7 @@ class Tagger:
         # matching and formatting
         if self.category_column:
             # patterns to add to Entity Ruler pipe
-            patterns = self._get_patterns(list_of_keywords, list_of_tags)
-            self._match_with_category(patterns, list_of_tags, list_of_keywords)
+            self._match_with_category(list_of_tags, list_of_keywords)
             logging.info(f"Tagging {len(text_df)} documents...")
             return self._format_with_category(
                 arguments=formatter_config,

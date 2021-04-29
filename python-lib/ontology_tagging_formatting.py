@@ -111,6 +111,9 @@ class FormatterByTag(Formatter):
         language = super()._get_document_language(row, language_column)
         matches = []
         document_to_match = super()._get_document_to_match(row, language)
+        for document in document_to_match:
+            for sentence in document:
+                print(sentence.lemma_)
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
             matches = [
