@@ -47,7 +47,7 @@ class Formatter:
         tqdm.pandas(miniters=1, mininterval=5.0)
         self._column_descriptions = COLUMN_DESCRIPTION
 
-    def _generate_tag_columns_names(self, text_df: pd.DataFrame) -> None:
+    def _generate_columns_names(self, text_df: pd.DataFrame) -> None:
         """Create unique names for tag columns and store their descriptions"""
         tag_columns_names = generate_unique_columns(text_df, self.tag_columns)
         for tag_column, tag_column_name in zip(self.tag_columns, tag_columns_names):
@@ -111,7 +111,7 @@ class FormatterByTag(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for one_row_per_tag format (with or without categories)"""
         start = perf_counter()
-        self._generate_tag_columns_names(input_df)
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -233,7 +233,7 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame():
         """Write the output dataframe for One row per document format (without categories)"""
         start = perf_counter()
-        self._generate_tag_columns_names(input_df)
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -310,7 +310,7 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for One row per document with category"""
         start = perf_counter()
-        self._generate_tag_columns_names(input_df)
+        self._generate_columns_names(input_df)
         input_df.progress_apply(
             self._write_row_category, args=[False, language_column], axis=1
         )
@@ -469,7 +469,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Write the output dataframe for the Json Format without category
         """
         start = perf_counter()
-        self._generate_tag_columns_names(input_df)
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -516,7 +516,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Write the output dataframe for the Json Format with category :
         """
         start = perf_counter()
-        self._generate_tag_columns_names(input_df)
+        self._generate_columns_names(input_df)
         input_df.progress_apply(
             super()._write_row_category, args=[True, language_column], axis=1
         )
