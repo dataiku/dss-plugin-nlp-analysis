@@ -28,7 +28,7 @@ tagger = Tagger(
     normalize_case=settings.normalize_case,
     normalization=settings.unicode_normalization,
 )
-output_df, column_descriptions = tagger.tag_and_format(
+output_df = tagger.tag_and_format(
     text_df=text_dataframe,
     text_column=settings.text_column,
     language_column=settings.language_column,
@@ -38,5 +38,5 @@ output_df, column_descriptions = tagger.tag_and_format(
 settings.output_dataset.write_with_schema(output_df)
 set_column_descriptions(
     output_dataset=settings.output_dataset,
-    column_descriptions=column_descriptions,
+    column_descriptions=tagger._column_descriptions,
 )

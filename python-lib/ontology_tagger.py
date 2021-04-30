@@ -1,6 +1,5 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique
 from nlp_utils import get_keyword
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
@@ -35,6 +34,7 @@ class Tagger:
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
             Example :
                 {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
+        _column_descriptions (dict): Private attribute. Dictionary of new columns to add in the dataframe (key) and their description (value)
 
     """
 
@@ -56,10 +56,9 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self._matcher_dict = {}  # this will be filled by the _match_no_category method
-        self._keyword_to_tag = (
-            {}
-        )  # this will be filled by the _tokenize_keywords method
+        self._matcher_dict = {}  # filled by the _match_no_category method
+        self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
+        self._column_descriptions = {}  # filled by the _format_ methods
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -69,16 +68,6 @@ class Tagger:
             raise ValueError(
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
-
-    def _generate_unique_columns(
-        self, text_df: pd.DataFrame, columns: List[AnyStr]
-    ) -> List[AnyStr]:
-        """Generate unique names for the new columns to add"""
-        text_df_columns = text_df.columns.tolist()
-        return [
-            generate_unique(name=column, existing_names=text_df_columns)
-            for column in columns
-        ]
 
     def _get_patterns(
         self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr]
@@ -167,17 +156,13 @@ class Tagger:
         formatter = FormatterInstanciator().get_formatter(
             config=arguments, format=output_format, category="category"
         )
-        formatter.tag_columns = self._generate_unique_columns(
-            text_df=text_df, columns=formatter.tag_columns
+        output_df = formatter.write_df_category(
+            input_df=text_df,
+            text_column=text_column,
+            language_column=language_column,
         )
-        return (
-            formatter.write_df_category(
-                input_df=text_df,
-                text_column=text_column,
-                language_column=language_column,
-            ),
-            formatter.column_descriptions,
-        )
+        self._column_descriptions = formatter._column_descriptions
+        return output_df
 
     def _match_no_category(
         self,
@@ -204,17 +189,13 @@ class Tagger:
         formatter = FormatterInstanciator().get_formatter(
             config=arguments, format=output_format, category="no_category"
         )
-        formatter.tag_columns = self._generate_unique_columns(
-            text_df=text_df, columns=formatter.tag_columns
+        output_df = formatter.write_df(
+            input_df=text_df,
+            text_column=text_column,
+            language_column=language_column,
         )
-        return (
-            formatter.write_df(
-                input_df=text_df,
-                text_column=text_column,
-                language_column=language_column,
-            ),
-            formatter.column_descriptions,
-        )
+        self._column_descriptions = formatter._column_descriptions
+        return output_df
 
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
         """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""

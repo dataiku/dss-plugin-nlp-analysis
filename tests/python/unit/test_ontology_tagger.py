@@ -87,7 +87,7 @@ def test_matching_in_lowercase():
         language="en",
         normalize_case=True,
     )
-    df, _ = tagger.tag_and_format(
+    df = tagger.tag_and_format(
         text_df=text_df,
         text_column="text",
         output_format="one_row_per_tag",
