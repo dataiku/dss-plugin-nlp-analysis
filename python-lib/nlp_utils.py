@@ -1,4 +1,4 @@
-from typing import AnyStr, Union
+from typing import AnyStr, Union, List
 from spacy.tokens import Span, Doc
 import unicodedata
 
