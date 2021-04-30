@@ -12,8 +12,9 @@ import logging
 from sentence_splitter import SentenceSplitter
 from language_support import (
     SPACY_LANGUAGE_LOOKUP,
-    SPACY_LANGUAGE_MODELS,
     SPACY_LANGUAGE_RULES,
+    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
+    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
 )
 
 
@@ -112,14 +113,16 @@ class Tagger:
             )
         ]
 
+    def _get_components_to_activate(self, language):
+        if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
+            return ["morphologizer", "lemmatizer"]
+        else:
+            return ["tagger", "attribute_ruler", "lemmatizer"]
+
     def _activate_components_to_lemmatize(self, language):
-        if language in SPACY_LANGUAGE_MODELS:
-            components_to_activate = [
-                "tok2vec",
-                "tagger",
-                "attribute_ruler",
-                "lemmatizer",
-            ]
+        if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
+            components_to_activate = ["tok2vec"]
+            components_to_activate.extend(self._get_components_to_activate(language))
             for component in components_to_activate:
                 self.tokenizer.spacy_nlp_dict[language].enable_pipe(component)
         elif language in SPACY_LANGUAGE_LOOKUP:
