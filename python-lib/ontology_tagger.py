@@ -104,9 +104,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": self.tokenizer.spacy_nlp_dict[language](
-                    get_keyword(pattern, self.normalize_case)
-                ),
+                "pattern": get_keyword(pattern, self.normalize_case),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -136,7 +134,7 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].initialize()
         else:
             raise ValueError(
-                f"The language {language} is not supported for lemmatization"
+                f"The language {language} is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
             )
 
     def _tokenize_keywords(
@@ -196,7 +194,10 @@ class Tagger:
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._get_patterns(list_of_keywords, list_of_tags, language)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
-            ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe("entity_ruler")
+            ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe(
+                "entity_ruler",
+                config={"phrase_matcher_attr": get_attr(self.lemmatization)},
+            )
             ruler.add_patterns(patterns)
 
     def _format_with_category(
