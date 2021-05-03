@@ -10,6 +10,7 @@ import pandas as pd
 from time import perf_counter
 import logging
 from sentence_splitter import SentenceSplitter
+import unicodedata
 
 
 class Tagger:
@@ -56,8 +57,8 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self._matcher_dict = {}  # this will be filled by the _match_no_category method
-        self._keyword_to_tag = {}  # this will be filled by the _tokenize_keywords method
+        self._matcher_dict = {}  # this will be fill in the _match_no_category method
+        self._keyword_to_tag = {}  # this will be fill in the _tokenize_keywords method
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -95,7 +96,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.normalize_case),
+                "pattern": get_keyword(normalize(pattern), self.normalize_case),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -111,15 +112,21 @@ class Tagger:
 
         Args:
             language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
-            keywords (List): The keywords to tokenize.
+            keywords (list): The keywords to tokenize.
 
         Returns:
             List: The tokenized keywords.
 
         """
-        keywords = [get_keyword(keyword, self.normalize_case) for keyword in keywords]
         tokenized_keywords = list(
-            self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
+            self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(
+                [
+                    unicodedata.normalize(
+                        "NFD", get_keyword(keyword, self.normalize_case)
+                    )
+                    for keyword in keywords
+                ]
+            )
         )
         self._keyword_to_tag[language] = {
             get_keyword(keyword.text, self.normalize_case): tag
@@ -135,6 +142,7 @@ class Tagger:
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
             "normalize_case": self.normalize_case,
+            "normalization": self.normalization,
         }
         if not self.category_column:
             arguments["_matcher_dict"] = self._matcher_dict
@@ -179,11 +187,27 @@ class Tagger:
     ) -> None:
         """Tokenize keywords for every language. Instanciate PhraseMatcher with associated tags"""
         for language in self.tokenizer.spacy_nlp_dict:
-            patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
+            patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher
+            print(patterns)
+            # print(
+            #    "here the text is",
+            #    self.tokenizer.spacy_nlp_dict[language](
+            #        normalize("this is Cl\u00e9ment")
+            #    ),
+            # )
+            # docu = self.tokenizer.spacy_nlp_dict[language](
+            #    normalize("this is Cl\u00e9ment")
+            # )
+            # z = matcher(docu)
+            # for id, st, end in z:
+            #    print(
+            #        "############### @@@@@@@@@@@@@ ",
+            #        docu[st:end].text,
+            #    )
 
     def _format_no_category(
         self,
@@ -223,6 +247,7 @@ class Tagger:
             text_column=text_column,
             tokenizer=self.tokenizer,
             normalize_case=self.normalize_case,
+            normalization=self.normalization,
             language=self.language,
             language_column=language_column,
         )

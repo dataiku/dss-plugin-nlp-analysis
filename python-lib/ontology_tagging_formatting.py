@@ -15,6 +15,8 @@ from plugin_io_utils import move_columns_after, unique_list
 from nlp_utils import get_keyword, get_sentence
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
+import unicodedata
+
 
 class Formatter:
     def __init__(
@@ -24,6 +26,7 @@ class Formatter:
         category_column: AnyStr,
         normalize_case: bool,
         text_column_tokenized: AnyStr,
+        normalization: bool,
         _keyword_to_tag: dict = None,
         _matcher_dict: dict = None,
     ):
@@ -46,11 +49,16 @@ class Formatter:
                 )
             )
         else:
-            return list(
-                self.tokenizer.spacy_nlp_dict[language].pipe(
-                    row[self.text_column_tokenized]
-                )
-            )
+            # return list(
+            #    self.tokenizer.spacy_nlp_dict[language].pipe(
+            #        row[self.text_column_tokenized]
+            #    )
+            # )
+            normalized_texte = [
+                unicodedata.normalize("NFD", sentence)
+                for sentence in row[self.text_column_tokenized]
+            ]
+            return list(self.tokenizer.spacy_nlp_dict[language].pipe(normalized_texte))
 
     def _set_columns_order(
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
@@ -134,6 +142,8 @@ class FormatterByTag(Formatter):
         """
         values = []
         for match, sentence in matches:
+            for keyword in match:
+                print("#######@@@@@@@", keyword.text)
             values = [
                 self._list_to_dict(
                     [
@@ -264,6 +274,7 @@ class FormatterByDocument(Formatter):
         """
         matches = self._matcher_dict[language](sentence, as_spans=True)
         for match in matches:
+            print("THERE IS A MATCH")
             keyword = match.text
             tag = self._keyword_to_tag[language][
                 get_keyword(keyword, self.normalize_case)
@@ -281,7 +292,9 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for One row per document with category"""
         start = perf_counter()
-        input_df.progress_apply(self._write_row_category, args=[False, language_column], axis=1)
+        input_df.progress_apply(
+            self._write_row_category, args=[False, language_column], axis=1
+        )
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
