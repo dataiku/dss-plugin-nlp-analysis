@@ -12,7 +12,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list
-from nlp_utils import get_keyword, get_sentence, get_tag, get_keyword_lemma
+from nlp_utils import get_keyword
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -111,9 +111,6 @@ class FormatterByTag(Formatter):
         language = super()._get_document_language(row, language_column)
         matches = []
         document_to_match = super()._get_document_to_match(row, language)
-        for document in document_to_match:
-            for sentence in document:
-                print(sentence.lemma_)
         empty_row = {column: np.nan for column in self.tag_columns}
         if not self.category_column:
             matches = [
@@ -143,7 +140,9 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self._keyword_to_tag[language][
-                            get_tag(self.normalize_case, self.lemmatization, keyword)
+                            get_keyword(
+                                self.normalize_case, self.lemmatization, keyword
+                            )
                         ],
                         sentence,
                         keyword.text,
@@ -271,7 +270,7 @@ class FormatterByDocument(Formatter):
         for match in matches:
             keyword = match.text
             tag = self._keyword_to_tag[language][
-                get_tag(self.normalize_case, self.lemmatization, match)
+                get_keyword(self.normalize_case, self.lemmatization, match)
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
@@ -489,7 +488,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         """
         keyword = match.text
         tag = self._keyword_to_tag[language][
-            get_tag(self.normalize_case, self.lemmatization, match)
+            get_keyword(self.normalize_case, self.lemmatization, match)
         ]
         if tag not in line_full.keys():
             line_full[tag] = {

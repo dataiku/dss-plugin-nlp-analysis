@@ -1,7 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import get_keyword, get_keyword_lemma, get_attr
+from nlp_utils import get_text_normalized, get_attribute, get_text_case
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -105,7 +105,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.normalize_case),
+                "pattern": get_text_case(pattern, self.normalize_case),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -113,13 +113,24 @@ class Tagger:
             )
         ]
 
-    def _get_components_to_activate(self, language):
+    def _get_components_to_activate(self, language: AnyStr) -> List[AnyStr]:
+        """Return the list of Spacy components to activate from the pre-trained model loaded to lemmatize text.
+        To lemmatize text with SpaCy models, text must have .pos attributes before lemmatization:
+        obtained with either a morphologizer or with tagger + attribute_ruler
+
+        """
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
             return ["morphologizer", "lemmatizer"]
         else:
             return ["tagger", "attribute_ruler", "lemmatizer"]
 
-    def _activate_components_to_lemmatize(self, language):
+    def _activate_components_to_lemmatize(self, language: AnyStr) -> None:
+        """Set the components of SpaCy Language to lemmatize text:
+        - If SpaCy Language is a pre-trained model : call _get_components_to_activate
+        - Else: Add a Lemmatizer in the available mode 'rule' or 'lookup'
+        (cf https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data)
+
+        """
         if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             components_to_activate = ["tok2vec"]
             components_to_activate.extend(self._get_components_to_activate(language))
@@ -156,19 +167,18 @@ class Tagger:
         """
         if self.lemmatization:
             self._activate_components_to_lemmatize(language)
-        keywords = [get_keyword(keyword, self.normalize_case) for keyword in keywords]
+        keywords = [get_text_case(keyword, self.normalize_case) for keyword in keywords]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
         )
         if self.lemmatization:
             self._keyword_to_tag[language] = {
-                get_keyword_lemma(keyword, self.normalize_case): tag
+                get_text_normalized(keyword, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
-
         else:
             self._keyword_to_tag[language] = {
-                get_keyword(keyword.text, self.normalize_case): tag
+                get_text_case(keyword.text, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
         return tokenized_keywords
@@ -199,7 +209,7 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe(
                 "entity_ruler",
-                config={"phrase_matcher_attr": get_attr(self.lemmatization)},
+                config={"phrase_matcher_attr": get_attribute(self.lemmatization)},
             )
             ruler.add_patterns(patterns)
 
@@ -230,11 +240,10 @@ class Tagger:
         """Tokenize keywords for every language. Instanciate PhraseMatcher with associated tags"""
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
-            print("patterns: ", patterns)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             matcher = PhraseMatcher(
                 self.tokenizer.spacy_nlp_dict[language].vocab,
-                attr=get_attr(self.lemmatization),
+                attr=get_attribute(self.lemmatization),
             )
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher

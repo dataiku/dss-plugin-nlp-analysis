@@ -2,29 +2,33 @@ from typing import AnyStr, Union
 from spacy.tokens import Span, Doc
 
 
-def get_keyword(text: AnyStr, normalize_case: bool) -> AnyStr:
+def get_text_case(text: AnyStr, normalize_case: bool) -> AnyStr:
     """Return text in its wanted-case form"""
     return text.lower() if normalize_case else text
 
 
-def get_sentence(span: Span, normalize_case: bool) -> Union[Span, Doc]:
-    """Return Span object as a Doc if normalize_case is set to True"""
-    return span if normalize_case else span.as_doc()
-
-
-def get_attr(lemmatize: bool) -> AnyStr:
+def get_attribute(lemmatize: bool) -> AnyStr:
     """Return the right attribute to pass to spaCy Matcher"""
     return "LEMMA" if lemmatize else "TEXT"
 
 
-def get_keyword_lemma(pattern, normalize_case):
-    text = " ".join([x.lemma_ for x in pattern])
-    print(text)
-    # text = "".join([sent.lemma_ for sent in pattern.sents])
-    return get_keyword(text, normalize_case)
+def get_text_normalized(text: Doc, normalize_case: bool) -> AnyStr:
+    """Lemmatize text and return it lowercase if normalize_case is True"""
+    text = " ".join([word.lemma_ for word in text])
+    return get_text_case(text, normalize_case)
 
 
-def get_tag(normalize_case, lemma, keyword):
-    if lemma:
+def get_keyword(normalize_case: bool, lemmatize: bool, keyword: Span) -> AnyStr:
+    """Return text after normalizing it if needed
+
+    Args:
+        normalize_case (bool): if True, keyword will be lowercased
+        lemmatize (bool): if True, return the keyword lemma
+        keyword (spacy.tokens.Span): the text you want to process
+
+    Returns:
+        The keyword normalized as needed
+    """
+    if lemmatize:
         return keyword.lemma_
-    return get_keyword(keyword.text, normalize_case)
+    return get_text_case(keyword.text, normalize_case)
