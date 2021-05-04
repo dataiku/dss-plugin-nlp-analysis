@@ -17,7 +17,12 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from language_support import SUPPORTED_LANGUAGES_SPACY, SPACY_LANGUAGE_MODELS
+from language_support import (
+    SUPPORTED_LANGUAGES_SPACY,
+    SPACY_LANGUAGE_MODELS,
+    SPACY_LANGUAGE_LOOKUP,
+    SPACY_LANGUAGE_RULES,
+)
 from plugin_io_utils import generate_unique, truncate_text_list
 
 
@@ -167,13 +172,13 @@ class MultilingualTokenizer:
                 Default is 10 million, higher than spaCy more conservative default at 1 million.
             add_pipe_components (list): List of spaCy pipeline components to add, for instance "sentencizer".
                 If use_models is False, only the tokenizer component is present so other components must be added explicitly.
-                If use_models is True, several pipeline components are automatically added. 
+                If use_models is True, several pipeline components are automatically added.
                 Please refer to the spaCy documentation to know which components are available for each model.
             enable_pipe_components (list, optional): List of spaCy pipeline components to enable.
-                To enable components, they must be added first, either by activating use_models 
+                To enable components, they must be added first, either by activating use_models
                 or by adding them explicitly in add_pipe_components.
             disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
-                To disable components, they must be added first, either by activating use_models 
+                To disable components, they must be added first, either by activating use_models
                 or by adding them explicitly in add_pipe_components.
                 Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
 
@@ -184,6 +189,49 @@ class MultilingualTokenizer:
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
+            )
+
+    def _get_components_to_activate(self, language: AnyStr) -> List[AnyStr]:
+        """Return the list of Spacy components to activate from the pre-trained model loaded to lemmatize text.
+        To lemmatize text with SpaCy models, text must have .pos attributes before lemmatization:
+        obtained with either a morphologizer or with tagger + attribute_ruler
+
+        """
+        pass
+
+    def _activate_components_to_lemmatize(self, language: AnyStr) -> None:
+        """Set the components of SpaCy Language to lemmatize text:
+        - If SpaCy Language is the russian pre-trained model : use tok2vec, morphologizer and lemmatizer
+        - Else: Add a Lemmatizer in the available mode 'rule' or 'lookup'
+        (cf https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data )
+
+        """
+        if language == "ru":
+            if self.use_models:
+                self.spacy_nlp_dict[language] = spacy.load(
+                    SPACY_LANGUAGE_MODELS[language]
+                )
+                components_to_activate = ["tok2vec", "morphologizer", "lemmatizer"]
+                self.spacy_nlp_dict[language].select_pipes(
+                    enable=components_to_activate
+                )
+            else:
+                raise ValueError(
+                    f"The language {language} is not available for Lemmatization without a pretrained model. Set use_models to True to lemmatize in {language}"
+                )
+        elif language in SPACY_LANGUAGE_LOOKUP:
+            self.spacy_nlp_dict[language].add_pipe(
+                "lemmatizer", config={"mode": "lookup"}
+            )
+            self.spacy_nlp_dict[language].initialize()
+        elif language in SPACY_LANGUAGE_RULES:
+            self.spacy_nlp_dict[language].add_pipe(
+                "lemmatizer", config={"mode": "rule"}
+            )
+            self.spacy_nlp_dict[language].initialize()
+        else:
+            raise ValueError(
+                f"The language {language} is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
             )
 
     def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
@@ -238,7 +286,9 @@ class MultilingualTokenizer:
                 ).search
         if self.stopwords_folder_path and language in SUPPORTED_LANGUAGES_SPACY:
             self._customize_stopwords(nlp, language)
-        logging.info(f"Loading tokenizer for language '{language}': done in {perf_counter() - start:.2f} seconds")
+        logging.info(
+            f"Loading tokenizer for language '{language}': done in {perf_counter() - start:.2f} seconds"
+        )
         return nlp
 
     def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:

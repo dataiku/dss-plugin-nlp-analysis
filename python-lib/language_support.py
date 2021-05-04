@@ -101,14 +101,22 @@ SPACY_LANGUAGE_LOOKUP = [
     "tl",
     "tr",
     "ur",
+    "en",
+    "pl",
+    "de",
+    "es",
+    "nb",
+    "fr",
+    "mk",
+    "nl",
+    "sv",
 ]
+"""list: ISO 639-1 language codes that have available SpaCy lookup tables for lemmatization. 
 
-SPACY_LANGUAGE_RULES = ["bn", "el", "fa", "mk", "nl", "sv"]
+The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
 
-SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["es", "ru", "nb", "fr"]
+SPACY_LANGUAGE_RULES = ["bn", "el", "fa"]
 
-SPACY_LANGUAGE_MODELS_TAGGER_ATTRIBUTE_RULER = ["en", "pl", "de"]
+"""list: ISO 639-1 language codes that have available SpaCy rules tables (and no lookup tables) for lemmatization
 
-SPACY_LANGUAGE_MODELS_LEMMATIZATION = (
-    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER + SPACY_LANGUAGE_MODELS_TAGGER_ATTRIBUTE_RULER
-)
+The rule tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
