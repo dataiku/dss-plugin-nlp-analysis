@@ -1,7 +1,3 @@
-"""
-Module to write the output dataframe depending on the output format
-This module inherits from Tagger where the tokenization, sentence splitting and Matcher instanciation has been done
-"""
 from fastcore.utils import store_attr
 import pandas as pd
 from collections import defaultdict
@@ -11,12 +7,31 @@ import numpy as np
 from time import perf_counter
 import logging
 import json
-from plugin_io_utils import move_columns_after, unique_list
-from nlp_utils import get_keyword, get_sentence
+from plugin_io_utils import move_columns_after, unique_list, generate_unique_columns
+from nlp_utils import get_keyword, get_sentence, normalize_text
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
+# names of all additional columns depending on the output_format
+COLUMN_DESCRIPTION = {
+    "tag_keywords": "List of matched keywords",
+    "tag_sentences": "Sentences containing matched keywords",
+    "tag_json_full": "Detailed tag column: list of matched keywords per tag and category, count of occurrences, sentences containing matched keywords",
+    "tag_json_categories": "List of tags per category",
+    "tag_list": "List of all assigned tags",
+    "tag": "Assigned tag",
+    "tag_keyword": "Matched keyword",
+    "tag_sentence": "Sentence containing the matched keyword",
+    "tag_category": "Category of tag",
+}
+
+
 class Formatter:
+    """
+    Write the output dataframe depending on the output format
+    This class is called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
+    """
+
     def __init__(
         self,
         language: AnyStr,
@@ -30,6 +45,14 @@ class Formatter:
         store_attr()
         self.output_df = pd.DataFrame()
         tqdm.pandas(miniters=1, mininterval=5.0)
+        self._column_descriptions = COLUMN_DESCRIPTION
+
+    def _generate_columns_names(self, text_df: pd.DataFrame) -> None:
+        """Create unique names for tag columns and store their descriptions"""
+        tag_columns_names = generate_unique_columns(text_df, self.tag_columns)
+        for tag_column, tag_column_name in zip(self.tag_columns, tag_columns_names):
+            self._column_descriptions[tag_column_name] = COLUMN_DESCRIPTION[tag_column]
+        self.tag_columns = tag_columns_names
 
     def _get_document_language(
         self, row: pd.Series, language_column: AnyStr = None
@@ -88,6 +111,7 @@ class FormatterByTag(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for one_row_per_tag format (with or without categories)"""
         start = perf_counter()
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -140,8 +164,8 @@ class FormatterByTag(Formatter):
                         self._keyword_to_tag[language][
                             get_keyword(keyword.text, self.normalize_case)
                         ],
-                        sentence,
                         keyword.text,
+                        sentence,
                     ]
                 )
                 for keyword in match
@@ -161,10 +185,10 @@ class FormatterByTag(Formatter):
             tag_rows = [
                 self._list_to_dict(
                     [
-                        keyword.ent_id_,
                         keyword.label_,
-                        original_document[idx],
+                        keyword.ent_id_,
                         keyword.text,
+                        original_document[idx],
                     ]
                 )
                 for keyword in sentence.ents
@@ -209,6 +233,7 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame():
         """Write the output dataframe for One row per document format (without categories)"""
         start = perf_counter()
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -241,9 +266,13 @@ class FormatterByDocument(Formatter):
 
         if tags_in_document != []:
             line = {
-                self.tag_columns[0]: unique_list(tags_in_document),
-                self.tag_columns[1]: "".join(unique_list(matched_sentences)),
-                self.tag_columns[2]: ", ".join(unique_list(keywords_in_document)),
+                self.tag_columns[0]: self._fill_tags(
+                    True, unique_list(tags_in_document)
+                ),
+                self.tag_columns[1]: self._fill_tags(
+                    True, unique_list(keywords_in_document)
+                ),
+                self.tag_columns[2]: "".join(unique_list(matched_sentences)),
             }
         else:
             line = {column: np.nan for column in self.tag_columns}
@@ -270,7 +299,7 @@ class FormatterByDocument(Formatter):
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
-            matched_sentences.append(original_sentence + " ")
+            matched_sentences.append(original_sentence + "\n")
         return tags_in_document, keywords_in_document, matched_sentences
 
     def write_df_category(
@@ -281,7 +310,10 @@ class FormatterByDocument(Formatter):
     ) -> pd.DataFrame:
         """Write the output dataframe for One row per document with category"""
         start = perf_counter()
-        input_df.progress_apply(self._write_row_category, args=[False, language_column], axis=1)
+        self._generate_columns_names(input_df)
+        input_df.progress_apply(
+            self._write_row_category, args=[False, language_column], axis=1
+        )
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
@@ -317,7 +349,7 @@ class FormatterByDocument(Formatter):
                     language=language,
                 )
                 keyword_list.append(keyword.text + " ")
-                matched_sentence.append(original_sentence[idx] + " ")
+                matched_sentence.append(original_sentence[idx] + "\n")
             tag_columns_for_json["tag_json_categories"] = self._fill_tags(
                 condition=(line and one_row_per_doc_json), value=dict(line)
             )
@@ -327,12 +359,19 @@ class FormatterByDocument(Formatter):
                     column_name: dict(value) for column_name, value in line_full.items()
                 },
             )
-        self.tag_keywords.append(", ".join(unique_list(keyword_list)))
+        line = {column: self._fill_tags(True, line[column]) for column in line}
+        if keyword_list:
+            self.tag_keywords.append(self._fill_tags(True, unique_list(keyword_list)))
+        else:
+            self.tag_keywords.append(np.nan)
         self.tag_sentences.append(" ".join(unique_list(matched_sentence)))
         self.output_df = (
             self.output_df.append(tag_columns_for_json, ignore_index=True)
             if one_row_per_doc_json
-            else self.output_df.append(line, ignore_index=True)
+            else self.output_df.append(
+                line,
+                ignore_index=True,
+            )
         )
 
     def _get_tags_in_row_category(
@@ -376,16 +415,30 @@ class FormatterByDocument(Formatter):
         Insert columns tag_keywords and tag_sentences
         Returns the complete output dataframe after setting the columns in the right order
         """
-        output_df_copy = self.output_df.copy().add_prefix("tag_list_")
-        tag_list_columns = output_df_copy.columns.tolist()
-        output_df_copy.insert(
-            len(self.output_df.columns), self.tag_columns[1], self.tag_keywords, True
+        tag_list_columns = self.output_df.columns.tolist()
+        tag_list_columns_unique = generate_unique_columns(
+            df=self.output_df,
+            columns=normalize_text(tag_list_columns),
+            prefix="tag_list",
         )
-        output_df_copy.insert(
-            len(self.output_df.columns), self.tag_columns[0], self.tag_sentences, True
+        self.output_df.columns = tag_list_columns_unique
+        for column, column_unique in zip(tag_list_columns, tag_list_columns_unique):
+            category = column.split("_")[-1]
+            self._column_descriptions[column_unique] = f"List of '{category}' tags"
+        self.output_df.insert(
+            len(self.output_df.columns),
+            self.tag_columns[0],
+            self.tag_keywords,
+            True,
         )
-        self.tag_columns = tag_list_columns + self.tag_columns
-        return self._set_columns_order(input_df, output_df_copy, text_column)
+        self.output_df.insert(
+            len(self.output_df.columns),
+            self.tag_columns[1],
+            self.tag_sentences,
+            True,
+        )
+        self.tag_columns = tag_list_columns_unique + self.tag_columns
+        return self._set_columns_order(input_df, self.output_df, text_column)
 
     def _merge_df_columns(
         self, input_df: pd.DataFrame, text_column: AnyStr
@@ -415,6 +468,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Write the output dataframe for the Json Format without category
         """
         start = perf_counter()
+        self._generate_columns_names(input_df)
         input_df.progress_apply(self._write_row, args=[language_column], axis=1)
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -461,6 +515,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Write the output dataframe for the Json Format with category :
         """
         start = perf_counter()
+        self._generate_columns_names(input_df)
         input_df.progress_apply(
             super()._write_row_category, args=[True, language_column], axis=1
         )

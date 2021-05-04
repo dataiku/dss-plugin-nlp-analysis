@@ -387,11 +387,11 @@
                 },
                 {
                     "value": "one_row_per_doc",
-                    "label": "1 row / document (array column)"
+                    "label": "1 row / doc (array columns)"
                 },
                 {
                     "value": "one_row_per_doc_json",
-                    "label": "1 row / document (nested JSON)"
+                    "label": "1 row / doc (nested JSON)"
                 }
             ],
             "defaultValue": "one_row_per_doc"
