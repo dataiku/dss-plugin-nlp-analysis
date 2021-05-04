@@ -13,7 +13,6 @@ from sentence_splitter import SentenceSplitter
 from language_support import (
     SPACY_LANGUAGE_LOOKUP,
     SPACY_LANGUAGE_RULES,
-    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
     SPACY_LANGUAGE_MODELS_LEMMATIZATION,
 )
 
@@ -58,7 +57,6 @@ class Tagger:
         store_attr()
         self._remove_incomplete_rows()
         self.tokenizer = MultilingualTokenizer(
-            use_models=True,
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
@@ -100,7 +98,7 @@ class Tagger:
 
         """
         if self.lemmatization:
-            self._activate_components_to_lemmatize(language)
+            self.tokenizer._activate_components_to_lemmatize(language)
         list_of_categories = self.ontology_df[self.category_column].values.tolist()
         return [
             {
@@ -112,44 +110,6 @@ class Tagger:
                 list_of_categories, list_of_keywords, list_of_tags
             )
         ]
-
-    def _get_components_to_activate(self, language: AnyStr) -> List[AnyStr]:
-        """Return the list of Spacy components to activate from the pre-trained model loaded to lemmatize text.
-        To lemmatize text with SpaCy models, text must have .pos attributes before lemmatization:
-        obtained with either a morphologizer or with tagger + attribute_ruler
-
-        """
-        if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
-            return ["morphologizer", "lemmatizer"]
-        else:
-            return ["tagger", "attribute_ruler", "lemmatizer"]
-
-    def _activate_components_to_lemmatize(self, language: AnyStr) -> None:
-        """Set the components of SpaCy Language to lemmatize text:
-        - If SpaCy Language is a pre-trained model : call _get_components_to_activate
-        - Else: Add a Lemmatizer in the available mode 'rule' or 'lookup'
-        (cf https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data)
-
-        """
-        if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
-            components_to_activate = ["tok2vec"]
-            components_to_activate.extend(self._get_components_to_activate(language))
-            for component in components_to_activate:
-                self.tokenizer.spacy_nlp_dict[language].enable_pipe(component)
-        elif language in SPACY_LANGUAGE_LOOKUP:
-            self.tokenizer.spacy_nlp_dict[language].add_pipe(
-                "lemmatizer", config={"mode": "lookup"}
-            )
-            self.tokenizer.spacy_nlp_dict[language].initialize()
-        elif language in SPACY_LANGUAGE_RULES:
-            self.tokenizer.spacy_nlp_dict[language].add_pipe(
-                "lemmatizer", config={"mode": "rule"}
-            )
-            self.tokenizer.spacy_nlp_dict[language].initialize()
-        else:
-            raise ValueError(
-                f"The language {language} is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
-            )
 
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
@@ -166,7 +126,7 @@ class Tagger:
 
         """
         if self.lemmatization:
-            self._activate_components_to_lemmatize(language)
+            self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [get_text_case(keyword, self.normalize_case) for keyword in keywords]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
@@ -269,8 +229,17 @@ class Tagger:
             language_column=language_column,
         )
 
+    def _set_use_models(self, languages: List[AnyStr]) -> bool:
+        """Return True in case the text should be lemmatize with SpaCy pre-trained model (i.e no lookups available in spacy-lookups-data) """
+        if "pl" in languages or "ru" in languages:
+            return True
+        else:
+            return False
+
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
         """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""
+        if self.lemmatization:
+            self.tokenizer.use_models = self._set_use_models(languages)
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
 

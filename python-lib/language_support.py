@@ -85,6 +85,12 @@ SPACY_LANGUAGE_MODELS = {
 Models with Creative Commons licenses are not included because this plugin is licensed under Apache-2
 """
 
+SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["en", "es", "nb", "fr", "de", "ru", "pl"]
+"""list: Languages that have a SpaCy pre-trained model with a Lemmatizer component"""
+
+SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["es", "nb", "fr", "de", "ru", "pl"]
+"""list: Languages that have a SpaCy pre-trained model with a Morphologizer component"""
+
 SPACY_LANGUAGE_LOOKUP = [
     "ca",
     "cs",
@@ -102,7 +108,6 @@ SPACY_LANGUAGE_LOOKUP = [
     "tr",
     "ur",
     "en",
-    "pl",
     "de",
     "es",
     "nb",
@@ -111,12 +116,12 @@ SPACY_LANGUAGE_LOOKUP = [
     "nl",
     "sv",
 ]
-"""list: ISO 639-1 language codes that have available SpaCy lookup tables for lemmatization. 
+"""list: Language that have available SpaCy lookup tables for lemmatization. 
 
 The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
 
 SPACY_LANGUAGE_RULES = ["bn", "el", "fa"]
 
-"""list: ISO 639-1 language codes that have available SpaCy rules tables (and no lookup tables) for lemmatization
+"""list: Languages that have available SpaCy rule tables for lemmatization
 
 The rule tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
