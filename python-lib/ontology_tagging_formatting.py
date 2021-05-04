@@ -416,16 +416,15 @@ class FormatterByDocument(Formatter):
         Returns the complete output dataframe after setting the columns in the right order
         """
         tag_list_columns = self.output_df.columns.tolist()
-        my_columns = generate_unique_columns(
+        tag_list_columns_unique = generate_unique_columns(
             df=self.output_df,
             columns=normalize_text(tag_list_columns),
             prefix="tag_list",
         )
-        self.output_df.columns = my_columns
-        for column, my_column in zip(tag_list_columns, my_columns):
-            self._column_descriptions[my_column] = (
-                "List of tags for category " + column.split("_")[-1]
-            )
+        self.output_df.columns = tag_list_columns_unique
+        for column, column_unique in zip(tag_list_columns, tag_list_columns_unique):
+            category = column.split("_")[-1]
+            self._column_descriptions[column_unique] = f"List of tags for category {category}"
         self.output_df.insert(
             len(self.output_df.columns),
             self.tag_columns[0],
@@ -438,7 +437,7 @@ class FormatterByDocument(Formatter):
             self.tag_sentences,
             True,
         )
-        self.tag_columns = my_columns + self.tag_columns
+        self.tag_columns = tag_list_columns_unique + self.tag_columns
         return self._set_columns_order(input_df, self.output_df, text_column)
 
     def _merge_df_columns(
