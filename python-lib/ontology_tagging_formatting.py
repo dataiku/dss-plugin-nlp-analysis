@@ -424,7 +424,7 @@ class FormatterByDocument(Formatter):
         self.output_df.columns = tag_list_columns_unique
         for column, column_unique in zip(tag_list_columns, tag_list_columns_unique):
             category = column.split("_")[-1]
-            self._column_descriptions[column_unique] = f"List of tags for category '{category}'"
+            self._column_descriptions[column_unique] = f"List of '{category}' tags"
         self.output_df.insert(
             len(self.output_df.columns),
             self.tag_columns[0],
