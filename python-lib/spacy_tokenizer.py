@@ -201,7 +201,7 @@ class MultilingualTokenizer:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
 
-    def _get_components_to_activate(self, language: AnyStr) -> List[AnyStr]:
+    def _get_components_to_activate_lemmatization(self, language: AnyStr) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
             return ["tok2vec", "morphologizer"]
