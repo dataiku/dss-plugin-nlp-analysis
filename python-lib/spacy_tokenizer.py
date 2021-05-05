@@ -195,7 +195,8 @@ class MultilingualTokenizer:
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
             )
 
-    def _get_error_message(self, language: AnyStr) -> AnyStr:
+    def _get_error_message_lemmatization(self, language: AnyStr) -> AnyStr:
+        """Return the error message to display when the lemmatization cannot be applied"""
         if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             # 'Russian','Polish' without a pretrained model
             return f"The language '{language}' is not available for Lemmatization without loading a pre-trained model. Set use_models to True to lemmatize in '{language}'"
@@ -204,6 +205,7 @@ class MultilingualTokenizer:
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
 
     def _get_components_to_activate(self, language: AnyStr) -> List[AnyStr]:
+        """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
             return ["tok2vec", "morphologizer"]
         else:
@@ -238,7 +240,7 @@ class MultilingualTokenizer:
             self.spacy_nlp_dict[language].initialize()
         else:
             # unsupported cases
-            raise ValueError(self._get_error_message(language))
+            raise ValueError(self._get_error_message_lemmatization(language))
 
     def _create_spacy_tokenizer(self, language: AnyStr) -> Language:
         """Private method to create a custom spaCy tokenizer for a given language
