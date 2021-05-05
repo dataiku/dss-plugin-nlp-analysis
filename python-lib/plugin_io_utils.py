@@ -68,9 +68,6 @@ def generate_unique(
     Returns:
        Unique name with a number suffix in case of conflict, and an optional prefix
     """
-    name = re.sub(r"[^\x00-\x7F]", "_", name).replace(
-        " ", "_"
-    )  # replace non ASCII and whitespace characters by an underscore _
     if prefix:
         new_name = f"{prefix}_{name}"
     else:
@@ -80,6 +77,17 @@ def generate_unique(
             return new_name
         new_name = f"{new_name}_{j}"
     raise RuntimeError(f"Failed to generated a unique name for '{name}'")
+
+
+def generate_unique_columns(
+    df: pd.DataFrame, columns: List[AnyStr], prefix=None
+) -> List[AnyStr]:
+    """Generate unique names for columns to add in a dataframe"""
+    df_columns = df.columns.tolist()
+    return [
+        generate_unique(name=column, existing_names=df_columns, prefix=prefix)
+        for column in columns
+    ]
 
 
 def move_columns_after(
