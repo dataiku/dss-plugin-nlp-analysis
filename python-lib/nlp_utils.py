@@ -3,37 +3,40 @@ from spacy.tokens import Span, Doc
 import unicodedata
 
 
-def get_text_case(text: AnyStr, normalize_case: bool) -> AnyStr:
+def normalize_case(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted-case form"""
-    return text.lower() if normalize_case else text
+    return text.lower() if lowercase else text
 
-def get_attribute(lemmatize: bool) -> AnyStr:
-    """Return the right attribute to pass to spaCy Matcher"""
+
+def get_token_attribute(lemmatize: bool) -> AnyStr:
+    """Return the attribute to pass to spaCy Matcher"""
     return "LEMMA" if lemmatize else "TEXT"
 
 
-def get_text_normalized(text: Doc, normalize_case: bool) -> AnyStr:
-    """Lemmatize text and return it lowercased if normalize_case is True"""
+def lemmatize(text: Doc, lowercase: bool) -> AnyStr:
+    """Lemmatize text. The lemma is lowercased if 'lowercase' is True"""
     text = " ".join([word.lemma_ for word in text])
-    return get_text_case(text, normalize_case)
+    return normalize_case(text, lowercase)
 
 
-def get_keyword(normalize_case: bool, lemmatize: bool, keyword: Span) -> AnyStr:
-    """Return text after normalizing it if needed
+def normalize(
+    keyword: Span, lowercase: bool, lemmatize: bool
+) -> AnyStr:
+    """Normalize keyword. Available normalizations : lemmatizing / lowercasing
 
     Args:
-        normalize_case (bool): if True, keyword will be lowercased
-        lemmatize (bool): if True, return the keyword lemma
         keyword (spacy.tokens.Span): the text to process
+        lowercase (bool): if True, keyword will be lowercased
+        lemmatize (bool): if True, return the keyword lemma
 
     Returns:
-        The keyword normalized as needed
+        The keyword lemmatized or lowercased
     """
     if lemmatize:
         return keyword.lemma_
-    return get_text_case(keyword.text, normalize_case)
+    return normalize_case(keyword.text, lowercase)
 
 
-def normalize_text(texts: List[AnyStr]) -> List[AnyStr]:
+def unicode_normalize_text(texts: List[AnyStr]) -> List[AnyStr]:
     """Return a list of texts NFD normalized"""
     return [unicodedata.normalize("NFD", text) for text in texts]
