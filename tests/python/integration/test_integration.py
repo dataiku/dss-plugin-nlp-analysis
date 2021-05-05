@@ -41,3 +41,7 @@ def test_multilingual_no_category(user_dss_clients):
 def test_case_sensitivity(user_dss_clients):
     """Plugin parameters : -case-insensitivity activated"""
     add_test_scenario(user_dss_clients, "CASESENSITIVITY")
+    
+def test_lemmatization(user_dss_clients):
+    """Plugin parameters : -lemmatization activated""""
+    add_test_scenario(user_dss_clients,"LEMMATIZATION")
