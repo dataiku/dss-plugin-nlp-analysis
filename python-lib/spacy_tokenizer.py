@@ -217,7 +217,7 @@ class MultilingualTokenizer:
         """
         if self.use_models and language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             # When using a pre-trained model
-            components_to_activate = self._get_components_to_activate(language)
+            components_to_activate = self._get_components_to_activate_lemmatization(language)
             self.spacy_nlp_dict[language].select_pipes(enable=components_to_activate)
             self.spacy_nlp_dict[language].config["mode"] = (
                 "rule" if language == "ru" else "lookup"
