@@ -86,12 +86,14 @@ Models with Creative Commons licenses are not included because this plugin is li
 """
 
 SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["en", "es", "nb", "fr", "de", "ru", "pl"]
-
-"""list: Languages that have a SpaCy pre-trained model with a Lemmatizer component"""
+"""list: Languages that have a SpaCy pre-trained model with a Lemmatizer component.
+When using a pre-trained pipeline to lemmatize, you need to have in your SpaCy Language pipeline:
+-either SpaCy 'morphologizer' + 'lemmatizer'
+-either SpaCy 'tagger' + 'attribute ruler' + 'lemmatizer'
+depending on the pre-trained pipeline built-in components"""
 
 SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["es", "nb", "fr", "de", "ru", "pl"]
-
-"""list: Languages that have a SpaCy pre-trained model with a Morphologizer component"""
+"""list: Languages that have a SpaCy pre-trained model with a Morphologizer component."""
 
 SPACY_LANGUAGE_LOOKUP = [
     "ca",
@@ -118,13 +120,11 @@ SPACY_LANGUAGE_LOOKUP = [
     "nl",
     "sv",
 ]
-
 """list: Languages that have available SpaCy lookup tables for lemmatization. 
-
-The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
+The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data
+"""
 
 SPACY_LANGUAGE_RULES = ["bn", "el", "fa"]
-
 """list: Languages that have available SpaCy rule tables for lemmatization
-
-The rule tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data """
+The rule tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data
+"""
