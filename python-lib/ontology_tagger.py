@@ -16,6 +16,9 @@ from language_support import (
     SPACY_LANGUAGE_MODELS_LEMMATIZATION,
 )
 
+#Display spacy logs messages only for ERROR messages, not for WARNING
+logger = logging.getLogger("spacy")
+logger.setLevel(logging.ERROR)
 
 class Tagger:
     """Tag text data with a given ontology. Relies on spaCy Language components:

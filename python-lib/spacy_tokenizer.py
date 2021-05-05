@@ -27,9 +27,6 @@ from language_support import (
 )
 from plugin_io_utils import generate_unique, truncate_text_list
 
-logger = logging.getLogger("spacy")
-logger.setLevel(logging.ERROR)
-
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
 Token.set_extension("is_hashtag", getter=lambda token: token.text[0] == "#", force=True)
 Token.set_extension(
