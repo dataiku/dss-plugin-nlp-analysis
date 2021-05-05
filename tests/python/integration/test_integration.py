@@ -43,5 +43,5 @@ def test_case_sensitivity(user_dss_clients):
     add_test_scenario(user_dss_clients, "CASESENSITIVITY")
     
 def test_lemmatization(user_dss_clients):
-    """Plugin parameters : -lemmatization activated""""
+    """Plugin parameters : -lemmatization activated"""
     add_test_scenario(user_dss_clients,"LEMMATIZATION")
