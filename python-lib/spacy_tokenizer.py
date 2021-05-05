@@ -187,6 +187,10 @@ class MultilingualTokenizer:
         store_attr()
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
+        self._restore_pipe_components = {}
+        """May be initialize in create_spacy_tokenizer as a spacy.language.DisabledPipes object. 
+        It is the disabled pipes from spacy.Languages.select_pipes() call, that can be restored by calling the object’s .restore() method."""
+
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
@@ -201,12 +205,15 @@ class MultilingualTokenizer:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
 
-    def _get_components_to_activate_lemmatization(self, language: AnyStr) -> List[AnyStr]:
+    def _get_components_to_activate_lemmatization(
+        self, language: AnyStr
+    ) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
-            return ["tok2vec", "morphologizer"]
+            print("in morphologizer")
+            return ["tok2vec", "morphologizer", "lemmatizer"]
         else:
-            return ["tok2vec", "tagger", "attribute_ruler"]
+            return ["tok2vec", "tagger", "attribute_ruler", "lemmatizer"]
 
     def _activate_components_to_lemmatize(self, language: AnyStr) -> None:
         """Set the components of SpaCy Language to lemmatize text:
@@ -217,12 +224,13 @@ class MultilingualTokenizer:
         """
         if self.use_models and language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             # When using a pre-trained model
-            components_to_activate = self._get_components_to_activate_lemmatization(language)
-            self.spacy_nlp_dict[language].select_pipes(enable=components_to_activate)
-            self.spacy_nlp_dict[language].config["mode"] = (
-                "rule" if language == "ru" else "lookup"
+            components_to_activate = self._get_components_to_activate_lemmatization(
+                language
             )
-            self.spacy_nlp_dict[language].enable_pipe("lemmatizer")
+            self._restore_pipe_components[language].restore()
+            self._restore_pipe_components[language] = self.spacy_nlp_dict[
+                language
+            ].select_pipes(enable=components_to_activate)
         elif language in SPACY_LANGUAGE_LOOKUP:
             # When using spacy lookups
             self.spacy_nlp_dict[language].add_pipe(
@@ -269,9 +277,13 @@ class MultilingualTokenizer:
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
             if self.enable_pipe_components:
-                nlp.select_pipes(enable=self.enable_pipe_components)
+                self._restore_pipe_components[language] = nlp.select_pipes(
+                    enable=self.enable_pipe_components
+                )
             if self.disable_pipe_components:
-                nlp.select_pipes(disable=self.disable_pipe_components)
+                self._restore_pipe_components[language] = nlp.select_pipes(
+                    disable=self.disable_pipe_components
+                )
 
         except (ValueError, OSError) as e:
             raise TokenizationError(
