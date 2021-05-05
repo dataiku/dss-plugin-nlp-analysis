@@ -4,6 +4,7 @@
 # see https://docs.pytest.org for more information
 from ontology_tagger import Tagger
 import pandas as pd
+import pytest 
 
 @pytest.mark.parametrize("keyword,language", [("worked","en"),("trabajó","es"),("jobbet","nb"),("travaillé","fr"),("hat funktioniert","de"),("работал","ru"), ("zadziałało","pl"),("treballat", "ca"),("pracoval","cs"),("arbejdede","da"),("radio","hr"),("dolgozott", "hu"),("bekerja","id"),("lavorato","it"),("geschafft","lb"),("dirbo","lt"),("trabalhado","pt"),("a lucrat","ro"),("радио","sr"),("nagtrabaho","tl"),("çalıştı","tr"),("کام کیا","ur"),("কাজ করছে","bn"),("δούλεψε","el"),("کار کرد","fa"),("работел","mk"),("werkte","nl"),("arbetade","sv")])
 def test_lemmatize_keywords(keyword, language):
