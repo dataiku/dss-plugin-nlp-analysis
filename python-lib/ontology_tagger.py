@@ -118,6 +118,11 @@ class Tagger:
             List: The tokenized keywords.
 
         """
+        print("keywords before normalization: ", keywords)
+        normalized_keywords = [unicodedata.normalize('NFD',keyword) for keyword in keywords]
+        print("keywords after normalization : ",normalized_keywords)
+        assert "Clément" in normalized_keywords
+        
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(
                 [
