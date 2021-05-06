@@ -375,7 +375,7 @@
         {
             "name": "lemmatization_multilingual",
             "label": "Lemmatize",
-            "description": "Simplify words to their lemma form e.g. going → go, mice → mouse. 28 supported languages.",
+            "description": "Simplify words to their lemma form e.g. going → go, mice → mouse. Available for 28 out of 59 languages.",
             "type": "BOOLEAN",
             "visibilityCondition": "model.language == 'language_column'",
             "defaultValue": false
