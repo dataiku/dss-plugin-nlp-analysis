@@ -89,7 +89,7 @@ SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["en", "es", "nb", "fr", "de", "ru", "pl"]
 """list: Languages that have a SpaCy pre-trained model with a Lemmatizer component.
 When using a pre-trained pipeline to lemmatize, you need to have in your SpaCy Language pipeline:
 -either SpaCy 'morphologizer' + 'lemmatizer'
--either SpaCy 'tagger' + 'attribute ruler' + 'lemmatizer'
+-or SpaCy 'tagger' + 'attribute ruler' + 'lemmatizer'
 depending on the pre-trained pipeline built-in components"""
 
 SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["es", "nb", "fr", "de", "ru", "pl"]
