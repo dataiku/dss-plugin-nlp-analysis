@@ -67,7 +67,6 @@ class Tagger:
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
-        """Display SpaCy logs messages only for ERROR messages, not for WARNING"""
         any([item in languages for item in SPACY_LANGUAGE_RULES])
         logger = logging.getLogger("spacy")
         logger.setLevel(logging.ERROR)
@@ -231,6 +230,7 @@ class Tagger:
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
         """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""
         if self.lemmatization:
+            self._set_log_level(languages)
             self.tokenizer._set_use_models(languages)
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
@@ -267,7 +267,6 @@ class Tagger:
             -Write the found matches into a new DataFrame (by calling the Formatter module)
 
         """
-        self._set_log_level(languages)
         self._initialize_tokenizer(languages)
         text_df, text_column_tokenized = self._sentence_splitting(
             text_df, text_column, language_column

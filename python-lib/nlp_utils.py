@@ -4,7 +4,7 @@ import unicodedata
 
 
 def normalize_case_text(text: AnyStr, lowercase: bool) -> AnyStr:
-    """Return text in its wanted-case form"""
+    """Return text in its wanted case form"""
     return text.lower() if lowercase else text
 
 
