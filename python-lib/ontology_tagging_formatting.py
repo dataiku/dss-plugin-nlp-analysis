@@ -8,7 +8,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list, generate_unique_columns
-from nlp_utils import normalize, unicode_normalize_text
+from nlp_utils import normalize_span, unicode_normalize_text
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -24,6 +24,7 @@ COLUMN_DESCRIPTION = {
     "tag_sentence": "Sentence containing the matched keyword",
     "tag_category": "Category of tag",
 }
+
 
 class Formatter:
     """
@@ -162,7 +163,7 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self._keyword_to_tag[language][
-                            normalize(
+                            normalize_span(
                                 keyword, self.normalize_case, self.lemmatization
                             )
                         ],
@@ -297,9 +298,7 @@ class FormatterByDocument(Formatter):
         for match in matches:
             keyword = match.text
             tag = self._keyword_to_tag[language][
-                normalize(
-                    match, self.normalize_case, self.lemmatization
-                )
+                normalize_span(match, self.normalize_case, self.lemmatization)
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
@@ -541,7 +540,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         """
         keyword = match.text
         tag = self._keyword_to_tag[language][
-            normalize(match, self.normalize_case, self.lemmatization)
+            normalize_span(match, self.normalize_case, self.lemmatization)
         ]
         if tag not in line_full.keys():
             line_full[tag] = {

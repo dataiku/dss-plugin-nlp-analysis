@@ -3,7 +3,7 @@ from spacy.tokens import Span, Doc
 import unicodedata
 
 
-def normalize_case(text: AnyStr, lowercase: bool) -> AnyStr:
+def normalize_case_text(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted-case form"""
     return text.lower() if lowercase else text
 
@@ -13,28 +13,35 @@ def get_token_attribute(lemmatize: bool) -> AnyStr:
     return "LEMMA" if lemmatize else "TEXT"
 
 
-def lemmatize(text: Doc, lowercase: bool) -> AnyStr:
-    """Lemmatize text. The lemma is lowercased if 'lowercase' is True"""
-    text = " ".join([word.lemma_ for word in text])
-    return normalize_case(text, lowercase)
-
-
-def normalize(
-    keyword: Span, lowercase: bool, lemmatize: bool
-) -> AnyStr:
-    """Normalize keyword. Available normalizations : lemmatizing / lowercasing
+def lemmatize_doc(doc: Doc) -> AnyStr:
+    """Lemmatize SpaCy.tokens.Doc object.
 
     Args:
-        keyword (spacy.tokens.Span): the text to process
-        lowercase (bool): if True, keyword will be lowercased
-        lemmatize (bool): if True, return the keyword lemma
+        doc (SpaCy.tokens.Doc): Text to lemmatize
 
     Returns:
-        The keyword lemmatized or lowercased
+        str: Text in its lemmatized form
+
+    """
+    return " ".join([span.lemma_ for span in doc])
+
+
+def normalize_span(span: Span, lowercase: bool, lemmatize: bool) -> AnyStr:
+    """Normalize SpaCy.tokens.Span object.
+    Available normalizations : lemmatizing / lowercasing
+
+    Args:
+        span (spacy.tokens.Span): Text to process
+        lowercase (bool): if True, the text will be lowercased
+        lemmatize (bool): if True, return the text lemmatized
+
+    Returns:
+        str: Text lemmatized or lowercased
+        
     """
     if lemmatize:
-        return keyword.lemma_
-    return normalize_case(keyword.text, lowercase)
+        return span.lemma_
+    return normalize_case_text(span.text, lowercase)
 
 
 def unicode_normalize_text(texts: List[AnyStr]) -> List[AnyStr]:

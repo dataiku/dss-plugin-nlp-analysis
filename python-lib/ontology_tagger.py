@@ -1,7 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize, get_token_attribute, normalize_case
+from nlp_utils import lemmatize_doc, get_token_attribute, normalize_case_text
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -97,7 +97,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": normalize_case(pattern, self.normalize_case),
+                "pattern": normalize_case_text(pattern, self.normalize_case),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -122,19 +122,19 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            normalize_case(keyword, self.normalize_case) for keyword in keywords
+            normalize_case_text(keyword, self.normalize_case) for keyword in keywords
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
         )
         if self.lemmatization:
             self._keyword_to_tag[language] = {
-                lemmatize(keyword, self.normalize_case): tag
+                normalize_case_text(lemmatize_doc(keyword), self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
         else:
             self._keyword_to_tag[language] = {
-                normalize_case(keyword.text, self.normalize_case): tag
+                normalize_case_text(keyword.text, self.normalize_case): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
         return tokenized_keywords
