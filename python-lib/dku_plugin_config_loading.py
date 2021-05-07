@@ -20,7 +20,6 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
 
     MATCHING_PARAMETERS = [
         "normalize_case",
-        "lemmatization",
         "unicode_normalization",
     ]
 
@@ -68,12 +67,25 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         )
 
     def _add_matching_settings(self):
-        """Load matching parameters"""
+        """Load parameters in MATCHING PARAMETERS"""
 
         for parameter in self.MATCHING_PARAMETERS:
             self.dku_config.add_param(
                 name=parameter, value=self.config[parameter], required=True
             )
+
+    def _add_lemmatization(self, multilingual=False):
+        """Load one of the two lemmatization buttons:
+        -'lemmatization_multilingual' if language==language_column,
+        -'lemmatization' otherwise.
+        """
+        if multilingual:
+            lemmatization = self.config.get("lemmatization_multilingual")
+        else:
+            lemmatization = self.config.get("lemmatization")
+        self.dku_config.add_param(
+            name="lemmatization", value=lemmatization, required=True
+        )
 
     def _add_language(self):
         """Load language from dropdown"""
@@ -218,11 +230,13 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         self._add_language()
         if self.dku_config.language == "language_column":
             self._add_language_column()
+            self._add_lemmatization(multilingual=True)
         else:
             self.dku_config.add_param(
                 name="language_column",
                 value="",
             )
+            self._add_lemmatization()
         self._add_ontology_columns()
         self._add_output_format()
         self._add_output_dataset()

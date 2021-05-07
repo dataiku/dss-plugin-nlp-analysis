@@ -8,7 +8,7 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list, generate_unique_columns
-from nlp_utils import get_keyword, get_sentence, normalize_text
+from nlp_utils import normalize_span, unicode_normalize_text
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -38,6 +38,7 @@ class Formatter:
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
         normalize_case: bool,
+        lemmatization: bool,
         text_column_tokenized: AnyStr,
         _keyword_to_tag: dict = None,
         _matcher_dict: dict = None,
@@ -162,7 +163,9 @@ class FormatterByTag(Formatter):
                 self._list_to_dict(
                     [
                         self._keyword_to_tag[language][
-                            get_keyword(keyword.text, self.normalize_case)
+                            normalize_span(
+                                keyword, self.normalize_case, self.lemmatization
+                            )
                         ],
                         keyword.text,
                         sentence,
@@ -295,7 +298,7 @@ class FormatterByDocument(Formatter):
         for match in matches:
             keyword = match.text
             tag = self._keyword_to_tag[language][
-                get_keyword(keyword, self.normalize_case)
+                normalize_span(match, self.normalize_case, self.lemmatization)
             ]
             tags_in_document.append(tag)
             keywords_in_document.append(keyword)
@@ -418,7 +421,7 @@ class FormatterByDocument(Formatter):
         tag_list_columns = self.output_df.columns.tolist()
         tag_list_columns_unique = generate_unique_columns(
             df=self.output_df,
-            columns=normalize_text(tag_list_columns),
+            columns=unicode_normalize_text(tag_list_columns),
             prefix="tag_list",
         )
         self.output_df.columns = tag_list_columns_unique
@@ -536,7 +539,9 @@ class FormatterByDocumentJson(FormatterByDocument):
         Return a dictionary containing precisions about each tag
         """
         keyword = match.text
-        tag = self._keyword_to_tag[language][get_keyword(keyword, self.normalize_case)]
+        tag = self._keyword_to_tag[language][
+            normalize_span(match, self.normalize_case, self.lemmatization)
+        ]
         if tag not in line_full.keys():
             line_full[tag] = {
                 "count": 1,

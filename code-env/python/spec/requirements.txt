@@ -1,4 +1,4 @@
-spacy[ja,th]~=3.0
+spacy[lookups,ja,th]~=3.0
 regex==2020.11.13
 emoji==1.2.0
 pymorphy2==0.9.1
