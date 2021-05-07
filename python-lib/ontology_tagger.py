@@ -16,10 +16,6 @@ from language_support import (
     SPACY_LANGUAGE_MODELS_LEMMATIZATION,
 )
 
-# Display spacy logs messages only for ERROR messages, not for WARNING
-logger = logging.getLogger("spacy")
-logger.setLevel(logging.ERROR)
-
 
 class Tagger:
     """Tag text data with a given ontology. Relies on spaCy Language components:
@@ -68,6 +64,13 @@ class Tagger:
         self._matcher_dict = {}  # filled by the _match_no_category method
         self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
         self._column_descriptions = {}  # filled by the _format_ methods
+
+    def _set_log_level(self, languages: List[AnyStr]) -> None:
+        """Set Spacy log level to ERROR to hide unwanted warnings"""
+        """Display SpaCy logs messages only for ERROR messages, not for WARNING"""
+        any([item in languages for item in SPACY_LANGUAGE_RULES])
+        logger = logging.getLogger("spacy")
+        logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -264,6 +267,7 @@ class Tagger:
             -Write the found matches into a new DataFrame (by calling the Formatter module)
 
         """
+        self._set_log_level(languages)
         self._initialize_tokenizer(languages)
         text_df, text_column_tokenized = self._sentence_splitting(
             text_df, text_column, language_column
