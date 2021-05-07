@@ -225,17 +225,10 @@ class Tagger:
         self._column_descriptions = formatter._column_descriptions
         return output_df
 
-    def _set_use_models(self, languages: List[AnyStr]) -> bool:
-        """Return True in case the text should be lemmatize with SpaCy pre-trained model (i.e no lookups available in spacy-lookups-data) """
-        if "pl" in languages or "ru" in languages:
-            return True
-        else:
-            return False
-
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
         """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""
         if self.lemmatization:
-            self.tokenizer.use_models = self._set_use_models(languages)
+            self.tokenizer._set_use_models(languages)
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
 

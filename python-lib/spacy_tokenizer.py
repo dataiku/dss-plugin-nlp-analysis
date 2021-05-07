@@ -196,6 +196,15 @@ class MultilingualTokenizer:
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
             )
 
+    def _set_use_models(self, languages: List[AnyStr]) -> bool:
+        """Set self.use_models attribute to True in case the text should be lemmatize with a SpaCy pre-trained model.
+        (e.g no lookups available for all languages in spacy-lookups-data)
+        This method should be called before creating your SpaCy Language object through create_spacy_tokenizer() method"""
+        if "pl" in languages or "ru" in languages:
+            self.use_models = True
+        else:
+            self.use_models = False
+
     def _get_error_message_lemmatization(self, language: AnyStr) -> AnyStr:
         """Return the error message to display when the lemmatization cannot be applied"""
         if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
