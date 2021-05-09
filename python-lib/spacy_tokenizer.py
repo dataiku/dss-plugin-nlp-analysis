@@ -219,7 +219,6 @@ class MultilingualTokenizer:
     ) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
-            print("in morphologizer")
             return ["tok2vec", "morphologizer", "lemmatizer"]
         else:
             return ["tok2vec", "tagger", "attribute_ruler", "lemmatizer"]
