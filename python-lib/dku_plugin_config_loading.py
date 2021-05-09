@@ -81,11 +81,14 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
         """
         if multilingual:
             lemmatization = self.config.get("lemmatization_multilingual")
+            self.dku_config.add_param(
+                name="lemmatization", value=lemmatization, required=True
+            )
         else:
             lemmatization = self.config.get("lemmatization")
-        self.dku_config.add_param(
-            name="lemmatization", value=lemmatization, required=True
-        )
+            self.dku_config.add_param(
+                name="lemmatization", value=lemmatization, required=True
+            )
 
     def _add_language(self):
         """Load language from dropdown"""
