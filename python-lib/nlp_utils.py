@@ -42,12 +42,14 @@ def lemmatize_span(span: Span, lemmatize: bool) -> AnyStr:
     return span.text
 
 
-def remove_diacritics_text(input_str):
-    return u"".join([c for c in input_str if not unicodedata.combining(c)])
+def remove_diacritics_text(text: AnyStr) -> AnyStr:
+    """Remove diacritics from text, e.g accents, cedillas, tildes."""
+    return "".join([c for c in text if not unicodedata.combining(c)])
 
 
-def normalize_nfd_text(input_str, normalize_diacritics: bool) -> AnyStr:
-    nfd_form = unicodedata.normalize("NFD", input_str)
+def normalize_nfd_text(text, normalize_diacritics: bool) -> AnyStr:
+    """Apply NFD normalization to text and remove its diacritics if 'normalize_diacritics' is True."""
+    nfd_form = unicodedata.normalize("NFD", text)
     if normalize_diacritics:
         nfd_form = remove_diacritics_text(nfd_form)
-    return str(nfd_form)
+    return nfd_form
