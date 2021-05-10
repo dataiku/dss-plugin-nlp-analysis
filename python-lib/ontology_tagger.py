@@ -1,7 +1,12 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc, get_token_attribute, normalize_case_text
+from nlp_utils import (
+    lemmatize_doc,
+    get_token_attribute,
+    normalize_case_text,
+    normalize_nfd_text,
+)
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -53,7 +58,7 @@ class Tagger:
         language: AnyStr,
         lemmatization: bool = False,
         normalize_case: bool = False,
-        normalization: bool = False,
+        normalize_diacritics: bool = False,
     ):
         store_attr()
         self._remove_incomplete_rows()
@@ -99,7 +104,10 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": normalize_case_text(pattern, self.normalize_case),
+                "pattern": normalize_nfd_text(
+                    normalize_case_text(pattern, self.normalize_case),
+                    self.normalize_diacritics,
+                ),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -124,7 +132,10 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            normalize_case_text(keyword, self.normalize_case) for keyword in keywords
+            normalize_nfd_text(
+                normalize_case_text(keyword, self.normalize_case), self.normalize_diacritics
+            )
+            for keyword in keywords
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
@@ -150,6 +161,7 @@ class Tagger:
             "category_column": self.category_column,
             "normalize_case": self.normalize_case,
             "lemmatization": self.lemmatization,
+            "normalize_diacritics": self.normalize_diacritics,
         }
         if not self.category_column:
             arguments["_matcher_dict"] = self._matcher_dict

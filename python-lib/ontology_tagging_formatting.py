@@ -8,7 +8,11 @@ from time import perf_counter
 import logging
 import json
 from plugin_io_utils import move_columns_after, unique_list, generate_unique_columns
-from nlp_utils import normalize_span, unicode_normalize_text
+from nlp_utils import (
+    normalize_span,
+    normalize_nfd_text,
+    normalize_case_text,
+)
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
@@ -39,6 +43,7 @@ class Formatter:
         category_column: AnyStr,
         normalize_case: bool,
         lemmatization: bool,
+        normalize_diacritics: bool,
         text_column_tokenized: AnyStr,
         _keyword_to_tag: dict = None,
         _matcher_dict: dict = None,
@@ -63,18 +68,17 @@ class Formatter:
 
     def _get_document_to_match(self, row: pd.Series, language) -> List:
         """Return the original document (as list of sentences) or, the lowercase one"""
-        if self.normalize_case:
-            return list(
-                self.tokenizer.spacy_nlp_dict[language].pipe(
-                    [sentence.lower() for sentence in row[self.text_column_tokenized]]
-                )
+        return list(
+            self.tokenizer.spacy_nlp_dict[language].pipe(
+                [
+                    normalize_nfd_text(
+                        normalize_case_text(sentence, self.normalize_case),
+                        self.normalize_diacritics,
+                    )
+                    for sentence in row[self.text_column_tokenized]
+                ]
             )
-        else:
-            return list(
-                self.tokenizer.spacy_nlp_dict[language].pipe(
-                    row[self.text_column_tokenized]
-                )
-            )
+        )
 
     def _set_columns_order(
         self, input_df: pd.DataFrame, output_df: pd.DataFrame, text_column: AnyStr
@@ -421,7 +425,7 @@ class FormatterByDocument(Formatter):
         tag_list_columns = self.output_df.columns.tolist()
         tag_list_columns_unique = generate_unique_columns(
             df=self.output_df,
-            columns=unicode_normalize_text(tag_list_columns),
+            columns=[normalize_nfd_text(column, False) for column in tag_list_columns],
             prefix="tag_list",
         )
         self.output_df.columns = tag_list_columns_unique

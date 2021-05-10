@@ -37,13 +37,19 @@ def normalize_span(span: Span, lowercase: bool, lemmatize: bool) -> AnyStr:
 
     Returns:
         str: Text lemmatized or lowercased
-        
+
     """
     if lemmatize:
         return span.lemma_
     return normalize_case_text(span.text, lowercase)
 
 
-def unicode_normalize_text(texts: List[AnyStr]) -> List[AnyStr]:
-    """Return a list of texts NFD normalized"""
-    return [unicodedata.normalize("NFD", text) for text in texts]
+def remove_diacritics_text(input_str):
+    return u"".join([c for c in input_str if not unicodedata.combining(c)])
+
+
+def normalize_nfd_text(input_str, normalize_diacritics: bool) -> AnyStr:
+    nfd_form = unicodedata.normalize("NFD", input_str)
+    if normalize_diacritics:
+        nfd_form = remove_diacritics_text(nfd_form)
+    return str(nfd_form)
