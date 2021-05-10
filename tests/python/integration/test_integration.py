@@ -45,3 +45,7 @@ def test_case_sensitivity(user_dss_clients):
 def test_lemmatization(user_dss_clients):
     """Plugin parameters : -lemmatization activated"""
     add_test_scenario(user_dss_clients,"LEMMATIZATION")
+    
+def test_normalize_diacritics(user_dss_clients):
+    """Plugin parameters: -normalize_diacritics activated"""
+    add_test_scenario(user_dss_clients,"NORMALIZEDIACRITICS")
