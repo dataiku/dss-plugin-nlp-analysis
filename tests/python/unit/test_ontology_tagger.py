@@ -51,8 +51,8 @@ def test_keywords_tokenization():
     patterns = tagger._tokenize_keywords(tagger.language, tags, keywords)
     for elt in patterns:
         assert elt.text in tagger._keyword_to_tag["en"]
-        
-        
+
+
 def test_initialize_tokenizer():
     """Test content of each tokenizer"""
     ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
