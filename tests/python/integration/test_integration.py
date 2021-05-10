@@ -49,3 +49,10 @@ def test_lemmatization(user_dss_clients):
 def test_normalize_diacritics(user_dss_clients):
     """Plugin parameters: -normalize_diacritics activated"""
     add_test_scenario(user_dss_clients,"NORMALIZEDIACRITICS")
+
+def test_combined_options(user_dss_clients):
+    """Plugin parameters:
+    -normalize_case activated
+    -normalize_diacritics activated
+    -lemmatization activated"""
+    add_test_scenario(user_dss_clients,"ALLOPTIONS")
