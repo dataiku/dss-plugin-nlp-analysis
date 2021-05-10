@@ -28,7 +28,6 @@ class SentenceSplitter:
         text_df,
         text_column,
         tokenizer,
-        normalize_case,
         language,
         language_column=None,
     ):

@@ -26,22 +26,20 @@ def lemmatize_doc(doc: Doc) -> AnyStr:
     return " ".join([span.lemma_ for span in doc])
 
 
-def normalize_span(span: Span, lowercase: bool, lemmatize: bool) -> AnyStr:
-    """Normalize SpaCy.tokens.Span object.
-    Available normalizations : lemmatizing / lowercasing
+def lemmatize_span(span: Span, lemmatize: bool) -> AnyStr:
+    """Lemmatize SpaCy.tokens.Span object if 'lemmatize' is True.
 
     Args:
         span (spacy.tokens.Span): Text to process
-        lowercase (bool): if True, the text will be lowercased
         lemmatize (bool): if True, return the text lemmatized
 
     Returns:
-        str: Text lemmatized or lowercased
+        str: Text or lemma associated to the span
 
     """
     if lemmatize:
         return span.lemma_
-    return normalize_case_text(span.text, lowercase)
+    return span.text
 
 
 def remove_diacritics_text(input_str):
