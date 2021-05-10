@@ -100,26 +100,26 @@ def test_matching_normalize_diacritics():
     """Test matching for the option 'normalize_diacritics'"""
     ontology_df = pd.DataFrame(
             {"tag": ["tag1"], "keyword": ["ÄâêËùûôçèîÏìàñ"]}
-        )
-        text_df = pd.DataFrame(
-            {
-                "text": [
-                    "The keyword is AaeEuuoceiIian."
-                ]
-            }
-        )
-        tagger = Tagger(
-            ontology_df=ontology_df,
-            tag_column="tag",
-            category_column=None,
-            keyword_column="keyword",
-            language="en",
-            normalize_diacritics=True,
-        )
-        df = tagger.tag_and_format(
-            text_df=text_df,
-            text_column="text",
-            output_format="one_row_per_tag",
-            languages=["en"],
-        )
-        assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])
+    )
+    text_df = pd.DataFrame(
+        {
+            "text": [
+                "The keyword is AaeEuuoceiIian."
+            ]
+        }
+    )
+    tagger = Tagger(
+        ontology_df=ontology_df,
+        tag_column="tag",
+        category_column=None,
+        keyword_column="keyword",
+        language="en",
+        normalize_diacritics=True,
+    )
+    df = tagger.tag_and_format(
+        text_df=text_df,
+        text_column="text",
+        output_format="one_row_per_tag",
+        languages=["en"],
+    )
+    assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])
