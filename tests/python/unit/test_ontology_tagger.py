@@ -51,8 +51,8 @@ def test_keywords_tokenization():
     patterns = tagger._tokenize_keywords(tagger.language, tags, keywords)
     for elt in patterns:
         assert elt.text in tagger._keyword_to_tag["en"]
-
-
+        
+        
 def test_initialize_tokenizer():
     """Test content of each tokenizer"""
     ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
@@ -69,6 +69,7 @@ def test_initialize_tokenizer():
 
 
 def test_matching_in_lowercase():
+    """Test matching for the option 'normalize_case'"""
     ontology_df = pd.DataFrame(
         {"tag": ["tag1", "tag2"], "keyword": ["My KeYword", "other keyword"]}
     )
@@ -94,3 +95,31 @@ def test_matching_in_lowercase():
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
+    
+def test_matching_normalize_diacritics():
+    """Test matching for the option 'normalize_diacritics'"""
+    ontology_df = pd.DataFrame(
+            {"tag": ["tag1"], "keyword": ["ÄâêËùûôçèîÏìàñ"]}
+        )
+        text_df = pd.DataFrame(
+            {
+                "text": [
+                    "The keyword is AaeEuuoceiIian."
+                ]
+            }
+        )
+        tagger = Tagger(
+            ontology_df=ontology_df,
+            tag_column="tag",
+            category_column=None,
+            keyword_column="keyword",
+            language="en",
+            normalize_diacritics=True,
+        )
+        df = tagger.tag_and_format(
+            text_df=text_df,
+            text_column="text",
+            output_format="one_row_per_tag",
+            languages=["en"],
+        )
+        assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])
