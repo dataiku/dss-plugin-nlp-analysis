@@ -131,13 +131,12 @@ class Tagger:
         )
         if self.lemmatization:
             self._keyword_to_tag[language] = {
-                normalize_case_text(lemmatize_doc(keyword), self.normalize_case): tag
+                lemmatize_doc(keyword): tag
                 for keyword, tag in zip(tokenized_keywords, tags)
             }
         else:
             self._keyword_to_tag[language] = {
-                normalize_case_text(keyword.text, self.normalize_case): tag
-                for keyword, tag in zip(tokenized_keywords, tags)
+                keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
             }
         return tokenized_keywords
 
@@ -246,7 +245,6 @@ class Tagger:
             text_df=text_df,
             text_column=text_column,
             tokenizer=self.tokenizer,
-            normalize_case=self.normalize_case,
             language=self.language,
             language_column=language_column,
         )
