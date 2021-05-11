@@ -67,9 +67,9 @@ class Tagger:
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
-        any([item in languages for item in SPACY_LANGUAGE_RULES])
-        logger = logging.getLogger("spacy")
-        logger.setLevel(logging.ERROR)
+        if any([item in languages for item in SPACY_LANGUAGE_RULES]):
+            logger = logging.getLogger("spacy")
+            logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
