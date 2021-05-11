@@ -11,8 +11,8 @@ from time import perf_counter
 import logging
 from sentence_splitter import SentenceSplitter
 from language_support import SPACY_LANGUAGE_LOOKUP
-from language_support SPACY_LANGUAGE_RULES
-from language_support SPACY_LANGUAGE_MODELS_LEMMATIZATION
+from language_support import SPACY_LANGUAGE_RULES
+from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 
 
 class Tagger:
