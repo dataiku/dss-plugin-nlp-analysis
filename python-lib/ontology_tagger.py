@@ -81,13 +81,16 @@ class Tagger:
             )
 
     def _get_patterns(
-        self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr], language
+        self,
+        list_of_keywords: List[AnyStr],
+        list_of_tags: List[AnyStr],
+        language: AnyStr,
     ) -> List[dict]:
         """Called in _tag_and_format, when self.category_column is not None. Create the list of patterns to match with.
 
         Args:
-            list_of_keywords : List of the keywords in the Ontology Dataset
-            list_of_tags : List of the tags in the Ontology Dataset
+            list_of_keywords (List): The keywords in the Ontology Dataset
+            list_of_tags (List): The tags in the Ontology Dataset
 
         Returns:
             List : List of dictionaries. One dictionary = one pattern, defined as follow : {"label": category, "pattern": keyword, "id": tag}
@@ -115,7 +118,8 @@ class Tagger:
 
         Args:
             language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
-            keywords (List): The keywords to tokenize.
+            tags (List): The tags in the Ontology Dataset.
+            keywords (List): The keywords in the Ontology Dataset to tokenize.
 
         Returns:
             List: The tokenized keywords.
@@ -128,15 +132,14 @@ class Tagger:
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
-        )
+        )  # list of SpaCy.tokens.Doc objects
         if self.lemmatization:
             self._keyword_to_tag[language] = {
-                lemmatize_doc(keyword): tag
-                for keyword, tag in zip(tokenized_keywords, tags)
+                lemmatize_doc(doc): tag for doc, tag in zip(tokenized_keywords, tags)
             }
         else:
             self._keyword_to_tag[language] = {
-                keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
+                doc.text: tag for doc, tag in zip(tokenized_keywords, tags)
             }
         return tokenized_keywords
 
