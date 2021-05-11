@@ -8,7 +8,7 @@ import pytest
 
 
 @pytest.mark.parametrize(
-    "keyword,language",
+    "keyword,language,lemma",
     [
         ("worked", "en","work"),
         ("trabajó", "es","trabajar"),
