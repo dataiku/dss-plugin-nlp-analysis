@@ -1,12 +1,10 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import (
-    lemmatize_doc,
-    get_token_attribute,
-    normalize_case_text,
-    normalize_nfd_text,
-)
+from nlp_utils import lemmatize_doc
+from nlp_utils import get_token_attribute
+from nlp_utils import normalize_case_text
+from nlp_utils import unicode_normalize_text
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -69,6 +67,8 @@ class Tagger:
         self._matcher_dict = {}  # filled by the _match_no_category method
         self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
         self._column_descriptions = {}  # filled by the _format_ methods
+        self._use_nfc = self.lemmatization and not self.normalize_diacritics
+        # text will be normalized with NFC if True, with NFD otherwise.
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
@@ -104,9 +104,10 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": normalize_nfd_text(
-                    normalize_case_text(pattern, self.normalize_case),
-                    self.normalize_diacritics,
+                "pattern": unicode_normalize_text(
+                    text=normalize_case_text(pattern, self.normalize_case),
+                    use_nfc=self._use_nfc,
+                    normalize_diacritics=self.normalize_diacritics,
                 ),
                 "id": tag,
             }
@@ -132,8 +133,10 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            normalize_nfd_text(
-                normalize_case_text(keyword, self.normalize_case), self.normalize_diacritics
+            unicode_normalize_text(
+                text=normalize_case_text(keyword, self.normalize_case),
+                use_nfc=self._use_nfc,
+                normalize_diacritics=self.normalize_diacritics,
             )
             for keyword in keywords
         ]
@@ -161,6 +164,7 @@ class Tagger:
             "normalize_case": self.normalize_case,
             "lemmatization": self.lemmatization,
             "normalize_diacritics": self.normalize_diacritics,
+            "_use_nfc": self._use_nfc,
         }
         if not self.category_column:
             arguments["_matcher_dict"] = self._matcher_dict
