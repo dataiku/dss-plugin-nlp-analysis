@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import AnyStr
 from ontology_tagging_formatting import FormatterByDocumentJson
-from ontology_tagging_formatting FormatterByDocument
-from ontology_tagging_formatting FormatterByTag
+from ontology_tagging_formatting import FormatterByDocument
+from ontology_tagging_formatting import FormatterByTag
 
 
 class OutputFormat(Enum):
