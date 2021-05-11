@@ -77,7 +77,7 @@ SPACY_LANGUAGE_MODELS = {
     "nb": "nb_core_news_sm",  # NorNE
     "pl": "pl_core_news_sm",  # NKJP
     "ru": "ru_core_news_sm",  # Nerus
-    "zh": "zh_core_web_sm",  # OntoNotes  
+    "zh": "zh_core_web_sm",  # OntoNotes
 }
 
 """dict: Mapping between ISO 639-1 language code and spaCy model identifiers
@@ -85,14 +85,14 @@ SPACY_LANGUAGE_MODELS = {
 Models with Creative Commons licenses are not included because this plugin is licensed under Apache-2
 """
 
-SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["de","en", "es", "fr", "nb","pl", "ru"]
+SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["de", "en", "es", "fr", "nb", "pl", "ru"]
 """list: Languages that have a SpaCy pre-trained model with a Lemmatizer component.
 When using a pre-trained pipeline to lemmatize, you need to have in your SpaCy Language pipeline:
 -either SpaCy 'morphologizer' + 'lemmatizer'
 -or SpaCy 'tagger' + 'attribute ruler' + 'lemmatizer'
 depending on the pre-trained pipeline built-in components"""
 
-SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["de","es","fr","nb","pl","ru"]
+SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["de", "es", "fr", "nb", "pl", "ru"]
 """list: Languages that have a SpaCy pre-trained model with a Morphologizer component."""
 
 SPACY_LANGUAGE_LOOKUP = [
@@ -118,7 +118,7 @@ SPACY_LANGUAGE_LOOKUP = [
     "sv",
     "tl",
     "tr",
-    "ur",  
+    "ur",
 ]
 """list: Languages that have available SpaCy lookup tables for lemmatization. 
 The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data
