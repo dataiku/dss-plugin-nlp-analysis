@@ -286,7 +286,7 @@ class MultilingualTokenizer:
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
-            if self.use_models == False:
+            if not self.use_models:
                 nlp.initialize()
             if self.enable_pipe_components:
                 self._restore_pipe_components[language] = nlp.select_pipes(
