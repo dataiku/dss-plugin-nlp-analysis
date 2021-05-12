@@ -1,16 +1,16 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import (
-    lemmatize_doc,
-    get_phrase_matcher_attr,
-    lowercase_if,
-    unicode_normalize_text,
-)
+from nlp_utils import lemmatize_doc
+from nlp_utils import get_phrase_matcher_attr
+from nlp_utils import lowercase_if
+from nlp_utils import unicode_normalize_text
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from typing import AnyStr, List, Union
+from typing import AnyStr
+from typing import List
+from typing import Union
 import pandas as pd
 from time import perf_counter
 import logging

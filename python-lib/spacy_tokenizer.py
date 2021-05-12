@@ -24,7 +24,8 @@ from language_support import SPACY_LANGUAGE_RULES
 from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 from language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
 
-from plugin_io_utils import generate_unique, truncate_text_list
+from plugin_io_utils import generate_unique
+from plugin_io_utils import truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
 Token.set_extension("is_hashtag", getter=lambda token: token.text[0] == "#", force=True)
@@ -286,7 +287,7 @@ class MultilingualTokenizer:
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
-            if self.use_models == False:
+            if not self.use_models:
                 nlp.initialize()
             if self.enable_pipe_components:
                 self._restore_pipe_components[language] = nlp.select_pipes(
