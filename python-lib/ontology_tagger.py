@@ -1,7 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc, get_token_attribute, normalize_case_text
+from nlp_utils import lemmatize_doc, get_phrase_matcher_attr, normalize_case_text
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -100,7 +100,9 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": normalize_case_text(pattern, self.normalize_case),
+                "pattern": normalize_case_text(
+                    text=pattern, lowercase=self.normalize_case
+                ),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -126,7 +128,8 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            normalize_case_text(keyword, self.normalize_case) for keyword in keywords
+            normalize_case_text(text=keyword, lowercase=self.normalize_case)
+            for keyword in keywords
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
@@ -167,7 +170,9 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe(
                 "entity_ruler",
-                config={"phrase_matcher_attr": get_token_attribute(self.lemmatization)},
+                config={
+                    "phrase_matcher_attr": get_phrase_matcher_attr(self.lemmatization)
+                },
             )
             ruler.add_patterns(patterns)
 
@@ -202,7 +207,7 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             matcher = PhraseMatcher(
                 self.tokenizer.spacy_nlp_dict[language].vocab,
-                attr=get_token_attribute(self.lemmatization),
+                attr=get_phrase_matcher_attr(self.lemmatization),
             )
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher
