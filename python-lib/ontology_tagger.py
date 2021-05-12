@@ -1,14 +1,22 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
-from nlp_utils import get_keyword
+from plugin_io_utils import generate_unique
+from nlp_utils import lemmatize_doc
+from nlp_utils import get_phrase_matcher_attr
+from nlp_utils import lowercase_if
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from typing import AnyStr, List, Union
+from typing import AnyStr
+from typing import List
+from typing import Union
 import pandas as pd
 from time import perf_counter
 import logging
 from sentence_splitter import SentenceSplitter
+from language_support import SPACY_LANGUAGE_LOOKUP
+from language_support import SPACY_LANGUAGE_RULES
+from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 
 
 class Tagger:
@@ -25,7 +33,7 @@ class Tagger:
             Used if there is only one language to treat.
             Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
-        case_insensitivity (bool): If True, match on lowercased forms. Default is False.
+        normalize_case (bool): If True, match on lowercased forms. Default is False.
         normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
@@ -52,13 +60,18 @@ class Tagger:
         store_attr()
         self._remove_incomplete_rows()
         self.tokenizer = MultilingualTokenizer(
-            use_models=True,
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
         self._matcher_dict = {}  # filled by the _match_no_category method
         self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
         self._column_descriptions = {}  # filled by the _format_ methods
+
+    def _set_log_level(self, languages: List[AnyStr]) -> None:
+        """Set Spacy log level to ERROR to hide unwanted warnings"""
+        if any([item in languages for item in SPACY_LANGUAGE_RULES]):
+            logger = logging.getLogger("spacy")
+            logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -70,23 +83,30 @@ class Tagger:
             )
 
     def _get_patterns(
-        self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr]
+        self,
+        list_of_keywords: List[AnyStr],
+        list_of_tags: List[AnyStr],
+        language: AnyStr,
     ) -> List[dict]:
         """Called in _tag_and_format, when self.category_column is not None. Create the list of patterns to match with.
 
         Args:
-            list_of_keywords : List of the keywords in the Ontology Dataset
-            list_of_tags : List of the tags in the Ontology Dataset
+            list_of_keywords (List): The keywords in the Ontology Dataset
+            list_of_tags (List): The tags in the Ontology Dataset
 
         Returns:
             List : List of dictionaries. One dictionary = one pattern, defined as follow : {"label": category, "pattern": keyword, "id": tag}
 
         """
+        if self.lemmatization:
+            self.tokenizer._activate_components_to_lemmatize(language)
         list_of_categories = self.ontology_df[self.category_column].values.tolist()
         return [
             {
                 "label": label,
-                "pattern": get_keyword(pattern, self.normalize_case),
+                "pattern": lowercase_if(
+                    text=pattern, lowercase=self.normalize_case
+                ),
                 "id": tag,
             }
             for label, pattern, tag in zip(
@@ -102,20 +122,30 @@ class Tagger:
 
         Args:
             language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
-            keywords (List): The keywords to tokenize.
+            tags (List): The tags in the Ontology Dataset.
+            keywords (List): The keywords in the Ontology Dataset to tokenize.
 
         Returns:
             List: The tokenized keywords.
 
         """
-        keywords = [get_keyword(keyword, self.normalize_case) for keyword in keywords]
+        if self.lemmatization:
+            self.tokenizer._activate_components_to_lemmatize(language)
+        keywords = [
+            lowercase_if(text=keyword, lowercase=self.normalize_case)
+            for keyword in keywords
+        ]
         tokenized_keywords = list(
-            self.tokenizer.spacy_nlp_dict[language].tokenizer.pipe(keywords)
-        )
-        self._keyword_to_tag[language] = {
-            get_keyword(keyword.text, self.normalize_case): tag
-            for keyword, tag in zip(tokenized_keywords, tags)
-        }
+            self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
+        )  # list of SpaCy.tokens.Doc objects
+        if self.lemmatization:
+            self._keyword_to_tag[language] = {
+                lemmatize_doc(doc): tag for doc, tag in zip(tokenized_keywords, tags)
+            }
+        else:
+            self._keyword_to_tag[language] = {
+                doc.text: tag for doc, tag in zip(tokenized_keywords, tags)
+            }
         return tokenized_keywords
 
     def get_formatter_config(self, text_column_tokenized: AnyStr) -> dict:
@@ -126,6 +156,7 @@ class Tagger:
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
             "normalize_case": self.normalize_case,
+            "lemmatization": self.lemmatization,
         }
         if not self.category_column:
             arguments["_matcher_dict"] = self._matcher_dict
@@ -134,14 +165,19 @@ class Tagger:
 
     def _match_with_category(
         self,
-        patterns: List[dict],
         list_of_tags: List[AnyStr],
         list_of_keywords: List[AnyStr],
     ) -> None:
         """Tokenize keywords for every language. Instanciate EntityRuler with associated tags and categories"""
         for language in self.tokenizer.spacy_nlp_dict:
+            patterns = self._get_patterns(list_of_keywords, list_of_tags, language)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
-            ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe("entity_ruler")
+            ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe(
+                "entity_ruler",
+                config={
+                    "phrase_matcher_attr": get_phrase_matcher_attr(self.lemmatization)
+                },
+            )
             ruler.add_patterns(patterns)
 
     def _format_with_category(
@@ -173,7 +209,10 @@ class Tagger:
         for language in self.tokenizer.spacy_nlp_dict:
             patterns = self._tokenize_keywords(language, list_of_tags, list_of_keywords)
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
-            matcher = PhraseMatcher(self.tokenizer.spacy_nlp_dict[language].vocab)
+            matcher = PhraseMatcher(
+                self.tokenizer.spacy_nlp_dict[language].vocab,
+                attr=get_phrase_matcher_attr(self.lemmatization),
+            )
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher
 
@@ -199,6 +238,9 @@ class Tagger:
 
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
         """Create a dictionary of nlp objects, one per language. Dictionary is accessible via self.tokenizer.nlp_dict"""
+        if self.lemmatization:
+            self._set_log_level(languages)
+            self.tokenizer._set_use_models(languages)
         for language in languages:
             self.tokenizer._add_spacy_tokenizer(language)
 
@@ -213,7 +255,6 @@ class Tagger:
             text_df=text_df,
             text_column=text_column,
             tokenizer=self.tokenizer,
-            normalize_case=self.normalize_case,
             language=self.language,
             language_column=language_column,
         )
@@ -244,8 +285,7 @@ class Tagger:
         # matching and formatting
         if self.category_column:
             # patterns to add to Entity Ruler pipe
-            patterns = self._get_patterns(list_of_keywords, list_of_tags)
-            self._match_with_category(patterns, list_of_tags, list_of_keywords)
+            self._match_with_category(list_of_tags, list_of_keywords)
             logging.info(f"Tagging {len(text_df)} documents...")
             return self._format_with_category(
                 arguments=formatter_config,

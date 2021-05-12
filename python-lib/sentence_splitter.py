@@ -1,10 +1,13 @@
 import pandas as pd
 import logging
 from time import perf_counter
-from typing import AnyStr, List, Tuple
+from typing import AnyStr
+from typing import List
+from typing import Tuple
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from plugin_io_utils import replace_nan_values, generate_unique
+from plugin_io_utils import replace_nan_values
+from plugin_io_utils import generate_unique
 from tqdm import tqdm
 
 
@@ -28,7 +31,6 @@ class SentenceSplitter:
         text_df,
         text_column,
         tokenizer,
-        normalize_case,
         language,
         language_column=None,
     ):
