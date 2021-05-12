@@ -2,13 +2,19 @@ from fastcore.utils import store_attr
 import pandas as pd
 from collections import defaultdict
 from spacy.tokens import Span, Doc
-from typing import AnyStr, Dict, List, Tuple
+from typing import AnyStr
+from typing import Dict
+from typing import List
+from typing import Tuple
 import numpy as np
 from time import perf_counter
 import logging
 import json
-from plugin_io_utils import move_columns_after, unique_list, generate_unique_columns
-from nlp_utils import get_span_text, unicode_normalize_text
+from plugin_io_utils import move_columns_after
+from plugin_io_utils import unique_list
+from plugin_io_utils import generate_unique_columns
+from nlp_utils import get_span_text
+from nlp_utils import unicode_normalize_text
 from spacy_tokenizer import MultilingualTokenizer
 from tqdm import tqdm
 
