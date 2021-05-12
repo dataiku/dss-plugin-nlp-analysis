@@ -187,9 +187,11 @@ class MultilingualTokenizer:
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
         self._restore_pipe_components = {}
-        """May be initialize in create_spacy_tokenizer as a spacy.language.DisabledPipes object. 
-        It is the disabled pipes from spacy.Languages.select_pipes() call, that can be restored by calling the object’s .restore() method."""
-
+        """spacy.language.DisabledPipes object initialized in create_spacy_tokenizer()
+        Contains the components of each SpaCy.Language object that have been disabled by spacy.Languages.select_pipes() method.
+        Those components can be re-added to each SpaCy.Language at their initial place in the pipeline, by calling restore_pipe_components[language].restore()
+        
+        """ 
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
