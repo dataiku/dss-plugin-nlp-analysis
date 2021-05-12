@@ -3,7 +3,7 @@ from spacy.tokens import Span, Doc
 import unicodedata
 
 
-def normalize_case_text(text: AnyStr, lowercase: bool) -> AnyStr:
+def lowercase_if(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted case form"""
     return text.lower() if lowercase else text
 

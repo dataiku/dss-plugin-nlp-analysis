@@ -1,7 +1,7 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc, get_phrase_matcher_attr, normalize_case_text
+from nlp_utils import lemmatize_doc, get_phrase_matcher_attr, lowercase_if
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -100,7 +100,7 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": normalize_case_text(
+                "pattern": lowercase_if(
                     text=pattern, lowercase=self.normalize_case
                 ),
                 "id": tag,
@@ -128,7 +128,7 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            normalize_case_text(text=keyword, lowercase=self.normalize_case)
+            lowercase_if(text=keyword, lowercase=self.normalize_case)
             for keyword in keywords
         ]
         tokenized_keywords = list(
