@@ -70,14 +70,14 @@ Korean is excluded for now because of system installation issues
 """
 
 SPACY_LANGUAGE_MODELS = {
+    "de": "de_core_news_sm",  # OntoNotes
     "en": "en_core_web_sm",  # OntoNotes
     "es": "es_core_news_sm",  # Wikipedia
-    "zh": "zh_core_web_sm",  # OntoNotes
-    "nb": "nb_core_news_sm",  # NorNE
     "fr": "fr_core_news_sm",  # Wikipedia
-    "de": "de_core_news_sm",  # OntoNotes
-    "ru": "ru_core_news_sm",  # Nerus
+    "nb": "nb_core_news_sm",  # NorNE
     "pl": "pl_core_news_sm",  # NKJP
+    "ru": "ru_core_news_sm",  # Nerus
+    "zh": "zh_core_web_sm",  # OntoNotes
 }
 
 """dict: Mapping between ISO 639-1 language code and spaCy model identifiers
@@ -85,40 +85,40 @@ SPACY_LANGUAGE_MODELS = {
 Models with Creative Commons licenses are not included because this plugin is licensed under Apache-2
 """
 
-SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["en", "es", "nb", "fr", "de", "ru", "pl"]
+SPACY_LANGUAGE_MODELS_LEMMATIZATION = ["de", "en", "es", "fr", "nb", "pl", "ru"]
 """list: Languages that have a SpaCy pre-trained model with a Lemmatizer component.
 When using a pre-trained pipeline to lemmatize, you need to have in your SpaCy Language pipeline:
 -either SpaCy 'morphologizer' + 'lemmatizer'
 -or SpaCy 'tagger' + 'attribute ruler' + 'lemmatizer'
 depending on the pre-trained pipeline built-in components"""
 
-SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["es", "nb", "fr", "de", "ru", "pl"]
+SPACY_LANGUAGE_MODELS_MORPHOLOGIZER = ["de", "es", "fr", "nb", "pl", "ru"]
 """list: Languages that have a SpaCy pre-trained model with a Morphologizer component."""
 
 SPACY_LANGUAGE_LOOKUP = [
     "ca",
     "cs",
     "da",
+    "de",
+    "en",
+    "es",
+    "fr",
     "hr",
     "hu",
     "id",
     "it",
     "lb",
     "lt",
+    "mk",
+    "nb",
+    "nl",
     "pt",
     "ro",
     "sr",
+    "sv",
     "tl",
     "tr",
     "ur",
-    "en",
-    "de",
-    "es",
-    "nb",
-    "fr",
-    "mk",
-    "nl",
-    "sv",
 ]
 """list: Languages that have available SpaCy lookup tables for lemmatization. 
 The lookup tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data

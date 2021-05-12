@@ -1,10 +1,12 @@
 from spacy_tokenizer import MultilingualTokenizer
 from formatter_instanciator import FormatterInstanciator
 from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc
-from nlp_utils import get_token_attribute
-from nlp_utils import normalize_case_text
-from nlp_utils import unicode_normalize_text
+from nlp_utils import (
+    lemmatize_doc,
+    get_phrase_matcher_attr,
+    lowercase_if,
+    unicode_normalize_text,
+)
 from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
@@ -13,11 +15,9 @@ import pandas as pd
 from time import perf_counter
 import logging
 from sentence_splitter import SentenceSplitter
-from language_support import (
-    SPACY_LANGUAGE_LOOKUP,
-    SPACY_LANGUAGE_RULES,
-    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
-)
+from language_support import SPACY_LANGUAGE_LOOKUP
+from language_support import SPACY_LANGUAGE_RULES
+from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 
 
 class Tagger:
@@ -72,9 +72,9 @@ class Tagger:
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
-        any([item in languages for item in SPACY_LANGUAGE_RULES])
-        logger = logging.getLogger("spacy")
-        logger.setLevel(logging.ERROR)
+        if any([item in languages for item in SPACY_LANGUAGE_RULES]):
+            logger = logging.getLogger("spacy")
+            logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
         """Remove rows with at least one empty value from ontology df"""
@@ -86,13 +86,16 @@ class Tagger:
             )
 
     def _get_patterns(
-        self, list_of_keywords: List[AnyStr], list_of_tags: List[AnyStr], language
+        self,
+        list_of_keywords: List[AnyStr],
+        list_of_tags: List[AnyStr],
+        language: AnyStr,
     ) -> List[dict]:
         """Called in _tag_and_format, when self.category_column is not None. Create the list of patterns to match with.
 
         Args:
-            list_of_keywords : List of the keywords in the Ontology Dataset
-            list_of_tags : List of the tags in the Ontology Dataset
+            list_of_keywords (List): The keywords in the Ontology Dataset
+            list_of_tags (List): The tags in the Ontology Dataset
 
         Returns:
             List : List of dictionaries. One dictionary = one pattern, defined as follow : {"label": category, "pattern": keyword, "id": tag}
@@ -105,7 +108,7 @@ class Tagger:
             {
                 "label": label,
                 "pattern": unicode_normalize_text(
-                    text=normalize_case_text(pattern, self.normalize_case),
+                    text=lowercase_if(text=pattern, lowercase=self.normalize_case),
                     use_nfc=self._use_nfc,
                     normalize_diacritics=self.normalize_diacritics,
                 ),
@@ -124,7 +127,8 @@ class Tagger:
 
         Args:
             language (str) : Language code in ISO 639-1 format to use to tokenize the keywords.
-            keywords (List): The keywords to tokenize.
+            tags (List): The tags in the Ontology Dataset.
+            keywords (List): The keywords in the Ontology Dataset to tokenize.
 
         Returns:
             List: The tokenized keywords.
@@ -134,7 +138,7 @@ class Tagger:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
             unicode_normalize_text(
-                text=normalize_case_text(keyword, self.normalize_case),
+                text=lowercase_if(text=keyword, lowercase=self.normalize_case),
                 use_nfc=self._use_nfc,
                 normalize_diacritics=self.normalize_diacritics,
             )
@@ -142,15 +146,14 @@ class Tagger:
         ]
         tokenized_keywords = list(
             self.tokenizer.spacy_nlp_dict[language].pipe(keywords)
-        )
+        )  # list of SpaCy.tokens.Doc objects
         if self.lemmatization:
             self._keyword_to_tag[language] = {
-                lemmatize_doc(keyword): tag
-                for keyword, tag in zip(tokenized_keywords, tags)
+                lemmatize_doc(doc): tag for doc, tag in zip(tokenized_keywords, tags)
             }
         else:
             self._keyword_to_tag[language] = {
-                keyword.text: tag for keyword, tag in zip(tokenized_keywords, tags)
+                doc.text: tag for doc, tag in zip(tokenized_keywords, tags)
             }
         return tokenized_keywords
 
@@ -182,7 +185,9 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             ruler = self.tokenizer.spacy_nlp_dict[language].add_pipe(
                 "entity_ruler",
-                config={"phrase_matcher_attr": get_token_attribute(self.lemmatization)},
+                config={
+                    "phrase_matcher_attr": get_phrase_matcher_attr(self.lemmatization)
+                },
             )
             ruler.add_patterns(patterns)
 
@@ -217,7 +222,7 @@ class Tagger:
             self.tokenizer.spacy_nlp_dict[language].remove_pipe("sentencizer")
             matcher = PhraseMatcher(
                 self.tokenizer.spacy_nlp_dict[language].vocab,
-                attr=get_token_attribute(self.lemmatization),
+                attr=get_phrase_matcher_attr(self.lemmatization),
             )
             matcher.add("PatternList", patterns)
             self._matcher_dict[language] = matcher

@@ -17,14 +17,13 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from language_support import (
-    SUPPORTED_LANGUAGES_SPACY,
-    SPACY_LANGUAGE_MODELS,
-    SPACY_LANGUAGE_LOOKUP,
-    SPACY_LANGUAGE_RULES,
-    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
-    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
-)
+from language_support import SUPPORTED_LANGUAGES_SPACY
+from language_support import SPACY_LANGUAGE_MODELS
+from language_support import SPACY_LANGUAGE_LOOKUP
+from language_support import SPACY_LANGUAGE_RULES
+from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+from language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
+
 from plugin_io_utils import generate_unique, truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
@@ -188,9 +187,11 @@ class MultilingualTokenizer:
         self.spacy_nlp_dict = {}
         self.tokenized_column = None  # may be changed by tokenize_df
         self._restore_pipe_components = {}
-        """May be initialize in create_spacy_tokenizer as a spacy.language.DisabledPipes object. 
-        It is the disabled pipes from spacy.Languages.select_pipes() call, that can be restored by calling the object’s .restore() method."""
-
+        """spacy.language.DisabledPipes object initialized in create_spacy_tokenizer()
+        Contains the components of each SpaCy.Language object that have been disabled by spacy.Languages.select_pipes() method.
+        Those components can be re-added to each SpaCy.Language at their initial place in the pipeline, by calling restore_pipe_components[language].restore()
+        
+        """ 
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
@@ -204,8 +205,9 @@ class MultilingualTokenizer:
             self.use_models = True
         else:
             self.use_models = False
-
-    def _get_error_message_lemmatization(self, language: AnyStr) -> AnyStr:
+    
+    @staticmethod
+    def _get_error_message_lemmatization(language: AnyStr) -> AnyStr:
         """Return the error message to display when the lemmatization cannot be applied"""
         if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             # 'Russian','Polish' without a pretrained model
@@ -213,10 +215,9 @@ class MultilingualTokenizer:
         else:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
-
-    def _get_components_to_activate_lemmatization(
-        self, language: AnyStr
-    ) -> List[AnyStr]:
+        
+    @staticmethod    
+    def _get_components_to_activate_lemmatization(language: AnyStr) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
             return ["tok2vec", "morphologizer", "lemmatizer"]
@@ -235,7 +236,8 @@ class MultilingualTokenizer:
             components_to_activate = self._get_components_to_activate_lemmatization(
                 language
             )
-            self._restore_pipe_components[language].restore()
+            if language in self._restore_pipe_components:
+                self._restore_pipe_components[language].restore()
             self._restore_pipe_components[language] = self.spacy_nlp_dict[
                 language
             ].select_pipes(enable=components_to_activate)
@@ -284,6 +286,8 @@ class MultilingualTokenizer:
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
+            if self.use_models == False:
+                nlp.initialize()
             if self.enable_pipe_components:
                 self._restore_pipe_components[language] = nlp.select_pipes(
                     enable=self.enable_pipe_components

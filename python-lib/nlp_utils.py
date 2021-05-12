@@ -3,12 +3,12 @@ from spacy.tokens import Span, Doc
 import unicodedata
 
 
-def normalize_case_text(text: AnyStr, lowercase: bool) -> AnyStr:
+def lowercase_if(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted case form"""
     return text.lower() if lowercase else text
 
 
-def get_token_attribute(lemmatize: bool) -> AnyStr:
+def get_phrase_matcher_attr(lemmatize: bool) -> AnyStr:
     """Return the attribute to pass to spaCy Matcher"""
     return "LEMMA" if lemmatize else "TEXT"
 
@@ -26,8 +26,8 @@ def lemmatize_doc(doc: Doc) -> AnyStr:
     return " ".join([span.lemma_ for span in doc])
 
 
-def lemmatize_span(span: Span, lemmatize: bool) -> AnyStr:
-    """Lemmatize SpaCy.tokens.Span object if 'lemmatize' is True.
+def get_span_text(span: Span, lemmatize: bool) -> AnyStr:
+    """Return the Span text, or the Span lemma if 'lemmatize' is True
 
     Args:
         span (spacy.tokens.Span): Text to process
@@ -37,9 +37,7 @@ def lemmatize_span(span: Span, lemmatize: bool) -> AnyStr:
         str: Text or lemma associated to the span
 
     """
-    if lemmatize:
-        return span.lemma_
-    return span.text
+    return span.lemma_ if lemmatize else span.text
 
 
 def unicode_normalize_text(
