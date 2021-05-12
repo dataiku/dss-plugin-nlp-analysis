@@ -205,8 +205,9 @@ class MultilingualTokenizer:
             self.use_models = True
         else:
             self.use_models = False
-
-    def _get_error_message_lemmatization(self, language: AnyStr) -> AnyStr:
+    
+    @staticmethod
+    def _get_error_message_lemmatization(language: AnyStr) -> AnyStr:
         """Return the error message to display when the lemmatization cannot be applied"""
         if language in SPACY_LANGUAGE_MODELS_LEMMATIZATION:
             # 'Russian','Polish' without a pretrained model
@@ -214,10 +215,9 @@ class MultilingualTokenizer:
         else:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
-
-    def _get_components_to_activate_lemmatization(
-        self, language: AnyStr
-    ) -> List[AnyStr]:
+        
+    @staticmethod    
+    def _get_components_to_activate_lemmatization(language: AnyStr) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
             return ["tok2vec", "morphologizer", "lemmatizer"]
@@ -236,7 +236,8 @@ class MultilingualTokenizer:
             components_to_activate = self._get_components_to_activate_lemmatization(
                 language
             )
-            self._restore_pipe_components[language].restore()
+            if language in self._restore_pipe_components:
+                self._restore_pipe_components[language].restore()
             self._restore_pipe_components[language] = self.spacy_nlp_dict[
                 language
             ].select_pipes(enable=components_to_activate)
@@ -285,6 +286,8 @@ class MultilingualTokenizer:
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
                 nlp.add_pipe(component)
+            if self.use_models == False:
+                nlp.initialize()
             if self.enable_pipe_components:
                 self._restore_pipe_components[language] = nlp.select_pipes(
                     enable=self.enable_pipe_components
