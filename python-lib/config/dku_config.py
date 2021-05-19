@@ -1,4 +1,4 @@
-from dss_parameter import DSSParameter
+from .dss_parameter import DSSParameter
 from collections.abc import MutableMapping
 from typing import Any
 

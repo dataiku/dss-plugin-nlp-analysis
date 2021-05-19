@@ -1,7 +1,12 @@
+import unicodedata
+from enum import Enum
 from typing import AnyStr, Union, List
 from spacy.tokens import Span, Doc
-import unicodedata
 
+
+class UnicodeNormalization(Enum):
+    NFC = "NFC"
+    NFD = "NFD"
 
 def lowercase_if(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted case form"""
@@ -54,7 +59,7 @@ def unicode_normalize_text(
         str: Text normalized with NFC or NFD norm.
 
     """
-    norm = "NFC" if use_nfc else "NFD"
+    norm = UnicodeNormalization.NFC.value if use_nfc else UnicodeNormalization.NFD.value
     text = unicodedata.normalize(norm, text)
     if normalize_diacritics:
         text = "".join([c for c in text if not unicodedata.combining(c)])

@@ -17,15 +17,14 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from language_support import SUPPORTED_LANGUAGES_SPACY
-from language_support import SPACY_LANGUAGE_MODELS
-from language_support import SPACY_LANGUAGE_LOOKUP
-from language_support import SPACY_LANGUAGE_RULES
-from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
-from language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
-
-from plugin_io_utils import generate_unique
-from plugin_io_utils import truncate_text_list
+from utils.language_support import SUPPORTED_LANGUAGES_SPACY
+from utils.language_support import SPACY_LANGUAGE_MODELS
+from utils.language_support import SPACY_LANGUAGE_LOOKUP
+from utils.language_support import SPACY_LANGUAGE_RULES
+from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+from utils.language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
+from utils.plugin_io_utils import generate_unique
+from utils.plugin_io_utils import truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
 Token.set_extension("is_hashtag", getter=lambda token: token.text[0] == "#", force=True)

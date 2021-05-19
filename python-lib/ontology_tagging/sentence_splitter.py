@@ -1,14 +1,17 @@
 import pandas as pd
 import logging
 from time import perf_counter
+from tqdm import tqdm
+
 from typing import AnyStr
 from typing import List
 from typing import Tuple
+
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
-from plugin_io_utils import replace_nan_values
-from plugin_io_utils import generate_unique
-from tqdm import tqdm
+
+from utils.plugin_io_utils import replace_nan_values
+from utils.plugin_io_utils import generate_unique
 
 
 class SentenceSplitter:

@@ -1,23 +1,27 @@
-from spacy_tokenizer import MultilingualTokenizer
-from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc
-from nlp_utils import get_phrase_matcher_attr
-from nlp_utils import lowercase_if
-from nlp_utils import unicode_normalize_text
-from spacy.matcher import PhraseMatcher
-from spacy.tokens import Doc
+import pandas as pd
+import logging
+from time import perf_counter
+
 from fastcore.utils import store_attr
+
 from typing import AnyStr
 from typing import List
 from typing import Union
-import pandas as pd
-from time import perf_counter
-import logging
-from sentence_splitter import SentenceSplitter
-from language_support import SPACY_LANGUAGE_LOOKUP
-from language_support import SPACY_LANGUAGE_RULES
-from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+
+from spacy.matcher import PhraseMatcher
+from spacy.tokens import Doc
+from .spacy_tokenizer import MultilingualTokenizer
+from .formatter_instanciator import FormatterInstanciator
+from .sentence_splitter import SentenceSplitter
+
+from utils.plugin_io_utils import generate_unique
+from utils.nlp_utils import lemmatize_doc
+from utils.nlp_utils import get_phrase_matcher_attr
+from utils.nlp_utils import lowercase_if
+from utils.nlp_utils import unicode_normalize_text
+from utils.language_support import SPACY_LANGUAGE_LOOKUP
+from utils.language_support import SPACY_LANGUAGE_RULES
+from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 
 
 class Tagger:
@@ -35,7 +39,7 @@ class Tagger:
             Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
         normalize_case (bool): If True, match on lowercased forms. Default is False.
-        normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
@@ -118,7 +122,7 @@ class Tagger:
                 list_of_categories, list_of_keywords, list_of_tags
             )
         ]
-
+        
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
     ) -> List[Doc]:

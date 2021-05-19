@@ -1,23 +1,33 @@
-from fastcore.utils import store_attr
+import json
+import numpy as np
 import pandas as pd
-from collections import defaultdict
-from spacy.tokens import Span, Doc
+
+import logging
+from tqdm import tqdm
+from time import perf_counter
+
+from fastcore.utils import store_attr
+
 from typing import AnyStr
 from typing import Dict
 from typing import List
 from typing import Tuple
-import numpy as np
-from time import perf_counter
-import logging
-import json
-from plugin_io_utils import move_columns_after
-from plugin_io_utils import unique_list
-from plugin_io_utils import generate_unique_columns
-from nlp_utils import get_span_text
-from nlp_utils import lowercase_if
-from nlp_utils import unicode_normalize_text
-from spacy_tokenizer import MultilingualTokenizer
-from tqdm import tqdm
+
+from spacy.tokens import Span, Doc
+from collections import defaultdict
+
+from utils.plugin_io_utils import move_columns_after
+from utils.plugin_io_utils import unique_list
+from utils.plugin_io_utils import generate_unique_columns
+from utils.nlp_utils import get_span_text
+from utils.nlp_utils import lowercase_if
+from utils.nlp_utils import unicode_normalize_text
+
+from .spacy_tokenizer import MultilingualTokenizer
+
+
+
+
 
 # names of all additional columns depending on the output_format
 COLUMN_DESCRIPTION = {
@@ -38,6 +48,30 @@ class Formatter:
     Write the output dataframe depending on the output format
     This class is called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
     """
+    """Write the output dataframe depending on the output format
+    This class is called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
+
+    Attributes:
+        language (string): language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
+            Used if there is only one language to treat.
+            Use the argument 'language_column' for passing a language column name in 'write_df' methods otherwise.
+        tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
+        category_column (string): Name of the column in the Ontology. Contains the category of each tag to assign.
+        normalize_case (bool): If True, match on lowercased forms. Default is False.
+        lemmatization (bool): If True , match on lemmatized forms. Default is False.
+        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        text_column_tokenized (string): Name of the column which contains the text splitted by sentences
+        _use_nfc (bool): If True, use NFC normalization to match, use NFD otherwise.
+        _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
+            Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        _keyword_to_tag (dict): Private attribute. Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
+            Unused if we are using EntityRuler (in case there are categories in the Ontology)
+            Example :
+                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
+        _column_descriptions (dict): Private attribute. Dictionary of new columns to add in the dataframe (key) and their description (value)
+        output_df (pandas.DataFrame): DataFrame with all columns from the input, plus new columns concerning the found tags
+
+    """
 
     def __init__(
         self,
@@ -47,8 +81,8 @@ class Formatter:
         normalize_case: bool,
         lemmatization: bool,
         normalize_diacritics: bool,
-        _use_nfc: bool,
         text_column_tokenized: AnyStr,
+        _use_nfc: bool,
         _keyword_to_tag: dict = None,
         _matcher_dict: dict = None,
     ):

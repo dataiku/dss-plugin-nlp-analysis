@@ -1,8 +1,9 @@
 from enum import Enum
 from typing import AnyStr
-from ontology_tagging_formatting import FormatterByDocumentJson
-from ontology_tagging_formatting import FormatterByDocument
-from ontology_tagging_formatting import FormatterByTag
+
+from .ontology_tagging_formatting import FormatterByDocumentJson
+from .ontology_tagging_formatting import FormatterByDocument
+from .ontology_tagging_formatting import FormatterByTag
 
 
 class OutputFormat(Enum):
@@ -12,7 +13,7 @@ class OutputFormat(Enum):
 
 
 class FormatterInstanciator:
-
+    
     INSTANCES = {
         OutputFormat.ONE_ROW_PER_DOCUMENT.value: FormatterByDocument,
         OutputFormat.ONE_ROW_PER_DOCUMENT_JSON.value: FormatterByDocumentJson,
