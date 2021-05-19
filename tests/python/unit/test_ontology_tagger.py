@@ -3,10 +3,10 @@
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
 
-from ontology_tagger import Tagger
 from spacy.matcher import PhraseMatcher
 import pandas as pd
-from language_support import SUPPORTED_LANGUAGES_SPACY
+from ontology_tagging.ontology_tagger import Tagger
+from utils.language_support import SUPPORTED_LANGUAGES_SPACY
 
 
 def test_create_matcher_missing_keywords():

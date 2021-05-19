@@ -2,7 +2,7 @@
 # This is a test file intended to be used with pytest
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
-from ontology_tagger import Tagger
+from ontology_tagging.ontology_tagger import Tagger
 import pandas as pd
 import pytest
 
