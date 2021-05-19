@@ -1,22 +1,27 @@
-from spacy_tokenizer import MultilingualTokenizer
-from formatter_instanciator import FormatterInstanciator
-from plugin_io_utils import generate_unique
-from nlp_utils import lemmatize_doc
-from nlp_utils import get_phrase_matcher_attr
-from nlp_utils import lowercase_if
-from spacy.matcher import PhraseMatcher
-from spacy.tokens import Doc
+import pandas as pd
+import logging
+from time import perf_counter
+
 from fastcore.utils import store_attr
+
 from typing import AnyStr
 from typing import List
 from typing import Union
-import pandas as pd
-from time import perf_counter
-import logging
-from sentence_splitter import SentenceSplitter
-from language_support import SPACY_LANGUAGE_LOOKUP
-from language_support import SPACY_LANGUAGE_RULES
-from language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+
+from spacy.matcher import PhraseMatcher
+from spacy.tokens import Doc
+from .spacy_tokenizer import MultilingualTokenizer
+from .formatter_instanciator import FormatterInstanciator
+from .sentence_splitter import SentenceSplitter
+
+from utils.plugin_io_utils import generate_unique
+from utils.nlp_utils import lemmatize_doc
+from utils.nlp_utils import get_phrase_matcher_attr
+from utils.nlp_utils import lowercase_if
+from utils.nlp_utils import unicode_normalize_text
+from utils.language_support import SPACY_LANGUAGE_LOOKUP
+from utils.language_support import SPACY_LANGUAGE_RULES
+from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
 
 
 class Tagger:
@@ -34,7 +39,7 @@ class Tagger:
             Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
         normalize_case (bool): If True, match on lowercased forms. Default is False.
-        normalization (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
             Unused if we are using EntityRuler (in case there are categories in the Ontology)
@@ -55,7 +60,7 @@ class Tagger:
         language: AnyStr,
         lemmatization: bool = False,
         normalize_case: bool = False,
-        normalization: bool = False,
+        normalize_diacritics: bool = False,
     ):
         store_attr()
         self._remove_incomplete_rows()
@@ -66,6 +71,8 @@ class Tagger:
         self._matcher_dict = {}  # filled by the _match_no_category method
         self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
         self._column_descriptions = {}  # filled by the _format_ methods
+        self._use_nfc = self.lemmatization and not self.normalize_diacritics
+        # text will be normalized with NFC if True, with NFD otherwise.
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
@@ -104,8 +111,10 @@ class Tagger:
         return [
             {
                 "label": label,
-                "pattern": lowercase_if(
-                    text=pattern, lowercase=self.normalize_case
+                "pattern": unicode_normalize_text(
+                    text=lowercase_if(text=pattern, lowercase=self.normalize_case),
+                    use_nfc=self._use_nfc,
+                    normalize_diacritics=self.normalize_diacritics,
                 ),
                 "id": tag,
             }
@@ -113,7 +122,7 @@ class Tagger:
                 list_of_categories, list_of_keywords, list_of_tags
             )
         ]
-
+        
     def _tokenize_keywords(
         self, language: AnyStr, tags: List[AnyStr], keywords: List[AnyStr]
     ) -> List[Doc]:
@@ -132,7 +141,11 @@ class Tagger:
         if self.lemmatization:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
-            lowercase_if(text=keyword, lowercase=self.normalize_case)
+            unicode_normalize_text(
+                text=lowercase_if(text=keyword, lowercase=self.normalize_case),
+                use_nfc=self._use_nfc,
+                normalize_diacritics=self.normalize_diacritics,
+            )
             for keyword in keywords
         ]
         tokenized_keywords = list(
@@ -157,6 +170,8 @@ class Tagger:
             "category_column": self.category_column,
             "normalize_case": self.normalize_case,
             "lemmatization": self.lemmatization,
+            "normalize_diacritics": self.normalize_diacritics,
+            "_use_nfc": self._use_nfc,
         }
         if not self.category_column:
             arguments["_matcher_dict"] = self._matcher_dict

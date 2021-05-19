@@ -5,8 +5,8 @@ from dataiku.customrecipe import (
     get_input_names_for_role,
     get_output_names_for_role,
 )
-from language_support import SUPPORTED_LANGUAGES_SPACY
-from dku_config import DkuConfig
+from utils.language_support import SUPPORTED_LANGUAGES_SPACY
+from config.dku_config import DkuConfig
 
 
 class DkuConfigLoading:

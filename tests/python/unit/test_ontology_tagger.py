@@ -3,10 +3,10 @@
 # pytest automatically runs all the function starting with "test_"
 # see https://docs.pytest.org for more information
 
-from ontology_tagger import Tagger
 from spacy.matcher import PhraseMatcher
 import pandas as pd
-from language_support import SUPPORTED_LANGUAGES_SPACY
+from ontology_tagging.ontology_tagger import Tagger
+from utils.language_support import SUPPORTED_LANGUAGES_SPACY
 
 
 def test_create_matcher_missing_keywords():
@@ -69,6 +69,7 @@ def test_initialize_tokenizer():
 
 
 def test_matching_in_lowercase():
+    """Test matching for the option 'normalize_case'"""
     ontology_df = pd.DataFrame(
         {"tag": ["tag1", "tag2"], "keyword": ["My KeYword", "other keyword"]}
     )
@@ -94,3 +95,31 @@ def test_matching_in_lowercase():
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
+    
+def test_matching_normalize_diacritics():
+    """Test matching for the option 'normalize_diacritics'"""
+    ontology_df = pd.DataFrame(
+            {"tag": ["tag1"], "keyword": ["ÄâêËùûôçèîÏìàñ"]}
+    )
+    text_df = pd.DataFrame(
+        {
+            "text": [
+                "The keyword is AaeEuuoceiIian."
+            ]
+        }
+    )
+    tagger = Tagger(
+        ontology_df=ontology_df,
+        tag_column="tag",
+        category_column=None,
+        keyword_column="keyword",
+        language="en",
+        normalize_diacritics=True,
+    )
+    df = tagger.tag_and_format(
+        text_df=text_df,
+        text_column="text",
+        output_format="one_row_per_tag",
+        languages=["en"],
+    )
+    assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])

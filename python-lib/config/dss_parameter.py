@@ -1,4 +1,4 @@
-from custom_check import CustomCheck, CustomCheckError
+from .custom_check import CustomCheck, CustomCheckError
 from typing import Any, List
 
 import logging

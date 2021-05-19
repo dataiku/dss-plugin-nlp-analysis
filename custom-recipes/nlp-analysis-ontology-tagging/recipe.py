@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import dataiku
-from dkulib_io_utils import set_column_descriptions
-from dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
-from ontology_tagger import Tagger
+from utils.dkulib_io_utils import set_column_descriptions
+from ontology_tagging.dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
+from ontology_tagging.ontology_tagger import Tagger
 
 
 dku_config = DkuConfigLoadingOntologyTagging()
@@ -26,7 +26,7 @@ tagger = Tagger(
     language=settings.language,
     lemmatization=settings.lemmatization,
     normalize_case=settings.normalize_case,
-    normalization=settings.unicode_normalization,
+    normalize_diacritics=settings.unicode_normalization,
 )
 output_df = tagger.tag_and_format(
     text_df=text_dataframe,

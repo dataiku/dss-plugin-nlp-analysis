@@ -1,7 +1,12 @@
+import unicodedata
+from enum import Enum
 from typing import AnyStr, Union, List
 from spacy.tokens import Span, Doc
-import unicodedata
 
+
+class UnicodeNormalization(Enum):
+    NFC = "NFC"
+    NFD = "NFD"
 
 def lowercase_if(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted case form"""
@@ -40,6 +45,22 @@ def get_span_text(span: Span, lemmatize: bool) -> AnyStr:
     return span.lemma_ if lemmatize else span.text
 
 
-def unicode_normalize_text(texts: List[AnyStr]) -> List[AnyStr]:
-    """Return a list of texts NFD normalized"""
-    return [unicodedata.normalize("NFD", text) for text in texts]
+def unicode_normalize_text(
+    text: AnyStr, use_nfc: bool = False, normalize_diacritics: bool = False
+):
+    """Apply unicode_normalization to text
+
+    Args:
+        text (str): Text to normalize with NFD or NFC norm.
+        use_nfc (bool): Apply NFC norm if True, NFD otherwise.
+        normalize_diacritics(bool): if True, remove diacritics after unicode normalizing.
+
+    Returns:
+        str: Text normalized with NFC or NFD norm.
+
+    """
+    norm = UnicodeNormalization.NFC.value if use_nfc else UnicodeNormalization.NFD.value
+    text = unicodedata.normalize(norm, text)
+    if normalize_diacritics:
+        text = "".join([c for c in text if not unicodedata.combining(c)])
+    return text
