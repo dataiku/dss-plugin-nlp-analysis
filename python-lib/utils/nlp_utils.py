@@ -8,6 +8,7 @@ class UnicodeNormalization(Enum):
     NFC = "NFC"
     NFD = "NFD"
 
+
 def lowercase_if(text: AnyStr, lowercase: bool) -> AnyStr:
     """Return text in its wanted case form"""
     return text.lower() if lowercase else text

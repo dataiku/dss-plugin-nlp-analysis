@@ -191,10 +191,10 @@ class MultilingualTokenizer:
         Contains the components of each SpaCy.Language object that have been disabled by spacy.Languages.select_pipes() method.
         Those components can be re-added to each SpaCy.Language at their initial place in the pipeline, by calling restore_pipe_components[language].restore()
         
-        """ 
+        """
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
-                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
+                "Only one of enable_pipe_components and disable_pipe_components can be specified at once."
             )
 
     def _set_use_models(self, languages: List[AnyStr]) -> bool:
@@ -205,7 +205,7 @@ class MultilingualTokenizer:
             self.use_models = True
         else:
             self.use_models = False
-    
+
     @staticmethod
     def _get_error_message_lemmatization(language: AnyStr) -> AnyStr:
         """Return the error message to display when the lemmatization cannot be applied"""
@@ -215,8 +215,8 @@ class MultilingualTokenizer:
         else:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
-        
-    @staticmethod    
+
+    @staticmethod
     def _get_components_to_activate_lemmatization(language: AnyStr) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
@@ -320,39 +320,7 @@ class MultilingualTokenizer:
         )
         return nlp
 
-    def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:
-        """Private method to customize stopwords for a given spaCy language
-
-        Args:
-            nlp: Instanciated spaCy language
-            language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
-
-        Raises:
-            TokenizationError: If something went wrong with the stopword customization
-
-        """
-        try:
-            stopwords_file_path = os.path.join(
-                self.stopwords_folder_path, f"{language}.txt"
-            )
-            with open(stopwords_file_path) as f:
-                custom_stopwords = set(f.read().splitlines())
-            for word in custom_stopwords:
-                nlp.vocab[word].is_stop = True
-                nlp.vocab[word.capitalize()].is_stop = True
-                nlp.vocab[word.upper()].is_stop = True
-            for word in nlp.Defaults.stop_words:
-                if word.lower() not in custom_stopwords:
-                    nlp.vocab[word].is_stop = False
-                    nlp.vocab[word.capitalize()].is_stop = False
-                    nlp.vocab[word.upper()].is_stop = False
-            nlp.Defaults.stop_words = custom_stopwords
-        except (ValueError, OSError) as e:
-            raise TokenizationError(
-                f"Stopword file for language '{language}' not available because of error: '{e}'"
-            )
-
-    def _add_spacy_tokenizer(self, language: AnyStr) -> bool:
+    def add_spacy_tokenizer(self, language: AnyStr) -> bool:
         """Private method to add a spaCy tokenizer for a given language to the `spacy_nlp_dict` attribute
 
         This method only adds the tokenizer if the language code is valid and recognized among
@@ -400,7 +368,7 @@ class MultilingualTokenizer:
         )
         text_list = [str(t) if pd.notnull(t) else "" for t in text_list]
         try:
-            self._add_spacy_tokenizer(language)
+            self.add_spacy_tokenizer(language)
             tokenized = list(
                 self.spacy_nlp_dict[language].pipe(
                     text_list,

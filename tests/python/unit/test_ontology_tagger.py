@@ -91,7 +91,7 @@ def test_matching_in_lowercase():
     df = tagger.tag_and_format(
         text_df=text_df,
         text_column="text",
-        output_format="one_row_per_tag",
+        output_format="one_row_per_match",
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
@@ -119,7 +119,7 @@ def test_matching_normalize_diacritics():
     df = tagger.tag_and_format(
         text_df=text_df,
         text_column="text",
-        output_format="one_row_per_tag",
+        output_format="one_row_per_match",
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])

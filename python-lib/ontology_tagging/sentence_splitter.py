@@ -39,7 +39,7 @@ class SentenceSplitter:
     ):
         store_attr()
 
-    def _split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
+    def split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
         """Append new column(s) to a dataframe, with documents as lists of sentences
 
         Returns:
@@ -74,7 +74,8 @@ class SentenceSplitter:
             List: Document splitted into sentences as strings.
 
         """
-        document, language = row[self.text_column], row[self.language_column]
+        document = row[self.text_column]
+        language = row[self.language_column]
         return [
             sentence.text
             for sentence in self.tokenizer.spacy_nlp_dict[language](document).sents
