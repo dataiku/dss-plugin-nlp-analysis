@@ -14,9 +14,7 @@ from .ontology_tagging_formatting import FormatterBase
 
 
 class FormatterByMatch(FormatterBase):
-    """Inherits from FormatterBase class.
-    Class to write a dataframe which contains one row per document per matched keyword
-    """
+    """Class to write a dataframe which contains one row per document per matched keyword"""
 
     def __init__(self, *args, **kwargs):
         super(FormatterByMatch, self).__init__(*args, **kwargs)

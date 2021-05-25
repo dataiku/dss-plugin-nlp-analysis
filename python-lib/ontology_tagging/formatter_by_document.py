@@ -21,9 +21,7 @@ from .ontology_tagging_formatting import FormatterBase
 
 
 class FormatterByDocument(FormatterBase):
-    """Inherits from FormatterBase class.
-    Class to write a dataframe which contains one row per document, with associated tags and keywords stored as array columns.
-    """
+    """Class to write a dataframe which contains one row per document, with associated tags and keywords stored as array columns."""
 
     def __init__(self, *args, **kwargs):
         super(FormatterByDocument, self).__init__(*args, **kwargs)
@@ -315,9 +313,7 @@ class FormatterByDocument(FormatterBase):
 
 
 class FormatterByDocumentJson(FormatterByDocument):
-    """Inherits from FormatterBase class.
-    Class to write a dataframe which contains one row per document, with tag datas in nested json columns
-    """
+    """Class to write a dataframe which contains one row per document, with tag datas in nested json columns"""
 
     def __init__(self, *args, **kwargs):
         super(FormatterByDocumentJson, self).__init__(*args, **kwargs)
