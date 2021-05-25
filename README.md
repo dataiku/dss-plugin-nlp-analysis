@@ -4,7 +4,7 @@
 
 This Dataiku DSS plugin provides recipes to analyze text data. With this plugin, you will be able to:
 
-- Tag documents matching keywords within a corpus of text documents, for 59 languages.
+- Tag documents matching keywords by string-matching, within a corpus of text documents, for 59 languages.
 
 Note that languages are defined as per the ISO 639-1 standard with 2-letter codes.
 ## How to set up
@@ -12,7 +12,7 @@ Note that languages are defined as per the ISO 639-1 standard with 2-letter code
 Right after installing the plugin, you will need to build its code environment. Note that Python version 3.6 or 3.7 is required.
 ## How to use
 ### Ontology tagging
-This recipe assign tags to text documents. To assign tags to a corpus of documents, you will need two input datasets:
+This recipe assigns tags to text documents. To assign tags to a corpus of documents, you will need two input datasets:
 #### Document dataset:
 Let’s assume that you have a Dataiku DSS project with a dataset containing raw text data. This text data must be stored in a dataset, inside a text column, with one row for each document. If your corpus is composed with document of different languages, you must have a language column to indicate each document language. 
 
@@ -38,7 +38,7 @@ Let’s assume that you have a Dataiku DSS project with a dataset containing raw
 | Guitar | String instrument     |    Music |
 | Violin | String instrument      |    Music |
 
-Let's assume you have your two dataset in a project. Now you can : 
+Let's assume you have your two datasets in a project. Now you can : 
 - Navigate to the Flow
 - Click on the + RECIPE button and access the Text Analysis menu. If your dataset is selected, you can directly find the plugin on the right panel.
 
@@ -50,7 +50,7 @@ Let's assume you have your two dataset in a project. Now you can :
 
 *   Text dataset:
     *   Text column
-    *   Language: the language parameter lets you choose among 59 supported languages if your text is monolingual. Else, the Multilingual option will let you set a Language column.This Language column parameter shoul contain ISO 639-1 supported language codes. 
+    *   Language: the language parameter lets you choose among 59 supported languages if your text is monolingual. Else, the Multilingual option will let you set a Language column.This Language column parameter should contain ISO 639-1 supported language codes. 
 *   Ontology dataset:
     *   tag column
     *   keyword column
@@ -59,20 +59,21 @@ Let's assume you have your two dataset in a project. Now you can :
  
 ##### Matching parameters
 
+You can widen the search by activating the following matching parameters:
 
-
-*   Button normalize case (activated by default) : To match documents by ignoring case (e.g will try to match 'guitar','Guitar', 'GUITAR')
-*   Button normalize diacritics(not activated by default) : To match documents by ignoring diacritics marks like accents, cedillas, tildes. 
-*   Button lemmatization(not activated by default) : To match documents by simplifying words to their lemma form (e.g. going → go, mice → mouse)
-
+*   Button normalize case: To match documents by ignoring case (e.g will try to match 'guitar','Guitar', 'GUITAR')
+*   Button normalize diacritics: To match documents by ignoring diacritics marks like accents, cedillas, tildes
+*   Button lemmatization: To match documents by simplifying words to their lemma form (e.g. going → go, mice → mouse). This option supports 28 languages. 
+###### List of the 28 supported languages for lemmatization in ISO 639-1 format:
+de, es, fr, nb, pl, ru, ca, cs, da, en, hr ,hu , id, it, lb, lt, mk, nb, nl, pt, ro, sr, sv, tl, tr, ur, bn, el, fa
 ##### Output format
 
-There are three available output formats. All the outputs preserve the intital datas of the dataset.
-* Default output “one row per document (array columns)”: A row for each document, with additial columns:
+There are three available output formats. All the outputs preserve the initial datas of the dataset.
+* Default output “one row per document (array columns)”: A row for each document, with additional columns:
   *   the assigned tags of the document (array-like)
-  *   the keywords that matches it (array-like)
+  *   the keywords that match with the document (array-like)
   *   the concatenated sentences that matched the keywords (string-like)
-  However, if you gave a 'category column' in the matching parameters, you won't have a unique tag column but one column per category, containing a list of associated tags
+  However, if you gave a 'category column' in the matching parameters, you won't have a unique tag column but one column per category, each one containing a list of associated tags
  
 * Output “one row per match”: A row per document per match. This mode creates duplicates from the input dataset, as you can have multiple matches in a document. 
 In this case, the additional columns are:
@@ -82,7 +83,7 @@ In this case, the additional columns are:
   * (Optional) a category column (string-like)
   
 * Output “one row per document (nested JSON)”: A row for each document, with additional columns:
-  * Tag_json_full column : a dictionary with details about occurences of each tag, matched keywords for each tag, and the sentences where they appear. (Object-like)
+  * tag_json_full column : a dictionary with details about occurences of each tag, matched keywords for each tag, and the sentences where they appear. (Object-like)
   * If you gave a 'category column' in the matching parameters, you will also have a column 'tag_json_categories' (Object-like), which is a simplified version of the previous dictionary: it contains categories (keys) and associated tags (values)
 
 
