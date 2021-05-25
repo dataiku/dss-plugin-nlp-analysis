@@ -54,7 +54,7 @@ class FormatterByDocument(FormatterBase):
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
         )
-        return self._merge_df_columns(input_df, text_column)
+        return self._set_columns_order(input_df, self.output_df, text_column)
 
     def _write_row(self, row: pd.Series, language_column: AnyStr = None) -> None:
         """Called by write_df on each row
@@ -233,22 +233,6 @@ class FormatterByDocument(FormatterBase):
             True,
         )
         self.tag_columns = tag_list_columns_unique + self.tag_columns
-        return self._set_columns_order(input_df, self.output_df, text_column)
-
-    def _merge_df_columns(
-        self, input_df: pd.DataFrame, text_column: AnyStr
-    ) -> pd.DataFrame:
-        """
-        Called by write_df
-        Insert columns 'tag_sentences' and 'tag_keywords' into self.output_df and there is no category
-
-        Returns:
-            pd.DataFrame: the complete output dataframe after setting the columns in the right order
-
-        """
-        for column in self.tag_columns[::-1]:
-            self.output_df.set_index(column, inplace=True)
-            self.output_df.reset_index(inplace=True)
         return self._set_columns_order(input_df, self.output_df, text_column)
 
 
