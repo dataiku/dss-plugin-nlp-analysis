@@ -7,7 +7,9 @@ This Dataiku DSS plugin provides recipes to analyze text data. With this plugin,
 - Tag documents matching keywords within a corpus of text documents, for 59 languages.
 
 Note that languages are defined as per the ISO 639-1 standard with 2-letter codes.
-
+## How to set up
+### Ontology tagging
+Right after installing the plugin, you will need to build its code environment. Note that Python version 3.6 or 3.7 is required.
 ## How to use
 ### Ontology tagging
 This recipe assign tags to text documents. To assign tags to a corpus of documents, you will need two input datasets:
