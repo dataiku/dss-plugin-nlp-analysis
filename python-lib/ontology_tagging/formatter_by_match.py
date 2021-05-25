@@ -17,7 +17,7 @@ class FormatterByMatch(FormatterBase):
     """Class to write a dataframe which contains one row per document per matched keyword"""
 
     def __init__(self, *args, **kwargs):
-        super(FormatterByMatch, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.contains_match = False
         self._duplicate_df = pd.DataFrame()
 

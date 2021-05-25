@@ -24,7 +24,7 @@ class FormatterByDocument(FormatterBase):
     """Class to write a dataframe which contains one row per document, with associated tags and keywords stored as array columns."""
 
     def __init__(self, *args, **kwargs):
-        super(FormatterByDocument, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.tag_sentences, self.tag_keywords = [], []
 
     def _fill_tags(self, condition: bool, value: dict):
@@ -316,7 +316,7 @@ class FormatterByDocumentJson(FormatterByDocument):
     """Class to write a dataframe which contains one row per document, with tag datas in nested json columns"""
 
     def __init__(self, *args, **kwargs):
-        super(FormatterByDocumentJson, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def write_df(
         self,
