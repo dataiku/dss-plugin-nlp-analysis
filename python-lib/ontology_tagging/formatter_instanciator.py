@@ -33,9 +33,9 @@ TAG_COLUMNS = {
     },
 }
 
-"""Dictionary of the names of the columns to create. The names of the columns depend on the output format chosen in the input parameters
+"""Dictionary of names of the columns to create. The names of the columns depend on the output format chosen in the input parameters
 of the recipe. 
-Each entry of TAG_COLUMNS is a format name. Each format has two values: 'category' (when there are categories in the ontology)
+Each key of TAG_COLUMNS is an output format name. Each format has two values: 'category' (when there are categories in the ontology)
 and 'no_category' (when there is not), and an associated list of column names, defined as follow: 
 
 Format 'one_row_per_doc':
@@ -65,7 +65,15 @@ Format 'one_row_per_match':
 class FormatterInstanciator:
     @staticmethod
     def get_formatter(config: dict, format: AnyStr, category: AnyStr):
-        """get the right formatting instance and returns it"""
+        """get the right formatting instance and returns it
+
+        Args:
+            config (dict): class attributes for the Formatter instance to instanciate
+            format (AnyStr): name of the format to instanciate
+            category (AnyStr): 'category' if we want the list of tag columns when there are categories in the ontology , 'no category' if we don't.
+
+        Returns:
+            The instance of the formatter"""
         formatter = INSTANCES[format](
             tag_columns=TAG_COLUMNS[format][category], **config
         )

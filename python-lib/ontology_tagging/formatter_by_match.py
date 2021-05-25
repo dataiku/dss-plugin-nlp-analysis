@@ -37,7 +37,7 @@ class FormatterByMatch(FormatterBase):
             language_column (AnyStr): If not None, name of the column with contains the language of each document
 
         Returns:
-               The dataframe with all columns from the input, plus new columns of tag, keyword, sentence and category
+               The input dataframe enriched withdataframe with new columns of tag, keyword, sentence and category
 
         """
         return self.write_df(input_df, text_column, language_column)
@@ -70,9 +70,9 @@ class FormatterByMatch(FormatterBase):
     def _write_row(self, row: pd.Series, language_column: AnyStr = None) -> None:
         """
         Called by write_df on each row
-        Update the output dataframes which will be concatenated after :
-        -> self.output_df contains the columns with informations about the tags
-        -> self._duplicate_df contains the original rows of the Document Dataset, with copies
+        Update the output dataframes which will be concatenated after that:
+        - self.output_df is filled with columns with the tag columns
+        - self._duplicate_df is filled with the original rows of the Document Dataset, with copies
         There are as many copies of a document as there are keywords in this document
         Args:
             row: pandas.Series from text_df
@@ -118,7 +118,7 @@ class FormatterByMatch(FormatterBase):
                     ]
                 )
                 for keyword in match
-            ]
+            ]  # new rows to append to the output dataframe
             self._update_df(match, values, row)
 
     def _get_tags_in_row_category(

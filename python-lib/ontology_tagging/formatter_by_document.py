@@ -22,7 +22,7 @@ from .ontology_tagging_formatting import FormatterBase
 
 class FormatterByDocument(FormatterBase):
     """Inherits from FormatterBase class.
-    Class to write a dataframe which contains one row per document
+    Class to write a dataframe which contains one row per document, with associated tags and keywords stored as array columns.
     """
 
     def __init__(self, *args, **kwargs):
@@ -62,7 +62,7 @@ class FormatterByDocument(FormatterBase):
         Append columns 'tag_sentences', 'tag_keywords' and 'tag_list' to the output dataframe self.output_df
         Args:
             row: pandas.Series from text_df
-            language_column: if not None, matcher will apply with the given language of the row
+            language_column: if not None, the matcher will be applied with the given language of the row
         """
         language = self._get_document_language(row, language_column)
         document_to_match = self._get_document_to_match(row, language)
@@ -106,7 +106,18 @@ class FormatterByDocument(FormatterBase):
     ) -> Tuple[List[AnyStr], List[AnyStr], List[AnyStr]]:
         """
         Called by _write_row on each sentence
-        Return the tags, sentences and keywords linked to 'sentence'
+
+        Args:
+            sentence (Doc): the sentence to search matches in (possibly previously normalized by _get_document_to_match)
+            original_sentence (Span): the original sentence from the input dataframe
+            tags_in_document (List): List of tags found in the current document
+            keywords_in_document (List): List of keywords tags found in the current document
+            matched_sentences (List): List of matched sentences in the current document
+            language (AnyStr): Language of the current document
+
+        Returns:
+            Lists of tags, keywords and sentences enriched with 'sentence' matches
+
         """
         matches = self._matcher_dict[language](sentence, as_spans=True)
         for match in matches:
@@ -152,18 +163,19 @@ class FormatterByDocument(FormatterBase):
         Called by FormatterByDocument.write_df_category or FormatterByDocumentJson.write_df_category
         Append the tag columns to the output dataframe self.output_df
         If one_row_per_doc_json is True, new columns are:
-        - 'tag_json_categories'
-        - 'tag_json_full'
+        - 'tag_json_categories' : dictionary of category (keys) and tags (value)
+        - 'tag_json_full': dictionary of category (keys).
+            Each category has for value a dictionary of tags and their associated datas (keywords, sentences, occurences of the tag)
         If one_row_per_doc_json is False, new columns are :
             - a column with lists of keywords
             - one column by category, with lists of tags
             - a column with concatenated matched sentences
-        
+
         Args:
             row: pandas.Series , document from text_df
             one_row_per_doc_json: Bool to know if the format is nested JSON
             language_column: if not None, matcher will apply with the given language of the row
-            
+
         """
         language = self._get_document_language(row, language_column)
         document_to_match = self._get_document_to_match(row, language)
@@ -214,17 +226,18 @@ class FormatterByDocument(FormatterBase):
     ) -> Tuple[dict, dict]:
         """
         Called by _write_row_category
-        Fill 'line' and 'line_full' dictionaries with new found tags
+        Enrich 'line' and 'line_full' dictionaries with new found tags
 
         Args:
-            line: dictionary {category: tag}
-            line_full: dictionary with full informations about the found tags
-            sentence: Doc object containing the keyword
-            language: string
+            line (dict): dictionary of category (keys) and tags (values)
+            line_full (dict): dictionary of category (keys).
+                Each category has for value a dictionary of tags and their associated datas (keywords, sentences, occurences of the tag)
+            sentence (Doc): sentence that matched with keyword(s)
+            language (AnyStr): language of the sentence
 
         Returns:
-            - Tuple(dict,dict) : The filled dictionaries 'line' and 'line_full'
-        
+            - Tuple(dict,dict) : The enriched dictionaries 'line' and 'line_full'
+
         """
         keyword = match.text
         tag = match.ent_id_
@@ -250,12 +263,12 @@ class FormatterByDocument(FormatterBase):
         self, input_df: pd.DataFrame, text_column: AnyStr
     ) -> pd.DataFrame:
         """
-        Called by _write_row_category, when the format is 'one row per document (array columns)'.
+        Called by _write_row_category, when the format is 'one row per document (array columns)' and there are categories.
         Insert columns 'tag_keywords' and 'tag_sentences' into self.output_df
 
         Returns:
             pd.DataFrame: the complete output dataframe after setting the columns in the right order
-        
+
         """
         tag_list_columns = self.output_df.columns.tolist()
         tag_list_columns_unique = generate_unique_columns(
@@ -289,11 +302,11 @@ class FormatterByDocument(FormatterBase):
     ) -> pd.DataFrame:
         """
         Called by write_df
-        Insert columns 'tag_sentences' and 'tag_keywords' into self.output_df
+        Insert columns 'tag_sentences' and 'tag_keywords' into self.output_df and there is no category
 
         Returns:
             pd.DataFrame: the complete output dataframe after setting the columns in the right order
-        
+
         """
         for column in self.tag_columns[::-1]:
             self.output_df.set_index(column, inplace=True)
@@ -321,7 +334,7 @@ class FormatterByDocumentJson(FormatterByDocument):
             pd.DataFrame : a dataframe with the following columns:
             - all columns from the input dataframe input_df
             - a column with a dictionary of tags (keys). Each tag has for value a dictionary with:
-                -key 'count' : number of occurences of the the keywords in the document
+                -key 'count' : number of occurences of the keywords in the document
                 -key 'sentences' : list of the sentences that matched keywords in the document
                 -key 'keywords' : list of the keywords in the document
 
@@ -342,7 +355,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         Args:
             row: pandas.Series from text_df
             language_column: if not None, matcher will be applied with the given language of the row; uses self.language otherwise
-        
+
         """
         language = self._get_document_language(row, language_column)
         document_to_match = self._get_document_to_match(row, language)
@@ -372,16 +385,16 @@ class FormatterByDocumentJson(FormatterByDocument):
         text_column: AnyStr,
         language_column: AnyStr = None,
     ) -> pd.DataFrame:
-        """Write the output dataframe for format 'one row per document (nested JSON)' when there is no category in the ontology
+        """Write the output dataframe for format 'one row per document (nested JSON)' when there are categories in the ontology
         Returns:
-            pd.DataFrame : dataframe with the following columns:
+            pd.DataFrame : a dataframe with the following columns:
             - all columns from the input dataframe input_df
             - a column with a dictionary of categories (keys)
-            Each category has for value a dictionary of tags (keys).
-            Each tag has for value a dictionary with the following schema:
-                -key 'count' : number of occurences of the the keywords in the document
-                -key 'sentences' : list of the sentences that matched keywords in the document
-                -key 'keywords' : list of the keywords in the document
+                Each category has for value a dictionary of tags (keys).
+                Each tag has for value a dictionary with the following schema:
+                    -key 'count' : number of occurences of the keywords in the document
+                    -key 'sentences' : list of the sentences that matched keywords in the document
+                    -key 'keywords' : list of the keywords in the document
 
         """
         start = perf_counter()
