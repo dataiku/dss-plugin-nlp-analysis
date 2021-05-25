@@ -44,7 +44,7 @@ Format 'one_row_per_doc':
     Plus, if there are categories: 
         For each category in the ontology, a column:
             -tag_list_'category_name' (List) : List of all assigned tags that have for category 'category_name' in a document
-    Otherwise:
+    Otherwise, if there are no categories:
         -tag_list (List): List of all assigned tags in a document 
 
 Format 'one_row_per_doc_json':

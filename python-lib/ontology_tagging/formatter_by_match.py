@@ -103,7 +103,7 @@ class FormatterByMatch(FormatterBase):
     def _get_tags_in_row(self, matches: List, row: pd.Series, language: AnyStr) -> None:
         """
         Called by _write_row
-        Create the list of new rows with infos about the tags and gives it to _update_df
+        Create new rows from the input one, containing the tag, keyword, and sentence columns for each match, and append them to the output_df.
         """
         values = []
         for match, sentence in matches:
@@ -147,8 +147,8 @@ class FormatterByMatch(FormatterBase):
     def _update_df(self, match: List, values: List[dict], row: pd.Series) -> None:
         """
         Appends:
-        -row with infos about the founded tags to output_df
-        -duplicated initial row from the Document dataframe to df.duplicated_lines
+        - row with tagging info (tag, keyword, sentence, category if available) to output_df
+        - duplicated initial row from the Document dataframe to df.duplicated_lines
         """
         if match:
             self.output_df = self.output_df.append(values, ignore_index=True)

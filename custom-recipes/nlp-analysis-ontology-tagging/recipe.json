@@ -17,7 +17,7 @@
         {
             "name": "ontology_dataset",
             "label": "Ontology dataset",
-            "description": "Dataset with one column for keywords (set of terms to match with text), tags (term assigned to a set of keywords) and categories (term assigned to a set of tags). Example: tag = 'New York', keyword = 'N.Y', category = 'city'",
+            "description": "Dataset with one column for keywords (words/tokens to match in text), tags (each keyword corresponds to a single tag) and categories (each tag corresponds to a single category). Example: tag = 'New York', keyword = 'N.Y', category = 'city'",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -27,7 +27,7 @@
         {
             "name": "tagged_documents",
             "label": "Tagged documents",
-            "description": "Input dataset enriched with tags and keywords, and extracted matched sentences",
+            "description": "Input dataset enriched with tags, keywords, and sentences where keywords were found.",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
