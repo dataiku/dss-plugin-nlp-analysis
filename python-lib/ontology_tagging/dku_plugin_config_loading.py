@@ -139,8 +139,7 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
             value=lang_column,
             checks=[
                 {
-                    "type": "custom",
-                    "cond": bool(lang_column),
+                    "type": "exists",
                     "err_msg": self._content_error_message("missing", None),
                 },
                 {
