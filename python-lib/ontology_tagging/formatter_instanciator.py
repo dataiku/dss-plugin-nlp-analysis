@@ -33,33 +33,31 @@ TAG_COLUMNS = {
     },
 }
 
-"""Dictionary of names of the columns to create. The names of the columns depend on the output format chosen in the input parameters
-of the recipe. 
-Each key of TAG_COLUMNS is an output format name. Each format has two values: 'category' (when there are categories in the ontology)
-and 'no_category' (when there is not), and an associated list of column names, defined as follow: 
-
-Format 'one_row_per_doc':
-    -'tag_keywords' (List): List of matched keywords
-    -'tag_sentences' (List): Sentences containing matched keywords
-    Plus, if there are categories: 
-        For each category in the ontology, a column:
-            -tag_list_'category_name' (List) : List of all assigned tags that have for category 'category_name' in a document
-    Otherwise, if there are no categories:
-        -tag_list (List): List of all assigned tags in a document 
-
-Format 'one_row_per_doc_json':
-    -'tag_json_full' (dict dumped as JSON): Detailed tag column: List of matched keywords per tag and category, count of occurrences, sentences containing matched keywords
-    Plus, if there are categories: 
-        -'tag_json_categories' (dict dumped as JSON): List of tags per category
-
-Format 'one_row_per_match':
-    -'tag' (str): Assigned tag
-    -'tag_keyword' (str): Matched keyword
-    -'tag_sentence'(str): Sentence containing the matched keyword
-    Plus, if there are categories: 
-        -'tag_category'(str): Category of tag
-
-"""
+# Dictionary of names of the columns to create. The names of the columns depend on the output format chosen in the input parameters
+# of the recipe.
+# Each key of TAG_COLUMNS is an output format name. Each format has two values: 'category' (when there are categories in the ontology)
+# and 'no_category' (when there is not), and an associated list of column names, defined as follow:
+#
+# Format 'one_row_per_doc':
+#    -'tag_keywords' (List): List of matched keywords
+#    -'tag_sentences' (List): Sentences containing matched keywords
+#    Plus, if there are categories:
+#        For each category in the ontology, a column:
+#            -tag_list_'category_name' (List) : List of all assigned tags that have for category 'category_name' in a document
+#    Otherwise, if there are no categories:
+#        -tag_list (List): List of all assigned tags in a document
+#
+# Format 'one_row_per_doc_json':
+#    -'tag_json_full' (dict dumped as JSON): Detailed tag column: List of matched keywords per tag and category, count of occurrences, sentences containing matched keywords
+#    Plus, if there are categories:
+#        -'tag_json_categories' (dict dumped as JSON): List of tags per category
+#
+# Format 'one_row_per_match':
+#    -'tag' (str): Assigned tag
+#    -'tag_keyword' (str): Matched keyword
+#    -'tag_sentence'(str): Sentence containing the matched keyword
+#    Plus, if there are categories:
+#        -'tag_category'(str): Category of tag
 
 
 class FormatterInstanciator:

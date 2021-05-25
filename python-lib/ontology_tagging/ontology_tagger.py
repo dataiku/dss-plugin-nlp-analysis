@@ -66,19 +66,19 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self._matcher_dict = {} 
-        """Dictionary of spaCy PhraseMatcher objects filled by the _match_no_category method. 
-        Unused if we are using EntityRuler (in case there are categories in the Ontology)"""
+        self._matcher_dict = {}
+        # Dictionary of spaCy PhraseMatcher objects filled by the _match_no_category method.
+        # Unused if we are using EntityRuler (in case there are categories in the Ontology)
         self.column_descriptions = {}
-        """Dictionary of new columns to add in the dataframe (key) and their descriptions (value).
-        It is filled by the _format_with_category / _format_no_category methods"""
+        # Dictionary of new columns to add in the dataframe (key) and their descriptions (value).
+        # It is filled by the _format_with_category / _format_no_category methods
         self._use_nfc = self.lemmatization and not self.normalize_diacritics
-        """Text will be normalized with NFC if True, with NFD otherwise."""
+        # Text will be normalized with NFC if True, with NFD otherwise.
         self._keyword_to_tag = {}
-        """Dictionary of keywords (key) and tags (value) to retrieve the tags from the matched keywords, filled by the _tokenize_keywords method.
-            Unused if we are using EntityRuler (in case there are categories in the Ontology)
-            Example :
-                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}"""
+        # Dictionary of keywords (key) and tags (value) to retrieve the tags from the matched keywords, filled by the _tokenize_keywords method.
+        #    Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        #    Example :
+        #        {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
 
     def tag_and_format(
         self,

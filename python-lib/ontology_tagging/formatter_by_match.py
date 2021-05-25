@@ -90,7 +90,7 @@ class FormatterByMatch(FormatterBase):
                     row[self.text_column_tokenized][idx],
                 )
                 for idx, sentence in enumerate(document_to_match)
-            ]
+            ]  # list of tuples (list of found keywords, list of associated sentences)
             self._get_tags_in_row(matches, row, language)
         else:
             self._get_tags_in_row_category(document_to_match, row, language)
