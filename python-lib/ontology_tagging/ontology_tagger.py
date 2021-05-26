@@ -10,7 +10,7 @@ from spacy.tokens import Doc
 from spacy.matcher import PhraseMatcher
 from .spacy_tokenizer import MultilingualTokenizer
 
-from .formatter_instanciator import FormatterInstanciator
+from .formatting.instanciator import FormatterInstanciator
 from .sentence_splitter import SentenceSplitter
 
 from utils.nlp_utils import lemmatize_doc

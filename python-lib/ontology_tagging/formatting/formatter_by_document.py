@@ -17,7 +17,7 @@ from utils.plugin_io_utils import generate_unique_columns
 from utils.nlp_utils import get_span_text
 from utils.nlp_utils import unicode_normalize_text
 
-from .ontology_tagging_formatting import FormatterBase
+from .base import FormatterBase
 
 
 class FormatterByDocument(FormatterBase):

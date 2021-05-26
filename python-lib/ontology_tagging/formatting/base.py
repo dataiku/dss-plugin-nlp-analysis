@@ -11,7 +11,7 @@ from utils.plugin_io_utils import generate_unique_columns
 from utils.nlp_utils import lowercase_if
 from utils.nlp_utils import unicode_normalize_text
 
-from .spacy_tokenizer import MultilingualTokenizer
+from ontology_tagging.spacy_tokenizer import MultilingualTokenizer
 
 
 # names of all additional columns depending on the output_format
