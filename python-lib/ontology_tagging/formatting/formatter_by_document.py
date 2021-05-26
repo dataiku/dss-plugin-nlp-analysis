@@ -200,18 +200,17 @@ class FormatterByDocument(FormatterBase):
             pd.DataFrame: the complete output dataframe after setting the columns in the right order
 
         """
-        tag_list_columns = self.output_df.columns.tolist()
-        tag_list_columns_unique = generate_unique_columns(
-            df=self.output_df,
+        category_columns = self.output_df.columns.tolist()
+        category_columns_unique = generate_unique_columns(
+            df=input_df,
             columns=[
-                unicode_normalize_text(text=column) for column in tag_list_columns
+                unicode_normalize_text(text=column) for column in category_columns
             ],
             prefix="tag_list",
         )
-        self.output_df.columns = tag_list_columns_unique
-        for column, column_unique in zip(tag_list_columns, tag_list_columns_unique):
-            category = column.split("_")[-1]
-            self.column_descriptions[column_unique] = f"List of '{category}' tags"
+        self.output_df.columns = category_columns_unique
+        for category, category_unique in zip(category_columns, category_columns_unique):
+            self.column_descriptions[category_unique] = f"List of '{category}' tags"
         self.output_df.insert(
             len(self.output_df.columns),
             self.tag_columns[0],
@@ -224,7 +223,7 @@ class FormatterByDocument(FormatterBase):
             self.tag_sentences,
             True,
         )
-        self.tag_columns = tag_list_columns_unique + self.tag_columns
+        self.tag_columns = category_columns_unique + self.tag_columns
         return self._set_columns_order(input_df, self.output_df, text_column)
 
 
