@@ -103,21 +103,20 @@ class FormatterByMatch(FormatterBase):
         Called by _write_row
         Create new rows from the input one, containing the tag, keyword, and sentence columns for each match, and append them to the output_df.
         """
-        values = []
+        tag_rows = []
+        # For FormatterByMatch with no category, the self.tag_columns are ordered as: [tag, keyword, sentence]
         for match, sentence in matches:
-            values = [
-                self._list_to_dict(
-                    [
-                        self._keyword_to_tag[language][
-                            get_span_text(span=keyword, lemmatize=self.lemmatization)
-                        ],
-                        keyword.text,
-                        sentence,
-                    ]
-                )
+            tag_rows = [
+                {
+                    self.tag_columns[0]: self._keyword_to_tag[language][
+                        get_span_text(span=keyword, lemmatize=self.lemmatization)
+                    ],
+                    self.tag_columns[1]: keyword.text,
+                    self.tag_columns[2]: sentence,
+                }
                 for keyword in match
-            ]  # new rows to append to the output dataframe
-            self._update_df(match, values, row)
+            ]
+            self._update_df(tag_rows, row)
 
     def _get_tags_in_row_category(
         self, document_to_match: List, row: pd.Series, language: AnyStr
@@ -128,36 +127,28 @@ class FormatterByMatch(FormatterBase):
         """
         tag_rows = []
         original_document = list(row[self.text_column_tokenized])
+        # For FormatterByMatch with categories, the self.tag_columns are ordered as: [category, tag, keyword, sentence]
         for idx, sentence in enumerate(document_to_match):
             tag_rows = [
-                self._list_to_dict(
-                    [
-                        keyword.label_,
-                        keyword.ent_id_,
-                        keyword.text,
-                        original_document[idx],
-                    ]
-                )
+                {
+                    self.tag_columns[0]: keyword.label_,
+                    self.tag_columns[1]: keyword.ent_id_,
+                    self.tag_columns[2]: keyword.text,
+                    self.tag_columns[3]: original_document[idx],
+                }
                 for keyword in sentence.ents
             ]
-            self._update_df(tag_rows, tag_rows, row)
+            self._update_df(tag_rows, row)
 
-    def _update_df(self, match: List, values: List[dict], row: pd.Series) -> None:
+    def _update_df(self, tag_rows: List[dict], row: pd.Series) -> None:
         """
         Appends:
         - row with tagging info (tag, keyword, sentence, category if available) to output_df
         - duplicated initial row from the Document dataframe to df.duplicated_lines
         """
-        if match:
-            self.output_df = self.output_df.append(values, ignore_index=True)
+        if tag_rows:
+            self.output_df = self.output_df.append(tag_rows, ignore_index=True)
             self._duplicate_df = self._duplicate_df.append(
-                pd.DataFrame([row] * len(values)), ignore_index=True
+                pd.DataFrame([row] * len(tag_rows)), ignore_index=True
             )
             self.contains_match = True
-
-    def _list_to_dict(self, tag_infos: List[AnyStr]) -> dict:
-        """Returns dictionary containing a new row with tag datas"""
-        return {
-            column_name: tag_info
-            for column_name, tag_info in zip(self.tag_columns, tag_infos)
-        }
