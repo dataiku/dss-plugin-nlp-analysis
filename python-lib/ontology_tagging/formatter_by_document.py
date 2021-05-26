@@ -28,9 +28,9 @@ class FormatterByDocument(FormatterBase):
         self.tag_sentences, self.tag_keywords = [], []
 
     @staticmethod
-    def _fill_tags(value: dict, not_empty: bool = True):
-        """Dump the dictionary 'value' if 'not_empty' is True"""
-        return json.dumps(value, ensure_ascii=False) if not_empty else np.nan
+    def _fill_tags(value: dict):
+        """Dump the dictionary 'value' if 'value' is not empty"""
+        return json.dumps(value, ensure_ascii=False) if value else np.nan
 
     def write_df(
         self,
@@ -81,14 +81,14 @@ class FormatterByDocument(FormatterBase):
                 matched_sentences.append(original_sentence + "\n")
 
         if tags_in_document:
-            tag_datas = {
+            tag_columns_to_append = {
                 self.tag_columns[0]: self._fill_tags(unique_list(tags_in_document)),
                 self.tag_columns[1]: self._fill_tags(unique_list(keywords_in_document)),
                 self.tag_columns[2]: "".join(matched_sentences),
-            }
+            }  # tag columns names are resp. 'tag_list', 'tag_keywords', 'tag_sentences'
         else:
-            tag_datas = {column: np.nan for column in self.tag_columns}
-        self.output_df = self.output_df.append(tag_datas, ignore_index=True)
+            tag_columns_to_append = {column: np.nan for column in self.tag_columns}
+        self.output_df = self.output_df.append(tag_columns_to_append, ignore_index=True)
 
     def _get_tags_in_sentence(
         self,
@@ -131,15 +131,14 @@ class FormatterByDocument(FormatterBase):
         Returns:
          pd.DataFrame: a dataframe with the following columns:
              - all columns from the input dataframe input_df
-             - a column with lists of keywords
+             - a column with lists of keywords (stored in self.tag_keywords)
              - one column by category, with lists of tags
-             - a column with concatenated matched sentences
-
+             - a column with concatenated matched sentences (stored in self.tag_sentences)
         """
         start = perf_counter()
         self._generate_columns_names(input_df)
         input_df.progress_apply(
-            self._write_row_category, args=[False, language_column], axis=1
+            self._write_row_category, args=[language_column], axis=1
         )
         logging.info(
             f"Tagging {len(input_df)} documents : Done in {perf_counter() - start:.2f} seconds."
@@ -147,23 +146,16 @@ class FormatterByDocument(FormatterBase):
         return self._merge_df_columns_category(input_df, text_column)
 
     def _write_row_category(
-        self, row: pd.Series, one_row_per_doc_json: bool, language_column: AnyStr = None
+        self, row: pd.Series, language_column: AnyStr = None
     ) -> None:
         """
-        Called by FormatterByDocument.write_df_category or FormatterByDocumentJson.write_df_category
-        Append the tag columns to the output dataframe self.output_df
-        If one_row_per_doc_json is True, new columns are:
-        - 'tag_json_categories' : dictionary of category (keys) and tags (value)
-        - 'tag_json_full': dictionary of category (keys).
-            Each category has for value a dictionary of tags and their associated datas (keywords, sentences, occurences of the tag)
-        If one_row_per_doc_json is False, new columns are :
-            - a column with lists of keywords
-            - one column by category, with lists of tags
-            - a column with concatenated matched sentences
+        Called by write_df_category
+        -Append one column by category, with lists of tags to the output dataframe self.output_df
+        - Fill self.tag_keywords (as a list of lists of found keywords)
+        - Fill self.tag_sentences (as a list of lists of concatenated matched sentences)
 
         Args:
             row: pandas.Series , document from text_df
-            one_row_per_doc_json: Bool to know if the format is nested JSON
             language_column: if not None, matcher will apply with the given language of the row
 
         """
@@ -279,7 +271,8 @@ class FormatterByDocumentJson(FormatterByDocument):
         """
         language = self._get_document_language(row, language_column)
         document_to_match = self._get_document_to_match(row, language)
-        tags_full, tag_column = defaultdict(defaultdict), {}
+        tags_full = defaultdict(defaultdict)
+        tag_column = {}
         for idx, sentence in enumerate(document_to_match):
             matches = self._matcher_dict[language](sentence, as_spans=True)
             for keyword in matches:
@@ -287,7 +280,7 @@ class FormatterByDocumentJson(FormatterByDocument):
                 tag = self._keyword_to_tag[language][
                     get_span_text(span=keyword, lemmatize=self.lemmatization)
                 ]
-                if tag not in tags_full.keys():
+                if tag not in tags_full:
                     tags_full[tag] = {
                         "count": 1,
                         "sentences": [original_sentence],
@@ -300,7 +293,6 @@ class FormatterByDocumentJson(FormatterByDocument):
                     if keyword.text not in tags_full[tag]["keywords"]:
                         tags_full[tag]["keywords"].append(keyword.text)
         tag_column["tag_json_full"] = self._fill_tags(
-            not_empty=bool(tags_full),
             value={
                 column_name: dict(value) for column_name, value in tags_full.items()
             },
@@ -314,9 +306,11 @@ class FormatterByDocumentJson(FormatterByDocument):
         language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """Write the output dataframe for format 'one row per document (nested JSON)' when there are categories in the ontology
+
         Returns:
             pd.DataFrame : a dataframe with the following columns:
             - all columns from the input dataframe input_df
+            - a column with a dictionary of categories(keys) and tags (values)
             - a column with a dictionary of categories (keys)
                 Each category has for value a dictionary of tags (keys).
                 Each tag has for value a dictionary with the following schema:
@@ -328,7 +322,7 @@ class FormatterByDocumentJson(FormatterByDocument):
         start = perf_counter()
         self._generate_columns_names(input_df)
         input_df.progress_apply(
-            self._write_row_category, args=[True, language_column], axis=1
+            self._write_row_category, args=[language_column], axis=1
         )
         logging.info(
             f"Tagging {len(input_df)} documents: Done in {perf_counter() - start:.2f} seconds."
@@ -336,8 +330,20 @@ class FormatterByDocumentJson(FormatterByDocument):
         return self._set_columns_order(input_df, self.output_df, text_column)
 
     def _write_row_category(
-        self, row: pd.Series, one_row_per_doc_json: bool, language_column: AnyStr = None
+        self, row: pd.Series, language_column: AnyStr = None
     ) -> None:
+        """
+        Called by write_df_category on each row
+        Append the following columns to the output dataframe self.output_df:
+            - 'tag_json_categories': column with a dictionary of categories(keys) and tags (values)
+            - 'tag_json_full': detailed tag column:
+                list of matched keywords per tag and category, count of occurrences, sentences containing matched keywords"
+
+        Args:
+            row: pandas.Series from text_df
+            language_column: if not None, matcher will be applied with the given language of the row; uses self.language otherwise
+
+        """
         language = self._get_document_language(row, language_column)
         document_to_match = self._get_document_to_match(row, language)
         tag_columns = defaultdict()
@@ -373,10 +379,9 @@ class FormatterByDocumentJson(FormatterByDocument):
                         )
 
             tag_columns["tag_json_categories"] = self._fill_tags(
-                not_empty=bool(categories_and_tags), value=dict(categories_and_tags)
+                value=dict(categories_and_tags)
             )
             tag_columns["tag_json_full"] = self._fill_tags(
-                not_empty=bool(categories_and_tags),
                 value={
                     column_name: dict(value)
                     for column_name, value in categories_and_tags_full.items()
