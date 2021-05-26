@@ -36,16 +36,4 @@ def set_column_descriptions(
         )
         if matched_comment is not None:
             output_col_info["comment"] = matched_comment
-        matched_comment = next(
-            iter(
-                [
-                    input_col_info.get("comment", "")
-                    for input_col_info in input_dataset_schema
-                    if input_col_info.get("name") == output_col_name
-                ]
-            ),
-            None,
-        )
-        if matched_comment is not None:
-            output_col_info["comment"] = matched_comment
     output_dataset.write_schema(output_dataset_schema)
