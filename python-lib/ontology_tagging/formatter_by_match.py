@@ -151,7 +151,7 @@ class FormatterByMatch(FormatterBase):
         if match:
             self.output_df = self.output_df.append(values, ignore_index=True)
             self._duplicate_df = self._duplicate_df.append(
-                pd.DataFrame([row for i in range(len(values))]), ignore_index=True
+                pd.DataFrame([row] * len(values)), ignore_index=True
             )
             self.contains_match = True
 
