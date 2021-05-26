@@ -25,8 +25,8 @@ tagger = Tagger(
     keyword_column=settings.keyword_column,
     language=settings.language,
     lemmatization=settings.lemmatization,
-    normalize_case=settings.normalize_case,
-    normalize_diacritics=settings.unicode_normalization,
+    ignore_case=settings.ignore_case,
+    ignore_diacritics=settings.ignore_diacritics,
 )
 output_df = tagger.tag_and_format(
     text_df=text_dataframe,

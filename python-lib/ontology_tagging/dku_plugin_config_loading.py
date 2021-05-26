@@ -19,8 +19,8 @@ class DkuConfigLoadingOntologyTagging(DkuConfigLoading):
     """Configuration for Ontology Tagging Plugin"""
 
     MATCHING_PARAMETERS = [
-        "normalize_case",
-        "unicode_normalization",
+        "ignore_case",
+        "ignore_diacritics",
     ]
 
     def __init__(self):
