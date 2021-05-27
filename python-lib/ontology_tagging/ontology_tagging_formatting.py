@@ -26,9 +26,6 @@ from utils.nlp_utils import unicode_normalize_text
 from .spacy_tokenizer import MultilingualTokenizer
 
 
-
-
-
 # names of all additional columns depending on the output_format
 COLUMN_DESCRIPTION = {
     "tag_keywords": "List of matched keywords",
@@ -48,6 +45,7 @@ class Formatter:
     Write the output dataframe depending on the output format
     This class is called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
     """
+
     """Write the output dataframe depending on the output format
     This class is called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
 
@@ -57,9 +55,9 @@ class Formatter:
             Use the argument 'language_column' for passing a language column name in 'write_df' methods otherwise.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         category_column (string): Name of the column in the Ontology. Contains the category of each tag to assign.
-        normalize_case (bool): If True, match on lowercased forms. Default is False.
+        ignore_case (bool): If True, match on lowercased forms. Default is False.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
-        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        ignore_diacritics (bool): If True, ignore diacritic marks e.g., accents, cedillas, tildes for matching. Default is False.
         text_column_tokenized (string): Name of the column which contains the text splitted by sentences
         _use_nfc (bool): If True, use NFC normalization to match, use NFD otherwise.
         _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
@@ -78,9 +76,9 @@ class Formatter:
         language: AnyStr,
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
-        normalize_case: bool,
+        ignore_case: bool,
         lemmatization: bool,
-        normalize_diacritics: bool,
+        ignore_diacritics: bool,
         text_column_tokenized: AnyStr,
         _use_nfc: bool,
         _keyword_to_tag: dict = None,
@@ -111,9 +109,9 @@ class Formatter:
             self.tokenizer.spacy_nlp_dict[language].pipe(
                 [
                     unicode_normalize_text(
-                        text=lowercase_if(text=sentence, lowercase=self.normalize_case),
+                        text=lowercase_if(text=sentence, lowercase=self.ignore_case),
                         use_nfc=self._use_nfc,
-                        normalize_diacritics=self.normalize_diacritics,
+                        ignore_diacritics=self.ignore_diacritics,
                     )
                     for sentence in row[self.text_column_tokenized]
                 ]
