@@ -47,14 +47,14 @@ def get_span_text(span: Span, lemmatize: bool) -> AnyStr:
 
 
 def unicode_normalize_text(
-    text: AnyStr, use_nfc: bool = False, normalize_diacritics: bool = False
+    text: AnyStr, use_nfc: bool = False, ignore_diacritics: bool = False
 ):
     """Apply unicode_normalization to text
 
     Args:
         text (str): Text to normalize with NFD or NFC norm.
         use_nfc (bool): Apply NFC norm if True, NFD otherwise.
-        normalize_diacritics(bool): if True, remove diacritics after unicode normalizing.
+        ignore_diacritics(bool): if True, remove diacritics after unicode normalizing.
 
     Returns:
         str: Text normalized with NFC or NFD norm.
@@ -62,6 +62,6 @@ def unicode_normalize_text(
     """
     norm = UnicodeNormalization.NFC.value if use_nfc else UnicodeNormalization.NFD.value
     text = unicodedata.normalize(norm, text)
-    if normalize_diacritics:
+    if ignore_diacritics:
         text = "".join([c for c in text if not unicodedata.combining(c)])
     return text

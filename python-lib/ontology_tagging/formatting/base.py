@@ -39,9 +39,9 @@ class FormatterBase:
             Use the argument 'language_column' for passing a language column name in 'write_df' methods otherwise.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
         category_column (string): Name of the column in the Ontology. Contains the category of each tag to assign.
-        normalize_case (bool): If True, match on lowercased forms. Default is False.
+        ignore_case (bool): If True, match on lowercased forms. Default is False.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
-        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        ignore_diacritics (bool): If True, ignore diacritic marks e.g., accents, cedillas, tildes. Default is False.
         text_column_tokenized (string): Name of the column which contains the text splitted by sentences
 
     """
@@ -51,9 +51,9 @@ class FormatterBase:
         language: AnyStr,
         tokenizer: MultilingualTokenizer,
         category_column: AnyStr,
-        normalize_case: bool,
+        ignore_case: bool,
         lemmatization: bool,
-        normalize_diacritics: bool,
+        ignore_diacritics: bool,
         text_column_tokenized: AnyStr,
         _use_nfc: bool,
         tag_columns: List[AnyStr],
@@ -61,9 +61,11 @@ class FormatterBase:
         _matcher_dict: dict = None,
     ):
         store_attr()
-        self.output_df = pd.DataFrame() #pandas.DataFrame with new columns concerning the found tags
+        self.output_df = (
+            pd.DataFrame()
+        )  # pandas.DataFrame with new columns concerning the found tags
         tqdm.pandas(miniters=1, mininterval=5.0)
-        self.column_descriptions = {} 
+        self.column_descriptions = {}
         """Dictionary of new columns to add in the dataframe (key) and their descriptions (value)
         It is filled in _generate_columns_names"""
 
@@ -87,9 +89,9 @@ class FormatterBase:
             self.tokenizer.spacy_nlp_dict[language].pipe(
                 [
                     unicode_normalize_text(
-                        text=lowercase_if(text=sentence, lowercase=self.normalize_case),
+                        text=lowercase_if(text=sentence, lowercase=self.ignore_case),
                         use_nfc=self._use_nfc,
-                        normalize_diacritics=self.normalize_diacritics,
+                        ignore_diacritics=self.ignore_diacritics,
                     )
                     for sentence in row[self.text_column_tokenized]
                 ]

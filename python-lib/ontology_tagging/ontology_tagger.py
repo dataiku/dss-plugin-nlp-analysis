@@ -43,8 +43,8 @@ class Tagger:
             Used if there is only one language to treat.
             Use the argument 'language_column' for passing a language column name in 'tag_and_format' method otherwise.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
-        normalize_case (bool): If True, match on lowercased forms. Default is False.
-        normalize_diacritics (bool): If True, normalize diacritic marks e.g., accents, cedillas, tildes. Default is False.
+        ignore_case (bool): If True, match on lowercased forms. Default is False.
+        ignore_diacritics (bool): If True, ignore diacritic marks e.g., accents, cedillas, tildes for matching. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
 
     """
@@ -57,8 +57,8 @@ class Tagger:
         keyword_column: AnyStr,
         language: AnyStr,
         lemmatization: bool = False,
-        normalize_case: bool = False,
-        normalize_diacritics: bool = False,
+        ignore_case: bool = False,
+        ignore_diacritics: bool = False,
     ):
         store_attr()
         self._remove_incomplete_rows()
@@ -72,7 +72,7 @@ class Tagger:
         self.column_descriptions = {}
         # Dictionary of new columns to add in the dataframe (key) and their descriptions (value).
         # It is filled by the _format_with_category / _format_no_category methods
-        self._use_nfc = self.lemmatization and not self.normalize_diacritics
+        self._use_nfc = self.lemmatization and not self.ignore_diacritics
         # Text will be normalized with NFC if True, with NFD otherwise.
         self._keyword_to_tag = {}
         # Dictionary of keywords (key) and tags (value) to retrieve the tags from the matched keywords, filled by the _tokenize_keywords method.
@@ -163,9 +163,9 @@ class Tagger:
             {
                 "label": label,
                 "pattern": unicode_normalize_text(
-                    text=lowercase_if(text=pattern, lowercase=self.normalize_case),
+                    text=lowercase_if(text=pattern, lowercase=self.ignore_case),
                     use_nfc=self._use_nfc,
-                    normalize_diacritics=self.normalize_diacritics,
+                    ignore_diacritics=self.ignore_diacritics,
                 ),
                 "id": tag,
             }
@@ -193,9 +193,9 @@ class Tagger:
             self.tokenizer._activate_components_to_lemmatize(language)
         keywords = [
             unicode_normalize_text(
-                text=lowercase_if(text=keyword, lowercase=self.normalize_case),
+                text=lowercase_if(text=keyword, lowercase=self.ignore_case),
                 use_nfc=self._use_nfc,
-                normalize_diacritics=self.normalize_diacritics,
+                ignore_diacritics=self.ignore_diacritics,
             )
             for keyword in keywords
         ]
@@ -219,9 +219,9 @@ class Tagger:
             "text_column_tokenized": text_column_tokenized,
             "tokenizer": self.tokenizer,
             "category_column": self.category_column,
-            "normalize_case": self.normalize_case,
+            "ignore_case": self.ignore_case,
             "lemmatization": self.lemmatization,
-            "normalize_diacritics": self.normalize_diacritics,
+            "ignore_diacritics": self.ignore_diacritics,
             "_use_nfc": self._use_nfc,
         }
         if not self.category_column:
