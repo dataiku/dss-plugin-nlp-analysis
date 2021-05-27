@@ -103,7 +103,6 @@ class FormatterByMatch(FormatterBase):
         Called by _write_row
         Create new rows from the input one, containing the tag, keyword, and sentence columns for each match, and append them to the output_df.
         """
-        tag_rows = []
         # For FormatterByMatch with no category, the self.tag_columns are ordered as: [tag, keyword, sentence]
         for match, sentence in matches:
             tag_rows = [
@@ -125,7 +124,6 @@ class FormatterByMatch(FormatterBase):
         Called by _write_row_category
         Create the list of new rows with infos about the tags and gives it to _update_df function
         """
-        tag_rows = []
         original_document = list(row[self.text_column_tokenized])
         # For FormatterByMatch with categories, the self.tag_columns are ordered as: [category, tag, keyword, sentence]
         for idx, sentence in enumerate(document_to_match):
