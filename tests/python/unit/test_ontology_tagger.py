@@ -123,3 +123,31 @@ def test_matching_normalize_diacritics():
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 1 == len(df["tag_sentence"]) == len(df["tag"])
+
+    
+def test_matching_emojis():
+    """Test matching with smileys"""
+    ontology_df = pd.DataFrame(
+        {"tag": ["👍", "👩"], "keyword": ["👍", "👩🏾"]}
+    )
+    text_df = pd.DataFrame(
+        {
+            "text": [
+                "I have an emoji 👍 in this sentence. I have an face emoji 👩🏾 in the second sentence."
+            ]
+        }
+    )
+    tagger = Tagger(
+        ontology_df=ontology_df,
+        tag_column="tag",
+        category_column=None,
+        keyword_column="keyword",
+        language="en",
+    )
+    df = tagger.tag_and_format(
+        text_df=text_df,
+        text_column="text",
+        output_format="one_row_per_tag",
+        languages=["en"],
+    )
+    assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
