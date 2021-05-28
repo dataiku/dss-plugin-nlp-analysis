@@ -186,7 +186,7 @@ class MultilingualTokenizer:
                 or by adding them explicitly in add_pipe_components.
                 Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
             config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
-                This config dictionary contain metadatas about the component.
+                This config dictionary contains metadatas about the component.
                 If empty, uses SpaCy default config, describing the default values of the factory arguments
 
         """
