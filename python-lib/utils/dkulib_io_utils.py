@@ -24,12 +24,14 @@ def set_column_descriptions(
     for output_col_info in output_dataset_schema:
         output_col_name = output_col_info.get("name", "")
         output_col_info["comment"] = column_descriptions.get(output_col_name)
-        if output_col_name in input_columns_names:
-            matched_comment = [
-                input_col_info.get("comment", "")
-                for input_col_info in input_dataset_schema
-                if input_col_info.get("name") == output_col_name
-            ]
-            if len(matched_comment) != 0:
-                output_col_info["comment"] = matched_comment[0]
+        matched_comment = next(
+            (
+                    input_col_info.get("comment", "")
+                    for input_col_info in input_dataset_schema
+                    if input_col_info.get("name") == output_col_name
+            ),
+            None,
+        )
+        if matched_comment is not None:
+            output_col_info["comment"] = matched_comment
     output_dataset.write_schema(output_dataset_schema)

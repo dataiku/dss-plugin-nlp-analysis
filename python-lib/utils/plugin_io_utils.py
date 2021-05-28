@@ -69,13 +69,15 @@ def generate_unique(
        Unique name with a number suffix in case of conflict, and an optional prefix
     """
     if prefix:
-        new_name = f"{prefix}_{name}"
+        name_base = f"{prefix}_{name}"
     else:
-        new_name = name
+        name_base = name
+    if name_base not in existing_names:
+        return name_base
     for j in range(1, 1001):
+        new_name = f"{name_base}_{j}"
         if new_name not in existing_names:
             return new_name
-        new_name = f"{new_name}_{j}"
     raise RuntimeError(f"Failed to generated a unique name for '{name}'")
 
 
@@ -91,7 +93,6 @@ def generate_unique_columns(
 
 
 def move_columns_after(
-    input_df: pd.DataFrame,
     df: pd.DataFrame,
     columns_to_move: List[AnyStr],
     after_column: AnyStr,
@@ -104,8 +105,10 @@ def move_columns_after(
     Returns:
        pandas.DataFrame with reordered columns
     """
-    input_df_columns = input_df.columns.tolist()
-    after_column_position = input_df.columns.get_loc(after_column) + 1
+    input_df_columns = [
+        column for column in df.columns.tolist() if column not in columns_to_move
+    ]
+    after_column_position = input_df_columns.index(after_column) + 1
     reordered_columns = (
         input_df_columns[:after_column_position]
         + columns_to_move

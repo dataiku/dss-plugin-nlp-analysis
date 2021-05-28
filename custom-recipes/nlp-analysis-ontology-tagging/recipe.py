@@ -16,7 +16,7 @@ languages = (
     if settings.language == "language_column"
     else [settings.language]
 )
-dku_config._check_languages(languages)
+dku_config.check_languages(languages)
 
 tagger = Tagger(
     ontology_df=ontology_dataframe,
@@ -38,5 +38,5 @@ output_df = tagger.tag_and_format(
 settings.output_dataset.write_with_schema(output_df)
 set_column_descriptions(
     output_dataset=settings.output_dataset,
-    column_descriptions=tagger._column_descriptions,
+    column_descriptions=tagger.column_descriptions,
 )

@@ -1,20 +1,18 @@
 import pandas as pd
 import logging
-from time import perf_counter
 
 from fastcore.utils import store_attr
 
 from typing import AnyStr
 from typing import List
-from typing import Union
 
-from spacy.matcher import PhraseMatcher
 from spacy.tokens import Doc
+from spacy.matcher import PhraseMatcher
 from .spacy_tokenizer import MultilingualTokenizer
-from .formatter_instanciator import FormatterInstanciator
+
+from .formatting.instanciator import FormatterInstanciator
 from .sentence_splitter import SentenceSplitter
 
-from utils.plugin_io_utils import generate_unique
 from utils.nlp_utils import lemmatize_doc
 from utils.nlp_utils import get_phrase_matcher_attr
 from utils.nlp_utils import lowercase_if
@@ -31,6 +29,13 @@ class Tagger:
 
     Attributes:
         ontology_df (pandas dataframe): Ontology which contains the tags to assign
+            Example:
+            tag       | keyword   | category
+            President | Trump     | Politics
+            President | Bush      | Politics
+            Democrats | Party     | Politics
+            State     | California| United States
+
         tag_column (string): Name of the column in the Ontology. Contains the tags to assign
         category_column (string): Name of the column in the Ontology. Contains the category of each tag to assign.
         keyword_column (string): Name of column in the Ontology. Contains the keywords to match with in documents.
@@ -41,13 +46,6 @@ class Tagger:
         ignore_case (bool): If True, match on lowercased forms. Default is False.
         ignore_diacritics (bool): If True, ignore diacritic marks e.g., accents, cedillas, tildes for matching. Default is False.
         tokenizer (MultilingualTokenizer): Tokenizer instance to create the tokenizers for each language
-        _matcher_dict (dict): Private attribute. Dictionary of spaCy PhraseMatchers objects.
-            Unused if we are using EntityRuler (in case there are categories in the Ontology)
-        _keyword_to_tag (dict): Private attribute. Keywords (key) and tags (value) to retrieve the tags from the matched keywords.
-            Unused if we are using EntityRuler (in case there are categories in the Ontology)
-            Example :
-                {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
-        _column_descriptions (dict): Private attribute. Dictionary of new columns to add in the dataframe (key) and their description (value)
 
     """
 
@@ -68,11 +66,64 @@ class Tagger:
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
         )
-        self._matcher_dict = {}  # filled by the _match_no_category method
-        self._keyword_to_tag = {}  # filled by the _tokenize_keywords method
-        self._column_descriptions = {}  # filled by the _format_ methods
+        self._matcher_dict = {}
+        # Dictionary of spaCy PhraseMatcher objects filled by the _match_no_category method.
+        # Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        self.column_descriptions = {}
+        # Dictionary of new columns to add in the dataframe (key) and their descriptions (value).
+        # It is filled by the _format_with_category / _format_no_category methods
         self._use_nfc = self.lemmatization and not self.ignore_diacritics
-        # text will be normalized with NFC if True, with NFD otherwise.
+        # Text will be normalized with NFC if True, with NFD otherwise.
+        self._keyword_to_tag = {}
+        # Dictionary of keywords (key) and tags (value) to retrieve the tags from the matched keywords, filled by the _tokenize_keywords method.
+        #    Unused if we are using EntityRuler (in case there are categories in the Ontology)
+        #    Example :
+        #        {"Donald Trump": "Politics", "N.Y.C" : "United States, "NBC": "News"}
+
+    def tag_and_format(
+        self,
+        text_df: pd.DataFrame,
+        text_column: AnyStr,
+        output_format: AnyStr,
+        languages: List[AnyStr],
+        language_column: AnyStr = None,
+    ) -> pd.DataFrame:
+        """
+        Public function called in recipe.py. Uses a spacy Language object to:
+            -Split sentences by applying sentencizer on documents (by calling the SentenceSplitter module)
+            -Use the right Matcher depending on the presence of categories (PhraseMatcher / EntityRuler) to match documents with tags
+            -Write the found matches into a new DataFrame (by calling the Formatter module)
+
+        """
+        self._initialize_tokenizer(languages)
+        text_df, text_column_tokenized = self._sentence_splitting(
+            text_df, text_column, language_column
+        )
+        list_of_tags = self.ontology_df[self.tag_column].values.tolist()
+        list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
+        formatter_config = self.get_formatter_config(text_column_tokenized)
+        # matching and formatting
+        if self.category_column:
+            # patterns to add to Entity Ruler pipe
+            self._match_with_category(list_of_tags, list_of_keywords)
+            logging.info(f"Tagging {len(text_df)} documents...")
+            return self._format_with_category(
+                arguments=formatter_config,
+                text_df=text_df,
+                text_column=text_column,
+                output_format=output_format,
+                language_column=language_column,
+            )
+        else:
+            self._match_no_category(list_of_tags, list_of_keywords)
+            logging.info(f"Tagging {len(text_df)} documents...")
+            return self._format_no_category(
+                arguments=formatter_config,
+                text_df=text_df,
+                text_column=text_column,
+                output_format=output_format,
+                language_column=language_column,
+            )
 
     def _set_log_level(self, languages: List[AnyStr]) -> None:
         """Set Spacy log level to ERROR to hide unwanted warnings"""
@@ -204,7 +255,7 @@ class Tagger:
         language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """Instanciate formatter and return the created output dataframe, when there are categories"""
-        formatter = FormatterInstanciator().get_formatter(
+        formatter = FormatterInstanciator.get_formatter(
             config=arguments, format=output_format, category="category"
         )
         output_df = formatter.write_df_category(
@@ -212,7 +263,7 @@ class Tagger:
             text_column=text_column,
             language_column=language_column,
         )
-        self._column_descriptions = formatter._column_descriptions
+        self.column_descriptions = formatter.column_descriptions
         return output_df
 
     def _match_no_category(
@@ -240,7 +291,7 @@ class Tagger:
         language_column: AnyStr = None,
     ) -> pd.DataFrame:
         """Instanciate formatter and return the created output dataframe, when there is no category"""
-        formatter = FormatterInstanciator().get_formatter(
+        formatter = FormatterInstanciator.get_formatter(
             config=arguments, format=output_format, category="no_category"
         )
         output_df = formatter.write_df(
@@ -248,7 +299,7 @@ class Tagger:
             text_column=text_column,
             language_column=language_column,
         )
-        self._column_descriptions = formatter._column_descriptions
+        self.column_descriptions = formatter.column_descriptions
         return output_df
 
     def _initialize_tokenizer(self, languages: List[AnyStr]) -> None:
@@ -257,7 +308,7 @@ class Tagger:
             self._set_log_level(languages)
             self.tokenizer._set_use_models(languages)
         for language in languages:
-            self.tokenizer._add_spacy_tokenizer(language)
+            self.tokenizer.add_spacy_tokenizer(language)
 
     def _sentence_splitting(
         self, text_df, text_column, language_column=None
@@ -273,49 +324,4 @@ class Tagger:
             language=self.language,
             language_column=language_column,
         )
-        return sentence_splitter._split_sentences_df()
-
-    def tag_and_format(
-        self,
-        text_df: pd.DataFrame,
-        text_column: AnyStr,
-        output_format: AnyStr,
-        languages: List[AnyStr],
-        language_column: AnyStr = None,
-    ) -> pd.DataFrame:
-        """
-        Public function called in recipe.py. Uses a spacy Language object to:
-            -Split sentences by applying sentencizer on documents (by calling the SentenceSplitter module)
-            -Use the right Matcher depending on the presence of categories (PhraseMatcher / EntityRuler) to match documents with tags
-            -Write the found matches into a new DataFrame (by calling the Formatter module)
-
-        """
-        self._initialize_tokenizer(languages)
-        text_df, text_column_tokenized = self._sentence_splitting(
-            text_df, text_column, language_column
-        )
-        list_of_tags = self.ontology_df[self.tag_column].values.tolist()
-        list_of_keywords = self.ontology_df[self.keyword_column].values.tolist()
-        formatter_config = self.get_formatter_config(text_column_tokenized)
-        # matching and formatting
-        if self.category_column:
-            # patterns to add to Entity Ruler pipe
-            self._match_with_category(list_of_tags, list_of_keywords)
-            logging.info(f"Tagging {len(text_df)} documents...")
-            return self._format_with_category(
-                arguments=formatter_config,
-                text_df=text_df,
-                text_column=text_column,
-                output_format=output_format,
-                language_column=language_column,
-            )
-        else:
-            self._match_no_category(list_of_tags, list_of_keywords)
-            logging.info(f"Tagging {len(text_df)} documents...")
-            return self._format_no_category(
-                arguments=formatter_config,
-                text_df=text_df,
-                text_column=text_column,
-                output_format=output_format,
-                language_column=language_column,
-            )
+        return sentence_splitter.split_sentences_df()

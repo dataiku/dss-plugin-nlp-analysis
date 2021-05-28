@@ -17,7 +17,7 @@
         {
             "name": "ontology_dataset",
             "label": "Ontology dataset",
-            "description": "Dataset with columns for tags, keywords and categories",
+            "description": "Dataset with one column for keywords (words/tokens to match in text), tags (each keyword corresponds to a single tag) and categories (each tag corresponds to a single category). Example: tag = 'New York', keyword = 'N.Y', category = 'city'",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -27,7 +27,7 @@
         {
             "name": "tagged_documents",
             "label": "Tagged documents",
-            "description": "Dataset with the input documents and their assigned tags",
+            "description": "Input dataset enriched with tags, keywords, and sentences where keywords were found.",
             "arity": "UNARY",
             "required": true,
             "acceptsDataset": true
@@ -391,16 +391,16 @@
             "type": "SELECT",
             "selectChoices": [
                 {
-                    "value": "one_row_per_tag",
-                    "label": "1 row / tag"
+                    "value": "one_row_per_match",
+                    "label": "row per match"
                 },
                 {
                     "value": "one_row_per_doc",
-                    "label": "1 row / doc (array columns)"
+                    "label": "row per doc (array columns)"
                 },
                 {
                     "value": "one_row_per_doc_json",
-                    "label": "1 row / doc (nested JSON)"
+                    "label": "row per doc (nested JSON)"
                 }
             ],
             "defaultValue": "one_row_per_doc"
