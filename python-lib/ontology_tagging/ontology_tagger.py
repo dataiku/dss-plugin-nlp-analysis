@@ -63,9 +63,8 @@ class Tagger:
     ):
         store_attr()
         self._remove_incomplete_rows()
-        #set spacy Language config dictionary 
-        config = defaultdict(str)
-        config["sentencizer"] = {"punct_chars": PUNCTUATION_CHARACTERS}
+        #set the punctuation characters to use for sentence splitting 
+        config = {"sentencizer":{"punct_chars": PUNCTUATION_CHARACTERS}}
         self.tokenizer = MultilingualTokenizer(
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",

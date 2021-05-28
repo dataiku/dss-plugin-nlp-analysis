@@ -117,6 +117,9 @@ class MultilingualTokenizer:
         add_pipe_components (list): List of spaCy pipeline components to add, for instance "sentencizer"
         enable_pipe_components (list, optional): List of spaCy pipeline components to enable
         disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
+        config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
+            This config dictionary contain metadatas about the component.
+            If empty, uses SpaCy default config, describing the default values of the factory arguments
         spacy_nlp_dict (dict): Dictionary holding spaCy Language instances (value) by language code (key)
         tokenized_column (str): Name of the dataframe column storing tokenized documents
 
@@ -156,7 +159,7 @@ class MultilingualTokenizer:
         add_pipe_components: List[str] = [],
         enable_pipe_components: Optional[Union[List[str], str]] = None,
         disable_pipe_components: Optional[Union[List[str], str]] = None,
-        config: defaultdict(str) = None,
+        config: dict = {},
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -182,8 +185,9 @@ class MultilingualTokenizer:
                 To disable components, they must be added first, either by activating use_models
                 or by adding them explicitly in add_pipe_components.
                 Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
-            config (defaultdict(str)): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
-            This config dictionary contain metadatas about the component. If None, uses SpaCy default config, describing the default values of the factory arguments
+            config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
+                This config dictionary contain metadatas about the component.
+                If empty, uses SpaCy default config, describing the default values of the factory arguments
 
         """
         store_attr()
@@ -197,7 +201,7 @@ class MultilingualTokenizer:
         """
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
-                "Only one of enable_pipe_components and disable_pipe_components can be specified at once."
+                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
             )
 
     def _set_use_models(self, languages: List[AnyStr]) -> bool:
@@ -288,8 +292,11 @@ class MultilingualTokenizer:
                 )  # spaCy language without models (https://spacy.io/usage/models)
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
-                nlp.add_pipe(component, config=self.config[component])
-                # if config is None, uses SpaCy default config, describing the default values of the factory arguments
+                nlp.add_pipe(
+                    component,
+                    config=self.config[component] if component in self.config else {},
+                )
+            # if self.config is None, uses SpaCy default config, describing the default values of the factory arguments
             if not self.use_models:
                 nlp.initialize()
             if self.enable_pipe_components:
@@ -326,13 +333,15 @@ class MultilingualTokenizer:
 
     def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:
         """Private method to customize stopwords for a given spaCy language
+
         Args:
             nlp: Instanciated spaCy language
             language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
+
         Raises:
             TokenizationError: If something went wrong with the stopword customization
-        """
 
+        """
         try:
             stopwords_file_path = os.path.join(
                 self.stopwords_folder_path, f"{language}.txt"
@@ -402,7 +411,7 @@ class MultilingualTokenizer:
         )
         text_list = [str(t) if pd.notnull(t) else "" for t in text_list]
         try:
-            self.add_spacy_tokenizer(language)
+            self._add_spacy_tokenizer(language)
             tokenized = list(
                 self.spacy_nlp_dict[language].pipe(
                     text_list,
