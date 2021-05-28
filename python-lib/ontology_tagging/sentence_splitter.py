@@ -41,7 +41,7 @@ class SentenceSplitter:
 
     @staticmethod
     def _clean_linebreaks(text: AnyStr) -> AnyStr:
-        """Replace multiple spaces with single space"""
+        """Replace multiple end-of-line characters and whitespaces with single ones"""
         text = "\n".join(
             [
                 elt.strip(" \t\n\r")

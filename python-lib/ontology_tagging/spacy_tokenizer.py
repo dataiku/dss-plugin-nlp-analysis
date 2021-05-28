@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module with a class to tokenize text data in multiple languages"""
-from collections import defaultdict
+
 import regex as re
 import os
 import logging
@@ -118,7 +118,7 @@ class MultilingualTokenizer:
         enable_pipe_components (list, optional): List of spaCy pipeline components to enable
         disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
         config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
-            This config dictionary contain metadatas about the component.
+            This config dictionary contains metadatas about the component.
             If empty, uses SpaCy default config, describing the default values of the factory arguments
         spacy_nlp_dict (dict): Dictionary holding spaCy Language instances (value) by language code (key)
         tokenized_column (str): Name of the dataframe column storing tokenized documents
@@ -201,7 +201,7 @@ class MultilingualTokenizer:
         """
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
-                f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
+                "Only one of enable_pipe_components and disable_pipe_components can be specified at once."
             )
 
     def _set_use_models(self, languages: List[AnyStr]) -> bool:
@@ -411,7 +411,7 @@ class MultilingualTokenizer:
         )
         text_list = [str(t) if pd.notnull(t) else "" for t in text_list]
         try:
-            self._add_spacy_tokenizer(language)
+            self.add_spacy_tokenizer(language)
             tokenized = list(
                 self.spacy_nlp_dict[language].pipe(
                     text_list,

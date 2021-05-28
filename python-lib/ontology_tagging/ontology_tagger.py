@@ -2,7 +2,6 @@ import pandas as pd
 import logging
 
 from fastcore.utils import store_attr
-from collections import defaultdict
 from typing import AnyStr
 from typing import List
 
