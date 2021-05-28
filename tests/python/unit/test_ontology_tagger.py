@@ -140,7 +140,7 @@ def test_matching_emojis():
     df = tagger.tag_and_format(
         text_df=text_df,
         text_column="text",
-        output_format="one_row_per_tag",
+        output_format="one_row_per_match",
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
