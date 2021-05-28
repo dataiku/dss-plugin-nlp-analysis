@@ -39,6 +39,19 @@ class SentenceSplitter:
     ):
         store_attr()
 
+    @staticmethod
+    def _clean_linebreaks(text: AnyStr) -> AnyStr:
+        """Replace multiple spaces with single space"""
+        text = "\n".join(
+            [
+                elt.strip(" \t\n\r")
+                for elt in filter(
+                    None, text.replace("\t", "\n").replace("\r", "\n").split("\n")
+                )
+            ]
+        )
+        return text
+
     def _split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
         """Append new column(s) to a dataframe, with documents as lists of sentences
 
@@ -74,7 +87,8 @@ class SentenceSplitter:
             List: Document splitted into sentences as strings.
 
         """
-        document, language = row[self.text_column], row[self.language_column]
+        document = self._clean_linebreaks(row[self.text_column])
+        language = row[self.language_column]
         return [
             sentence.text
             for sentence in self.tokenizer.spacy_nlp_dict[language](document).sents
@@ -90,7 +104,7 @@ class SentenceSplitter:
             List : Document splitted into tokenized sentences as strings.
 
         """
-        document = row[self.text_column]
+        document = self._clean_linebreaks(row[self.text_column])
         return [
             sentence.text
             for sentence in self.tokenizer.spacy_nlp_dict[self.language](document).sents

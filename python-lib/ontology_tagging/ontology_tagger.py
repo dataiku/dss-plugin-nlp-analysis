@@ -3,7 +3,7 @@ import logging
 from time import perf_counter
 
 from fastcore.utils import store_attr
-
+from collections import defaultdict
 from typing import AnyStr
 from typing import List
 from typing import Union
@@ -22,6 +22,7 @@ from utils.nlp_utils import unicode_normalize_text
 from utils.language_support import SPACY_LANGUAGE_LOOKUP
 from utils.language_support import SPACY_LANGUAGE_RULES
 from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+from utils.language_support import PUNCTUATION_CHARACTERS
 
 
 class Tagger:
@@ -64,9 +65,13 @@ class Tagger:
     ):
         store_attr()
         self._remove_incomplete_rows()
+        #set spacy Language config dictionary 
+        config = defaultdict(str)
+        config["sentencizer"] = {"punct_chars": PUNCTUATION_CHARACTERS}
         self.tokenizer = MultilingualTokenizer(
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",
+            config=config,
         )
         self._matcher_dict = {}  # filled by the _match_no_category method
         self._keyword_to_tag = {}  # filled by the _tokenize_keywords method

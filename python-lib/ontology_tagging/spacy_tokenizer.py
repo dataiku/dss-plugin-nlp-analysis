@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Module with a class to tokenize text data in multiple languages"""
-
+from collections import defaultdict
 import regex as re
 import os
 import logging
@@ -156,6 +156,7 @@ class MultilingualTokenizer:
         add_pipe_components: List[str] = [],
         enable_pipe_components: Optional[Union[List[str], str]] = None,
         disable_pipe_components: Optional[Union[List[str], str]] = None,
+        config: defaultdict(str) = None,
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -181,6 +182,8 @@ class MultilingualTokenizer:
                 To disable components, they must be added first, either by activating use_models
                 or by adding them explicitly in add_pipe_components.
                 Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
+            config (defaultdict(str)): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
+            This config dictionary contain metadatas about the component. If None, uses SpaCy default config, describing the default values of the factory arguments
 
         """
         store_attr()
@@ -191,7 +194,7 @@ class MultilingualTokenizer:
         Contains the components of each SpaCy.Language object that have been disabled by spacy.Languages.select_pipes() method.
         Those components can be re-added to each SpaCy.Language at their initial place in the pipeline, by calling restore_pipe_components[language].restore()
         
-        """ 
+        """
         if self.enable_pipe_components and self.disable_pipe_components:
             raise ValueError(
                 f"enable_pipe_components and disable_pipe_components are both non-empty. Please give either components to enable, or components to disable."
@@ -205,7 +208,7 @@ class MultilingualTokenizer:
             self.use_models = True
         else:
             self.use_models = False
-    
+
     @staticmethod
     def _get_error_message_lemmatization(language: AnyStr) -> AnyStr:
         """Return the error message to display when the lemmatization cannot be applied"""
@@ -215,8 +218,8 @@ class MultilingualTokenizer:
         else:
             # Any unsupported language
             return f"The language '{language}' is not available for Lemmatization. Uncheck the lemmatization option and re-run the recipe."
-        
-    @staticmethod    
+
+    @staticmethod
     def _get_components_to_activate_lemmatization(language: AnyStr) -> List[AnyStr]:
         """Return the list of  SpaCy components to add to SpaCy Language to lemmatize"""
         if language in SPACY_LANGUAGE_MODELS_MORPHOLOGIZER:
@@ -285,7 +288,8 @@ class MultilingualTokenizer:
                 )  # spaCy language without models (https://spacy.io/usage/models)
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
-                nlp.add_pipe(component)
+                nlp.add_pipe(component, config=self.config[component])
+                # if config is None, uses SpaCy default config, describing the default values of the factory arguments
             if not self.use_models:
                 nlp.initialize()
             if self.enable_pipe_components:
