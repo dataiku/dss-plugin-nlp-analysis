@@ -41,3 +41,4 @@ Last line"""
     tagger._initialize_tokenizer([tagger.language])
     text_df, text_column_tokenized = tagger._sentence_splitting(text_df, "text")
     assert len(text_df[text_column_tokenized].tolist()[0]) == 4
+    
