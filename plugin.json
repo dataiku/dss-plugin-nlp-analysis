@@ -4,7 +4,7 @@
     "meta": {
         "label": "Text analysis",
         "category": "Natural Language Processing",
-        "description": "TODO add your description (keep it short and simple)",
+        "description": "Analyse text data",
         "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE)",
         "icon": "icon-list-alt",
         "licenseInfo": "Apache Software License",

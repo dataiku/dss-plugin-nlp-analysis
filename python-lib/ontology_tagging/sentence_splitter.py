@@ -52,7 +52,7 @@ class SentenceSplitter:
         )
         return text
 
-    def _split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
+    def split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
         """Append new column(s) to a dataframe, with documents as lists of sentences
 
         Returns:
