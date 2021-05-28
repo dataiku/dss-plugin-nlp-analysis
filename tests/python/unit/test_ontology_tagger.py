@@ -126,7 +126,7 @@ def test_matching_normalize_diacritics():
 
     
 def test_matching_emojis():
-    """Test matching with smileys"""
+    """Test matching with emojis"""
     ontology_df = pd.DataFrame(
         {"tag": ["👍", "👩"], "keyword": ["👍", "👩🏾"]}
     )
