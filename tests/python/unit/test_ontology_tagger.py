@@ -69,7 +69,7 @@ def test_initialize_tokenizer():
 
 
 def test_matching_in_lowercase():
-    """Test matching for the option 'normalize_case'"""
+    """Test matching for the option 'ignore_case'"""
     ontology_df = pd.DataFrame(
         {"tag": ["tag1", "tag2"], "keyword": ["My KeYword", "other keyword"]}
     )
@@ -86,7 +86,7 @@ def test_matching_in_lowercase():
         category_column=None,
         keyword_column="keyword",
         language="en",
-        normalize_case=True,
+        ignore_case=True,
     )
     df = tagger.tag_and_format(
         text_df=text_df,
@@ -95,26 +95,19 @@ def test_matching_in_lowercase():
         languages=["en"],
     )
     assert len(df["tag_keyword"]) == 2 == len(df["tag_sentence"]) == len(df["tag"])
-    
-def test_matching_normalize_diacritics():
-    """Test matching for the option 'normalize_diacritics'"""
-    ontology_df = pd.DataFrame(
-            {"tag": ["tag1"], "keyword": ["ÄâêËùûôçèîÏìàñ"]}
-    )
-    text_df = pd.DataFrame(
-        {
-            "text": [
-                "The keyword is AaeEuuoceiIian."
-            ]
-        }
-    )
+
+
+def test_matching_ignore_diacritics():
+    """Test matching for the option 'ignore_diacritics'"""
+    ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["ÄâêËùûôçèîÏìàñ"]})
+    text_df = pd.DataFrame({"text": ["The keyword is AaeEuuoceiIian."]})
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column="tag",
         category_column=None,
         keyword_column="keyword",
         language="en",
-        normalize_diacritics=True,
+        ignore_diacritics=True,
     )
     df = tagger.tag_and_format(
         text_df=text_df,

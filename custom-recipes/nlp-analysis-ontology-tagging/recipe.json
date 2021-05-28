@@ -351,16 +351,16 @@
             "type": "SEPARATOR"
         },
         {
-            "name": "normalize_case",
-            "label": "Normalize case",
+            "name": "ignore_case",
+            "label": "Ignore case",
             "description": "Match keywords whichever the case (upper or lower)",
             "type": "BOOLEAN",
             "defaultValue": false
         },
         {
-            "name": "unicode_normalization",
-            "label": "Normalize diacritics",
-            "description": "Normalize diacritic marks e.g., accents, cedillas, tildes",
+            "name": "ignore_diacritics",
+            "label": "Ignore diacritics",
+            "description": "Ignore diacritic marks e.g., accents, cedillas, tildes",
             "type": "BOOLEAN",
             "defaultValue": false
         },
@@ -380,7 +380,6 @@
             "visibilityCondition": "model.language == 'language_column'",
             "defaultValue": false
         },
-        
         {
             "name": "separator_output_parameters",
             "label": "Output parameters",
