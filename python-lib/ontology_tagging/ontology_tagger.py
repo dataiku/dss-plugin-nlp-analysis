@@ -13,13 +13,13 @@ from .spacy_tokenizer import MultilingualTokenizer
 from .formatting.instanciator import FormatterInstanciator
 from .sentence_splitter import SentenceSplitter
 
-from utils.nlp_utils import (
+from nlp.nlp_utils import (
     lemmatize_doc,
     get_phrase_matcher_attr,
     lowercase_if,
     unicode_normalize_text,
 )
-from utils.language_support import (
+from nlp.language_support import (
     SPACY_LANGUAGE_LOOKUP,
     SPACY_LANGUAGE_RULES,
     SPACY_LANGUAGE_MODELS_LEMMATIZATION,

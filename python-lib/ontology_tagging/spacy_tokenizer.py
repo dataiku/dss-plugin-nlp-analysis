@@ -17,7 +17,7 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from utils.language_support import (
+from nlp.language_support import (
     SUPPORTED_LANGUAGES_SPACY,
     SPACY_LANGUAGE_MODELS,
     SPACY_LANGUAGE_LOOKUP,

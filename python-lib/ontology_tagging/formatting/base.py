@@ -9,7 +9,7 @@ from utils.plugin_io_utils import (
     unique_list,
     generate_unique_columns,
 )
-from utils.nlp_utils import lowercase_if, unicode_normalize_text
+from nlp.nlp_utils import lowercase_if, unicode_normalize_text
 
 from ontology_tagging.spacy_tokenizer import MultilingualTokenizer
 
