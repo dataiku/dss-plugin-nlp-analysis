@@ -31,10 +31,7 @@ def test_split_sentences_linebreaks():
     text_df = pd.DataFrame(
         {
             "text": [
-                """first line with carriage return"""+"\r"+"""second line with two linebreaks
-
-third line with parenthesis)
-Last line"""
+                'first line with carriage return\rsecond line with two linebreaks\n\nthird line with parenthesis)\nLast line'
             ]
         }
     )

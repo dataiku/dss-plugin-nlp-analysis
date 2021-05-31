@@ -7,7 +7,7 @@ from typing import AnyStr, List
 
 from spacy.tokens import Doc
 
-from nlp.nlp_utils import get_span_text
+from nlp.utils import get_span_text
 
 from .base import FormatterBase
 

@@ -10,7 +10,7 @@ from collections import defaultdict
 from spacy.tokens import Span, Doc
 
 from utils.plugin_io_utils import unique_list, generate_unique_columns
-from nlp.nlp_utils import get_span_text, unicode_normalize_text
+from nlp.utils import get_span_text, unicode_normalize_text
 
 from .base import FormatterBase
 

@@ -13,7 +13,7 @@ from .spacy_tokenizer import MultilingualTokenizer
 from .formatting.instanciator import FormatterInstanciator
 from .sentence_splitter import SentenceSplitter
 
-from nlp.nlp_utils import (
+from nlp.utils import (
     lemmatize_doc,
     get_phrase_matcher_attr,
     lowercase_if,

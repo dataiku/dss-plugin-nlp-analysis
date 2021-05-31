@@ -39,7 +39,7 @@ class SentenceSplitter:
     @staticmethod
     def _clean_linebreaks(text: AnyStr) -> AnyStr:
         """Replace multiple end-of-line characters and whitespaces with single ones"""
-        text = "\n".join([elt.strip() for elt in filter(None, text.splitlines())])
+        text= "\n".join(line.strip() for line in filter(None, text.splitlines()))
         return text
 
     def split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
