@@ -2,14 +2,14 @@ import pandas as pd
 from tqdm import tqdm
 from fastcore.utils import store_attr
 
-from typing import AnyStr
-from typing import List
+from typing import AnyStr, List
 
-from utils.plugin_io_utils import move_columns_after
-from utils.plugin_io_utils import unique_list
-from utils.plugin_io_utils import generate_unique_columns
-from utils.nlp_utils import lowercase_if
-from utils.nlp_utils import unicode_normalize_text
+from utils.plugin_io_utils import (
+    move_columns_after,
+    unique_list,
+    generate_unique_columns,
+)
+from nlp.utils import lowercase_if, unicode_normalize_text
 
 from ontology_tagging.spacy_tokenizer import MultilingualTokenizer
 

@@ -26,9 +26,9 @@ def set_column_descriptions(
         output_col_info["comment"] = column_descriptions.get(output_col_name)
         matched_comment = next(
             (
-                    input_col_info.get("comment", "")
-                    for input_col_info in input_dataset_schema
-                    if input_col_info.get("name") == output_col_name
+                input_col_info.get("comment", "")
+                for input_col_info in input_dataset_schema
+                if input_col_info.get("name") == output_col_name
             ),
             None,
         )

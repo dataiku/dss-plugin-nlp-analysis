@@ -3,15 +3,12 @@ import logging
 from time import perf_counter
 from tqdm import tqdm
 
-from typing import AnyStr
-from typing import List
-from typing import Tuple
+from typing import AnyStr, List, Tuple
 
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
 
-from utils.plugin_io_utils import replace_nan_values
-from utils.plugin_io_utils import generate_unique
+from utils.plugin_io_utils import replace_nan_values, generate_unique
 
 
 class SentenceSplitter:
@@ -38,6 +35,13 @@ class SentenceSplitter:
         language_column=None,
     ):
         store_attr()
+
+    @staticmethod
+    def _clean_linebreaks(text: AnyStr) -> AnyStr:
+        """Replace multiple end-of-line characters and whitespaces with single ones"""
+        text= "\n".join(line.strip() for line in filter(None, text.splitlines()))
+        # filter() is used to remove the whitespace characters in case there are multiple line breaks ("\n\n")
+        return text
 
     def split_sentences_df(self) -> Tuple[pd.DataFrame, AnyStr]:
         """Append new column(s) to a dataframe, with documents as lists of sentences
@@ -74,7 +78,7 @@ class SentenceSplitter:
             List: Document splitted into sentences as strings.
 
         """
-        document = row[self.text_column]
+        document = self._clean_linebreaks(row[self.text_column])
         language = row[self.language_column]
         return [
             sentence.text
@@ -91,7 +95,7 @@ class SentenceSplitter:
             List : Document splitted into tokenized sentences as strings.
 
         """
-        document = row[self.text_column]
+        document = self._clean_linebreaks(row[self.text_column])
         return [
             sentence.text
             for sentence in self.tokenizer.spacy_nlp_dict[self.language](document).sents

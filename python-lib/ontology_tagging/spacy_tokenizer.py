@@ -17,13 +17,15 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from utils.language_support import SUPPORTED_LANGUAGES_SPACY
-from utils.language_support import SPACY_LANGUAGE_MODELS
-from utils.language_support import SPACY_LANGUAGE_LOOKUP
-from utils.language_support import SPACY_LANGUAGE_RULES
-from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
-from utils.language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
-from utils.plugin_io_utils import generate_unique
+from nlp.language_support import (
+    SUPPORTED_LANGUAGES_SPACY,
+    SPACY_LANGUAGE_MODELS,
+    SPACY_LANGUAGE_LOOKUP,
+    SPACY_LANGUAGE_RULES,
+    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
+    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
+)
+from utils.plugin_io_utils import generate_unique, truncate_text_list
 from utils.plugin_io_utils import truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
@@ -117,6 +119,9 @@ class MultilingualTokenizer:
         add_pipe_components (list): List of spaCy pipeline components to add, for instance "sentencizer"
         enable_pipe_components (list, optional): List of spaCy pipeline components to enable
         disable_pipe_components (list, optional): List of spaCy pipeline components to disable.
+        config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
+            This config dictionary contains metadatas about the component.
+            If empty, uses SpaCy default config, describing the default values of the factory arguments
         spacy_nlp_dict (dict): Dictionary holding spaCy Language instances (value) by language code (key)
         tokenized_column (str): Name of the dataframe column storing tokenized documents
 
@@ -156,6 +161,7 @@ class MultilingualTokenizer:
         add_pipe_components: List[str] = [],
         enable_pipe_components: Optional[Union[List[str], str]] = None,
         disable_pipe_components: Optional[Union[List[str], str]] = None,
+        config: dict = {},
     ):
         """Initialization method for the MultilingualTokenizer class, with optional arguments
 
@@ -181,6 +187,9 @@ class MultilingualTokenizer:
                 To disable components, they must be added first, either by activating use_models
                 or by adding them explicitly in add_pipe_components.
                 Please use either enable_pipe_components or disable_pipe_components, as both cannot be used at the same time.
+            config (dict): Dictionary for SpaCy component(key) and its associated SpaCy.Language.config dictionary (value)
+                This config dictionary contains metadatas about the component.
+                If empty, uses SpaCy default config, describing the default values of the factory arguments
 
         """
         store_attr()
@@ -285,7 +294,11 @@ class MultilingualTokenizer:
                 )  # spaCy language without models (https://spacy.io/usage/models)
             nlp.max_length = self.max_num_characters
             for component in self.add_pipe_components:
-                nlp.add_pipe(component)
+                nlp.add_pipe(
+                    component,
+                    config=self.config[component] if component in self.config else {},
+                )
+            # if self.config is None, uses SpaCy default config, describing the default values of the factory arguments
             if not self.use_models:
                 nlp.initialize()
             if self.enable_pipe_components:
@@ -322,13 +335,15 @@ class MultilingualTokenizer:
 
     def _customize_stopwords(self, nlp: Language, language: AnyStr) -> None:
         """Private method to customize stopwords for a given spaCy language
+
         Args:
             nlp: Instanciated spaCy language
             language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
+
         Raises:
             TokenizationError: If something went wrong with the stopword customization
-        """
 
+        """
         try:
             stopwords_file_path = os.path.join(
                 self.stopwords_folder_path, f"{language}.txt"

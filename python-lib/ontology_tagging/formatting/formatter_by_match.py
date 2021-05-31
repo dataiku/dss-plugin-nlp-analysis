@@ -3,12 +3,11 @@ import pandas as pd
 import logging
 from time import perf_counter
 
-from typing import AnyStr
-from typing import List
+from typing import AnyStr, List
 
 from spacy.tokens import Doc
 
-from utils.nlp_utils import get_span_text
+from nlp.utils import get_span_text
 
 from .base import FormatterBase
 
