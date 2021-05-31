@@ -6,7 +6,7 @@
 from spacy.matcher import PhraseMatcher
 import pandas as pd
 from ontology_tagging.ontology_tagger import Tagger
-from utils.language_support import SUPPORTED_LANGUAGES_SPACY
+from nlp.language_support import SUPPORTED_LANGUAGES_SPACY
 
 
 def test_create_matcher_missing_keywords():
