@@ -128,10 +128,3 @@ SPACY_LANGUAGE_RULES = ["bn", "el", "fa"]
 """list: Languages that have available SpaCy rule tables for lemmatization
 The rule tables are available at https://github.com/explosion/spacy-lookups-data/tree/master/spacy_lookups_data/data
 """
-
-    "𝪈",
-    "｡",
-    "。",
-    "\n",
-]
-"""Punctuation characters used for sentence splitting purpose. Every punctuation character is considered as an end of a sentence mark."""

@@ -1,8 +1,7 @@
 from enum import Enum
 from typing import AnyStr
 
-from .formatter_by_document import FormatterByDocumentJson
-from .formatter_by_document import FormatterByDocument
+from .formatter_by_document import FormatterByDocumentJson, FormatterByDocument
 from .formatter_by_match import FormatterByMatch
 
 

@@ -8,18 +8,22 @@ from typing import List
 from spacy.tokens import Doc
 from spacy.matcher import PhraseMatcher
 from spacy.pipeline.sentencizer import Sentencizer
-from .spacy_tokenizer import MultilingualTokenizer
 
+from .spacy_tokenizer import MultilingualTokenizer
 from .formatting.instanciator import FormatterInstanciator
 from .sentence_splitter import SentenceSplitter
 
-from utils.nlp_utils import lemmatize_doc
-from utils.nlp_utils import get_phrase_matcher_attr
-from utils.nlp_utils import lowercase_if
-from utils.nlp_utils import unicode_normalize_text
-from utils.language_support import SPACY_LANGUAGE_LOOKUP
-from utils.language_support import SPACY_LANGUAGE_RULES
-from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
+from utils.nlp_utils import (
+    lemmatize_doc,
+    get_phrase_matcher_attr,
+    lowercase_if,
+    unicode_normalize_text,
+)
+from utils.language_support import (
+    SPACY_LANGUAGE_LOOKUP,
+    SPACY_LANGUAGE_RULES,
+    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
+)
 
 
 class Tagger:
@@ -62,8 +66,10 @@ class Tagger:
     ):
         store_attr()
         self._remove_incomplete_rows()
-        #set the punctuation characters to use for sentence splitting 
-        config = {"sentencizer":{"punct_chars": Sentencizer.default_punct_chars + ["\n"]}}
+        # set the punctuation characters to use for sentence splitting
+        config = {
+            "sentencizer": {"punct_chars": Sentencizer.default_punct_chars + ["\n"]}
+        }
         self.tokenizer = MultilingualTokenizer(
             add_pipe_components=["sentencizer"],
             enable_pipe_components="sentencizer",

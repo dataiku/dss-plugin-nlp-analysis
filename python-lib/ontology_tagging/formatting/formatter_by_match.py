@@ -3,8 +3,7 @@ import pandas as pd
 import logging
 from time import perf_counter
 
-from typing import AnyStr
-from typing import List
+from typing import AnyStr, List
 
 from spacy.tokens import Doc
 

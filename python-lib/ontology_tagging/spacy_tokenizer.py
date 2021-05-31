@@ -17,13 +17,15 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from utils.language_support import SUPPORTED_LANGUAGES_SPACY
-from utils.language_support import SPACY_LANGUAGE_MODELS
-from utils.language_support import SPACY_LANGUAGE_LOOKUP
-from utils.language_support import SPACY_LANGUAGE_RULES
-from utils.language_support import SPACY_LANGUAGE_MODELS_LEMMATIZATION
-from utils.language_support import SPACY_LANGUAGE_MODELS_MORPHOLOGIZER
-from utils.plugin_io_utils import generate_unique
+from utils.language_support import (
+    SUPPORTED_LANGUAGES_SPACY,
+    SPACY_LANGUAGE_MODELS,
+    SPACY_LANGUAGE_LOOKUP,
+    SPACY_LANGUAGE_RULES,
+    SPACY_LANGUAGE_MODELS_LEMMATIZATION,
+    SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
+)
+from utils.plugin_io_utils import generate_unique, truncate_text_list
 from utils.plugin_io_utils import truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
