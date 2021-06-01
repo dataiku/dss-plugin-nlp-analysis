@@ -8,7 +8,7 @@ from typing import AnyStr, List, Tuple
 from spacy.tokens import Doc
 from fastcore.utils import store_attr
 
-from utils.plugin_io_utils import replace_nan_values, generate_unique
+from utils.cleaning_utils import replace_nan_values, generate_unique
 
 
 class SentenceSplitter:

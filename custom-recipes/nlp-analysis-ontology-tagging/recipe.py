@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import dataiku
 from utils.dkulib_io_utils import set_column_descriptions
-from ontology_tagging.dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
-from ontology_tagging.ontology_tagger import Tagger
+from nlp.ontology_tagging.dku_plugin_config_loading import DkuConfigLoadingOntologyTagging
+from nlp.ontology_tagging.ontology_tagger import Tagger
 
 
 dku_config = DkuConfigLoadingOntologyTagging()

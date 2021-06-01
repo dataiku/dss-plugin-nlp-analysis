@@ -17,7 +17,7 @@ from spacy.vocab import Vocab
 from emoji import UNICODE_EMOJI
 from fastcore.utils import store_attr
 
-from nlp.language_support import (
+from .language_support import (
     SUPPORTED_LANGUAGES_SPACY,
     SPACY_LANGUAGE_MODELS,
     SPACY_LANGUAGE_LOOKUP,
@@ -25,8 +25,8 @@ from nlp.language_support import (
     SPACY_LANGUAGE_MODELS_LEMMATIZATION,
     SPACY_LANGUAGE_MODELS_MORPHOLOGIZER,
 )
-from utils.plugin_io_utils import generate_unique, truncate_text_list
-from utils.plugin_io_utils import truncate_text_list
+from utils.cleaning_utils import generate_unique, truncate_text_list
+from utils.cleaning_utils import truncate_text_list
 
 # Setting custom spaCy token extensions to allow for easier filtering in downstream tasks
 Token.set_extension("is_hashtag", getter=lambda token: token.text[0] == "#", force=True)
