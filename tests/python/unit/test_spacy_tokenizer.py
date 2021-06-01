@@ -9,7 +9,7 @@ import pytest
 
 import pandas as pd
 
-from ontology_tagging.spacy_tokenizer import MultilingualTokenizer
+from nlp.spacy_tokenizer import MultilingualTokenizer
 
 
 def test_tokenize_df_english():

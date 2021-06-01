@@ -5,7 +5,7 @@
 
 from spacy.matcher import PhraseMatcher
 import pandas as pd
-from ontology_tagging.ontology_tagger import Tagger
+from nlp.ontology_tagging.ontology_tagger import Tagger
 from nlp.language_support import SUPPORTED_LANGUAGES_SPACY
 
 

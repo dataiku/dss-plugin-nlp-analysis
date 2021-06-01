@@ -1,5 +1,5 @@
 import pandas as pd
-from ontology_tagging.ontology_tagger import Tagger
+from nlp.ontology_tagging.ontology_tagger import Tagger
 
 
 def test_split_sentences_nan_values():

@@ -4,14 +4,14 @@ from fastcore.utils import store_attr
 
 from typing import AnyStr, List
 
-from utils.plugin_io_utils import (
+from utils.cleaning_utils import (
     move_columns_after,
     unique_list,
     generate_unique_columns,
 )
 from nlp.utils import lowercase_if, unicode_normalize_text
 
-from ontology_tagging.spacy_tokenizer import MultilingualTokenizer
+from nlp.spacy_tokenizer import MultilingualTokenizer
 
 
 # names of all additional columns depending on the output_format

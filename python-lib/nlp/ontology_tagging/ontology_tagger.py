@@ -9,9 +9,9 @@ from spacy.tokens import Doc
 from spacy.matcher import PhraseMatcher
 from spacy.pipeline.sentencizer import Sentencizer
 
-from .spacy_tokenizer import MultilingualTokenizer
+from nlp.spacy_tokenizer import MultilingualTokenizer
 from .formatting.instanciator import FormatterInstanciator
-from .sentence_splitter import SentenceSplitter
+from nlp.sentence_splitter import SentenceSplitter
 
 from nlp.utils import (
     lemmatize_doc,
