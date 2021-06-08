@@ -143,17 +143,22 @@ class Tagger:
             logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
-        """Remove rows with at least one empty value from ontology df"""
+        """Remove rows with at least one empty value in the keyword column and the tag column from ontology df"""
         self.ontology_df.replace("", float("nan"), inplace=True)
-        self.ontology_df.dropna(subset=[self.keyword_column,self.tag_column],inplace=True)
-        if self.ontology_df[[self.keyword_column,self.tag_column]].empty:
+        self.ontology_df.dropna(
+            subset=[self.keyword_column, self.tag_column], inplace=True
+        )
+        if self.ontology_df[[self.keyword_column, self.tag_column]].empty:
             raise ValueError(
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
-            
-    def _replace_missing_categories(self):
-        self.ontology_df[self.category_column] = self.ontology_df[self.category_column].fillna(self.ontology_df[self.tag_column])
-   
+
+    def _replace_missing_categories(self) -> None:
+        """Replace each empty category by its tag"""
+        self.ontology_df[self.category_column] = self.ontology_df[
+            self.category_column
+        ].fillna(self.ontology_df[self.tag_column])
+
     def _get_patterns(
         self,
         list_of_keywords: List[AnyStr],
