@@ -27,7 +27,18 @@ def test_create_matcher_missing_keywords():
     tagger._match_no_category(tags, keywords)
     assert len(tagger._matcher_dict[tagger.language]) == 1
 
-
+def test_replace_missing_categories():
+    ontology_df = pd.DataFrame(
+    {"tag": ["tag1","tag2","tag3"], "keyword":[float("nan"),"keyword2","keyword3"],"category":["cat1","",float("nan")]})
+    tagger= Tagger(
+    ontology_df=ontology_df,
+    tag_column="tag",
+    category_column="category",
+    keyword_column="keyword",
+    language="en",
+    )
+    assert tagger.ontology_df.values.tolist() == [['tag2', 'keyword2', 'tag2'], ['tag3', 'keyword3', 'tag3']]
+    
 def test_keywords_tokenization():
     """Test equality between keywords in the matcher and keywords in keyword_to_tag dictionary"""
     ontology_df = pd.DataFrame(
