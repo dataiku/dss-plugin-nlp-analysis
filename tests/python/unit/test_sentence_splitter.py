@@ -24,7 +24,7 @@ def test_split_sentences_linebreaks():
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column="tag",
-        category_column="None",
+        category_column=None,
         keyword_column="tag",
         language="en",
     )
