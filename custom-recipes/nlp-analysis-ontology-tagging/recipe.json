@@ -395,11 +395,11 @@
                     "label": "one row per match"
                 },
                 {
-                    "value": "one_row_per_doc",
+                    "value": "one_row_per_doc_json",
                     "label": "one row per doc (json style)"
                 },
                 {
-                    "value": "one_row_per_doc_json",
+                    "value": "one_row_per_doc",
                     "label": "one row per doc (array style)"
                 }
             ],
