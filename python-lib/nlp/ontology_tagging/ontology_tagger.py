@@ -66,6 +66,8 @@ class Tagger:
     ):
         store_attr()
         self._remove_incomplete_rows()
+        if self.category_column:
+            self._replace_missing_categories()
         # set the punctuation characters to use for sentence splitting
         config = {
             "sentencizer": {"punct_chars": Sentencizer.default_punct_chars + ["\n"]}
@@ -141,13 +143,21 @@ class Tagger:
             logger.setLevel(logging.ERROR)
 
     def _remove_incomplete_rows(self) -> None:
-        """Remove rows with at least one empty value from ontology df"""
+        """Remove rows with at least one empty value in the keyword column and the tag column from ontology df"""
         self.ontology_df.replace("", float("nan"), inplace=True)
-        self.ontology_df.dropna(inplace=True)
-        if self.ontology_df.empty:
+        self.ontology_df.dropna(
+            subset=[self.keyword_column, self.tag_column], inplace=True
+        )
+        if self.ontology_df[[self.keyword_column, self.tag_column]].empty:
             raise ValueError(
                 "No valid tags were found. Please specify at least a keyword and a tag in the ontology dataset, and re-run the recipe"
             )
+
+    def _replace_missing_categories(self) -> None:
+        """Replace each empty category by a category 'uncategorized'"""
+        self.ontology_df[self.category_column] = self.ontology_df[
+            self.category_column
+        ].fillna("uncategorized")
 
     def _get_patterns(
         self,

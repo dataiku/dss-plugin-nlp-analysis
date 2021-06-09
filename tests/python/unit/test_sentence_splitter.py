@@ -7,9 +7,9 @@ def test_split_sentences_nan_values():
     ontology_df = pd.DataFrame({"tag": ["tag1"], "keyword": ["keyword1"]})
     tagger = Tagger(
         ontology_df=ontology_df,
-        tag_column=None,
+        tag_column="tag",
         category_column=None,
-        keyword_column=None,
+        keyword_column="keyword",
         language="en",
     )
     text_df = pd.DataFrame({"text": [float("nan")]})
@@ -24,18 +24,17 @@ def test_split_sentences_linebreaks():
     tagger = Tagger(
         ontology_df=ontology_df,
         tag_column="tag",
-        category_column="None",
+        category_column=None,
         keyword_column="tag",
         language="en",
     )
     text_df = pd.DataFrame(
         {
             "text": [
-                'first line with carriage return\rsecond line with two linebreaks\n\nthird line with parenthesis)\nLast line'
+                "first line with carriage return\rsecond line with two linebreaks\n\nthird line with parenthesis)\nLast line"
             ]
         }
     )
     tagger._initialize_tokenizer([tagger.language])
     text_df, text_column_tokenized = tagger._sentence_splitting(text_df, "text")
     assert len(text_df[text_column_tokenized].tolist()[0]) == 4
-    
