@@ -392,15 +392,15 @@
             "selectChoices": [
                 {
                     "value": "one_row_per_match",
-                    "label": "row per match"
-                },
-                {
-                    "value": "one_row_per_doc",
-                    "label": "row per doc (array columns)"
+                    "label": "One row per match"
                 },
                 {
                     "value": "one_row_per_doc_json",
-                    "label": "row per doc (nested JSON)"
+                    "label": "One row per doc (json style)"
+                },
+                {
+                    "value": "one_row_per_doc",
+                    "label": "One row per doc (array style)"
                 }
             ],
             "defaultValue": "one_row_per_doc"
