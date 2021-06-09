@@ -38,7 +38,7 @@ def test_replace_missing_categories():
     keyword_column="keyword",
     language="en",
     )
-    assert tagger.ontology_df.values.tolist() == [['tag1', 'keyword1', 'tag1'], ['tag2', 'keyword2', 'tag2']]
+    assert tagger.ontology_df.values.tolist() == [['tag1', 'keyword1', 'uncategorized'], ['tag2', 'keyword2', 'uncategorized']]
     
 def test_keywords_tokenization():
     """Test equality between keywords in the matcher and keywords in keyword_to_tag dictionary"""

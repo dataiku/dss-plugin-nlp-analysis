@@ -154,10 +154,10 @@ class Tagger:
             )
 
     def _replace_missing_categories(self) -> None:
-        """Replace each empty category by its tag"""
+        """Replace each empty category by a category 'uncategorized'"""
         self.ontology_df[self.category_column] = self.ontology_df[
             self.category_column
-        ].fillna(self.ontology_df[self.tag_column])
+        ].fillna("uncategorized")
 
     def _get_patterns(
         self,
