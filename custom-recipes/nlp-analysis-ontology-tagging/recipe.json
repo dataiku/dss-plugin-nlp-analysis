@@ -396,7 +396,7 @@
                 },
                 {
                     "value": "one_row_per_doc_json",
-                    "label": "One row per doc (json style)"
+                    "label": "One row per doc (JSON style)"
                 },
                 {
                     "value": "one_row_per_doc",
