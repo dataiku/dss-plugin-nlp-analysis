@@ -2,7 +2,7 @@
     "id": "nlp-analysis",
     "version": "0.1.0",
     "meta": {
-        "label": "Text analysis",
+        "label": "Text Analysis",
         "category": "Natural Language Processing",
         "description": "Analyze text data with ontology tagging",
         "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE)",
