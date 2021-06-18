@@ -391,17 +391,17 @@
             "type": "SELECT",
             "selectChoices": [
                 {
-                    "value": "one_row_per_match",
-                    "label": "One row per match"
-                },
-                {
                     "value": "one_row_per_doc",
                     "label": "One row per doc (array style)"
                 },
                 {
                     "value": "one_row_per_doc_json",
                     "label": "One row per doc (JSON style)"
-                } 
+                },
+                {
+                    "value": "one_row_per_match",
+                    "label": "One row per match"
+                }
             ],
             "defaultValue": "one_row_per_doc"
         }
