@@ -1,6 +1,6 @@
 {
     "id": "nlp-analysis",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "meta": {
         "label": "Text Analysis",
         "category": "Natural Language Processing",
