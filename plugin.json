@@ -1,11 +1,11 @@
 {
     "id": "nlp-analysis",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "meta": {
         "label": "Text Analysis",
         "category": "Natural Language Processing",
         "description": "Analyze text data with ontology tagging",
-        "author": "Dataiku (Jane BELLAICHE, Alex COMBESSIE)",
+        "author": "Dataiku (Jane BELLAICHE, CaraML)",
         "icon": "icon-list-alt",
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/product/plugins/nlp-analysis/",
