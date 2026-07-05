@@ -27,10 +27,10 @@ class CustomCheckError(Exception):
 
 
 class CustomCheck:
-    """Class related to a check. Use run() to verify whether the check fails or pass
+    """Class related to a check. Use run() to verify whether the check fails or passes
     Attributes:
         type (str): Type of the CustomCheck. Must have a related method having "_" before type name
-        op (Any, optional): Operator to compare the value to. Unnecessary for som checks
+        op (Any, optional): Operator to compare the value to. Unnecessary for some checks
         cond (bool, optional): Only necessary for type "custom". Must be true for check to pass
         err_msg (str, optional): Custom message to display if check fails. Default is a generic message
     """
@@ -39,7 +39,7 @@ class CustomCheck:
         """Initialization method for the CustomCheck class
         Args:
             type (str): Type of the CustomCheck. Must have a related method having "_" before type name
-            op (Any, optional): Operator to compare the value to. Unnecessary for som checks
+            op (Any, optional): Operator to compare the value to. Unnecessary for some checks
             cond (bool, optional): Only necessary for type "custom". Must be true for check to pass
             err_msg (str, optional): Custom message to display if check fails. Default is a generic message
         """
@@ -64,7 +64,7 @@ class CustomCheck:
         """Checks whether the check has failed or pass
         Args:
             result(bool): True if check has passed else False
-            value(Any): The value on which the test has been ran
+            value(Any): The value on which the test has been run
         Raises:
             CustomCheckError if check fails
         """
@@ -95,7 +95,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value is not None
 
@@ -104,7 +104,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value in self.op
 
@@ -113,7 +113,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value not in self.op
 
@@ -122,7 +122,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value == self.op
 
@@ -131,7 +131,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value > float(self.op)
 
@@ -140,7 +140,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value < float(self.op)
 
@@ -149,7 +149,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value >= float(self.op)
 
@@ -158,7 +158,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return value <= float(self.op)
 
@@ -167,7 +167,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return float(self.op[0]) <= value <= float(self.op[1])
 
@@ -176,7 +176,7 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return float(self.op[0]) < value < float(self.op[1])
 
@@ -185,20 +185,20 @@ class CustomCheck:
         Args:
             value(Any): Value to test
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return isinstance(value, self.op)
 
     def _custom(self, _) -> bool:
         """Checks whether "cond" attribute is true or false
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return self.cond
 
     def _match(self, value) -> bool:
         """Checks whether "cond" matches the regex provided in "op" attribute
         Returns:
-            bool: Whether the check has succeed
+            bool: Whether the check has succeeded
         """
         return not not re.match(self.op, value)

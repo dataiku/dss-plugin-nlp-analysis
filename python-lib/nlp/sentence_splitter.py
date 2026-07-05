@@ -22,7 +22,7 @@ class SentenceSplitter:
         language (str) : language of the documents to process.
         language_column (str) : Name of the dataframe column storing languages of the document to process.
             Default to None
-        case_sensitivity (bool): Boolean used to know if the text should be resplitted with lowercase text.
+        case_sensitivity (bool): Boolean used to know if the text should be resplit with lowercase text.
 
     """
 
@@ -75,7 +75,7 @@ class SentenceSplitter:
             row (pandas.DataFrame): row which contains the text to split
 
         Returns:
-            List: Document splitted into sentences as strings.
+            List: Document split into sentences as strings.
 
         """
         document = self._clean_linebreaks(row[self.text_column])
@@ -92,7 +92,7 @@ class SentenceSplitter:
             row (pandas.Series): row which contains text to process
 
         Returns:
-            List : Document splitted into tokenized sentences as strings.
+            List : Document split into tokenized sentences as strings.
 
         """
         document = self._clean_linebreaks(row[self.text_column])

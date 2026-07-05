@@ -78,7 +78,7 @@ def generate_unique(
         new_name = f"{name_base}_{j}"
         if new_name not in existing_names:
             return new_name
-    raise RuntimeError(f"Failed to generated a unique name for '{name}'")
+    raise RuntimeError(f"Failed to generate a unique name for '{name}'")
 
 
 def generate_unique_columns(

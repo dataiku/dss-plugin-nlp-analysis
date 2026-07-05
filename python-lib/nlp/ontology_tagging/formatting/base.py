@@ -31,7 +31,7 @@ COLUMN_DESCRIPTION = {
 class FormatterBase:
     """
     Base class to write the output dataframe depending on the output format
-    The subclasses are called by the Tagger class where the tokenization, sentence splitting and Matcher instanciation has been done
+    The subclasses are called by the Tagger class where the tokenization, sentence splitting and Matcher instantiation has been done
 
     Attributes:
         language (string): language: Language code in ISO 639-1 format, cf. https://spacy.io/usage/models#languages
@@ -42,7 +42,7 @@ class FormatterBase:
         ignore_case (bool): If True, match on lowercased forms. Default is False.
         lemmatization (bool): If True , match on lemmatized forms. Default is False.
         ignore_diacritics (bool): If True, ignore diacritic marks e.g., accents, cedillas, tildes. Default is False.
-        text_column_tokenized (string): Name of the column which contains the text splitted by sentences
+        text_column_tokenized (string): Name of the column which contains the text split by sentences
 
     """
 

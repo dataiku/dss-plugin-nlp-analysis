@@ -31,10 +31,10 @@ class FormatterByMatch(FormatterBase):
         Args:
             input_df (pd.DataFrame): The input dataframe.
             text_column (AnyStr): Name of the column which contains the text to match with.
-            language_column (AnyStr): If not None, name of the column with contains the language of each document
+            language_column (AnyStr): If not None, name of the column which contains the language of each document
 
         Returns:
-               The input dataframe enriched withdataframe with new columns of tag, keyword, sentence and category
+               The input dataframe enriched with a dataframe with new columns of tag, keyword, sentence and category
 
         """
         return self.write_df(input_df, text_column, language_column)
@@ -50,7 +50,7 @@ class FormatterByMatch(FormatterBase):
         Args:
             input_df (pd.DataFrame): The input dataframe.
             text_column (AnyStr): Name of the column which contains the text to match with.
-            language_column (AnyStr): If not None, name of the column with contains the language of each document
+            language_column (AnyStr): If not None, name of the column which contains the language of each document
 
         Returns:
                The dataframe with all columns from the input, plus new columns of tag, keyword and sentence
