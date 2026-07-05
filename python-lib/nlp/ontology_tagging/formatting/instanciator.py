@@ -65,9 +65,9 @@ class FormatterInstanciator:
         """get the right formatting instance and returns it
 
         Args:
-            config (dict): class attributes for the Formatter instance to instanciate
-            format (AnyStr): name of the format to instanciate
-            category (AnyStr): 'category' if we want the list of tag columns when there are categories in the ontology , 'no category' if we don't.
+            config (dict): class attributes for the Formatter instance to instantiate
+            format (AnyStr): name of the format to instantiate
+            category (AnyStr): 'category' if we want the list of tag columns when there are categories in the ontology, 'no category' if we don't.
 
         Returns:
             The instance of the formatter"""
