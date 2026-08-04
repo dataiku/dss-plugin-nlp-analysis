@@ -1,5 +1,1 @@
-# Cobuild guidance
-
-Runtime constraints:
-- When `language=language_column`, configure `language_column`; the runner requires it even though the descriptor does not mark the parameter mandatory.
-- Every non-null value in `language_column` must be a supported language code listed by the descriptor.
+- When `language=language_column`, set `language_column` to a column where every row contains one of the supported language codes listed for `language`; missing or unsupported values fail at runtime.
