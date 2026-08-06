@@ -1,0 +1,1 @@
+- When `language=language_column`, set `language_column` to a column where every row contains one of the supported language codes listed for `language`; missing or unsupported values fail at runtime.
