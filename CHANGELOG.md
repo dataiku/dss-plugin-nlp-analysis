@@ -1,5 +1,8 @@
 # Changelog
 
+## [Version 0.3.0](https://github.com/dataiku/dss-plugin-nlp-analysis/releases/tag/v0.3.0)
+- Add Cobuild support to the ontology tagging recipe
+
 ## [Version 0.2.2](https://github.com/dataiku/dss-plugin-nlp-analysis/releases/tag/v0.2.2)
 - Fix broken dependency chain on python v3.7 and v3.8 due to a new sudachipy version released
 
